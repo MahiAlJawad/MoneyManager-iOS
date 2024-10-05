@@ -10,7 +10,7 @@ import SwiftUI
 struct TabBarView: View {
     typealias Tab = TabBarModel.Item
     @State var selectedTab: Tab = .dashboard
-
+    
     var body: some View {
         TabView(selection: $selectedTab) {
             Text("Coming Soon")
@@ -19,11 +19,13 @@ struct TabBarView: View {
                 }
                 .tag(Tab.dashboard)
             
-            Text("Coming Soon")
-                .tabItem {
-                    Label(Tab.accounts.title, systemImage: Tab.accounts.icon)
-                }
-                .tag(Tab.accounts)
+            NavigationStack {
+                AccountsView()
+            }
+            .tabItem {
+                Label(Tab.accounts.title, systemImage: Tab.accounts.icon)
+            }
+            .tag(Tab.accounts)
             
             Text("Coming Soon")
                 .tabItem {

@@ -22,7 +22,7 @@ class Account {
         }
     }
     
-    private var id: String
+    var id: String
     private var name: String
     private var balance: Double
     private var type: String
@@ -33,6 +33,14 @@ class Account {
         self.balance = balance
         self.type = type.description
     }
+}
+
+extension Account {
+    var accountName: String { name }
+    
+    var accountBalance: Double { balance }
+    
+    var accountType: String { type }
 }
 
 

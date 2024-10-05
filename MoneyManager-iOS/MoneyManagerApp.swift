@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct MoneyManager_iOSApp: App {
     var body: some Scene {
         WindowGroup {
             TabBarView()
-        }
+        }.modelContainer(for: Account.self)
     }
 }
