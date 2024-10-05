@@ -12,24 +12,6 @@ struct AccountsView: View {
     @Environment(\.modelContext) var modelContext
     @Query var accounts: [Account]
     
-    var debitAccounts: [Account] {
-        accounts.filter({ $0.accountType == Account.AccountType.debit.description })
-    }
-    
-    var creditAccounts: [Account] {
-        accounts.filter({ $0.accountType == Account.AccountType.credit.description })
-    }
-    
-    func accountView(for account: Account) -> some View {
-        VStack(alignment: .leading) {
-            Text(account.accountName)
-                .font(.headline)
-            Text(account.accountBalance, format: .currency(code: "BDT"))
-            Text(account.accountType)
-                .font(.caption)
-        }
-    }
-    
     var body: some View {
         List {
             Section("Debit Accounts") {
@@ -53,6 +35,24 @@ struct AccountsView: View {
                     modelContext.insert(account)
                 }
             }
+        }
+    }
+    
+    var debitAccounts: [Account] {
+        accounts.filter({ $0.accountType == Account.AccountType.debit.description })
+    }
+    
+    var creditAccounts: [Account] {
+        accounts.filter({ $0.accountType == Account.AccountType.credit.description })
+    }
+    
+    func accountView(for account: Account) -> some View {
+        VStack(alignment: .leading) {
+            Text(account.accountName)
+                .font(.headline)
+            Text(account.accountBalance, format: .currency(code: "BDT"))
+            Text(account.accountType)
+                .font(.caption)
         }
     }
 }

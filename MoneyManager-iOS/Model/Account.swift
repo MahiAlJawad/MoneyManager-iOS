@@ -42,5 +42,3 @@ extension Account {
     
     var accountType: String { type }
 }
-
-
