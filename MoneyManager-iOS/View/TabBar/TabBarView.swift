@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct TabBarView: View {
-    typealias Tab = TabBarModel.Item
-    @State var selectedTab: Tab = .dashboard
-    @State var presentAddTransactionSheet: Bool = false
+    private typealias Tab = TabBarModel.Item
+    @State private var selectedTab: Tab = .dashboard
+    @State private var presentAddTransactionSheet: Bool = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -63,7 +63,7 @@ struct TabBarView: View {
             NavigationStack {
                 AddTransactionView()
             }
-            .presentationDetents([.fraction(0.75)])
+            .presentationDetents([.medium, .large])
         }
     }
 }
