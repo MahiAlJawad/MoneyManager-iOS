@@ -8,42 +8,62 @@
 import SwiftUI
 
 struct TabBarView: View {
-    typealias Tab = TabBarModel.Item
-    @State var selectedTab: Tab = .dashboard
+    private typealias Tab = TabBarModel.Item
+    @State private var selectedTab: Tab = .dashboard
+    @State private var presentAddTransactionSheet: Bool = false
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            Text("Coming Soon")
-                .tabItem {
-                    Label(Tab.dashboard.title, systemImage: Tab.dashboard.icon)
+        ZStack(alignment: .bottom) {
+            TabView(selection: $selectedTab) {
+                Text("Dashbaord")
+                    .tabItem {
+                        Label(Tab.dashboard.title, systemImage: Tab.dashboard.icon)
+                    }
+                    .tag(Tab.dashboard)
+                
+                NavigationStack {
+                    AccountsView()
                 }
-                .tag(Tab.dashboard)
-            
+                .tabItem {
+                    Label(Tab.accounts.title, systemImage: Tab.accounts.icon)
+                }
+                .tag(Tab.accounts)
+                
+                Spacer()
+                    .tabItem {
+                        EmptyView()
+                    }
+                    .tag(0)
+                
+                Text("Statistics")
+                    .tabItem {
+                        Label(Tab.statistics.title, systemImage: Tab.statistics.icon)
+                    }
+                    .tag(Tab.statistics)
+                
+                Text("More View")
+                    .tabItem {
+                        Label(Tab.more.title, systemImage: Tab.more.icon)
+                    }
+                    .tag(Tab.more)
+            }
+
+            // MARK: Add Transaction button
+            Button {
+                presentAddTransactionSheet.toggle()
+            } label: {
+                Image(systemName: "plus")
+                    .tint(Color.white)
+                    .padding()
+            }
+            .background(Color.green)
+            .clipShape(Circle())
+        }
+        .sheet(isPresented: $presentAddTransactionSheet) {
             NavigationStack {
-                AccountsView()
+                AddTransactionView()
             }
-            .tabItem {
-                Label(Tab.accounts.title, systemImage: Tab.accounts.icon)
-            }
-            .tag(Tab.accounts)
-            
-            Text("Coming Soon")
-                .tabItem {
-                    Label(Tab.statistics.title, systemImage: Tab.statistics.icon)
-                }
-                .tag(Tab.statistics)
-            
-            Text("Coming Soon")
-                .tabItem {
-                    Label(Tab.planning.title, systemImage: Tab.planning.icon)
-                }
-                .tag(Tab.planning)
-            
-            Text("Coming Soon")
-                .tabItem {
-                    Label(Tab.more.title, systemImage: Tab.more.icon)
-                }
-                .tag(Tab.more)
+            .presentationDetents([.medium, .large])
         }
     }
 }
