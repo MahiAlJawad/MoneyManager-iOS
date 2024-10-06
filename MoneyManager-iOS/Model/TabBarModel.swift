@@ -12,7 +12,6 @@ struct TabBarModel {
         case dashboard
         case accounts
         case statistics
-        case planning
         case more
         
         var title: String {
@@ -20,7 +19,6 @@ struct TabBarModel {
             case .dashboard:    return "Dashboard"
             case .accounts:     return "Accounts"
             case .statistics:   return "Statistics"
-            case .planning:     return "Planning"
             case .more:         return "More"
             }
         }
@@ -30,7 +28,6 @@ struct TabBarModel {
             case .dashboard:  return "dollarsign.bank.building.fill"
             case .accounts:   return "note.text"
             case .statistics: return "chart.bar.xaxis"
-            case .planning:   return "calendar.badge.clock"
             case .more:       return "ellipsis.circle.fill"
             }
         }
