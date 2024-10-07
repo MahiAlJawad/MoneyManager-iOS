@@ -63,7 +63,7 @@ struct TabBarView: View {
             NavigationStack {
                 AddTransactionView()
             }
-            .presentationDetents([.medium, .large])
+            .presentationDetents([.large, .large])
         }
     }
 }
