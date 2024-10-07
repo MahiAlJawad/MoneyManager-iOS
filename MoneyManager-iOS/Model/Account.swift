@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 class Account {
-    enum AccountType {        
+    enum AccountType: CaseIterable {
         case debit
         case credit
         
@@ -27,12 +27,17 @@ class Account {
     private var balance: Double
     private var type: String
     
+    // For Credit type account
     private var creditLimit: Double
+    private var billingDay: Int
+    private var dueDay: Int
     
     init(
         name: String,
         balance: Double,
         creditLimit: Double = 0,
+        billingDay: Int = 0,
+        dueDay: Int = 0,
         type: AccountType
     ) {
         id = UUID().uuidString
@@ -40,6 +45,8 @@ class Account {
         self.balance = balance
         self.type = type.description
         self.creditLimit = creditLimit
+        self.billingDay = billingDay
+        self.dueDay = dueDay
     }
 }
 

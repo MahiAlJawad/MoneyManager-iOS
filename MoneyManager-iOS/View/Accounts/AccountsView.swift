@@ -21,21 +21,18 @@ struct AccountsView: View {
             } else {
                 accountsListView
             }
-        }
-        .navigationTitle("Accounts")
-        .navigationTitle("Accounts")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Add Account") {
-                    presentAddAccountView.toggle()
-                }
+            Button("Add Account") {
+                presentAddAccountView.toggle()
             }
+            .buttonStyle(.borderedProminent)
+            .padding()
         }
+        .navigationTitle("Accounts")
+        .navigationTitle("Accounts")
         .sheet(isPresented: $presentAddAccountView) {
             NavigationView {
                 AddAccountView()
             }
-            .presentationDetents([.medium, .large])
         }
     }
     
