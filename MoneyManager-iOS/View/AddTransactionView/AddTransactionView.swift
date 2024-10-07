@@ -7,22 +7,27 @@
 
 import SwiftUI
 
+enum FocusField {
+    case amount
+}
+
 struct AddTransactionView: View {
     @State private var selectedTab = 0 // 0: Expense, 1: Income, 2: Transfer
     @State private var amount: String = ""
     @State private var account: String? = "Cash"
     @State private var toAccount: String? = nil
     @State private var dateTime: Date = Date()
+    @State private var toNote: String? = ""
+    
+    @FocusState private var focusField: FocusField?
 
     var body: some View {
         VStack {
             HStack {
-                Button(action: {
-                    // Handle cancel action
-                }) {
-                    Text("Cancel")
-                        .foregroundColor(.red)
+                Button("Cancel") {
+                    // TODO: handle cancel action
                 }
+                .foregroundStyle(.red)
                 .padding()
 
                 Spacer()
@@ -32,12 +37,10 @@ struct AddTransactionView: View {
 
                 Spacer()
 
-                Button(action: {
-                    // Handle templates action
-                }) {
-                    Text("Templates")
-                        .foregroundColor(.black)
+                Button("Templates") {
+                    // TODO: Handle templates action
                 }
+                .foregroundStyle(.black)
                 .padding()
             }
             .background(Color.gray.opacity(0.8))
@@ -57,63 +60,104 @@ struct AddTransactionView: View {
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(8)
+                    .keyboardType(.decimalPad)
                 
                 Spacer()
                 
                 TextField("0", text: $amount)
                     .font(.system(size: 50))
-                    .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.trailing)
+                    .focused($focusField, equals: .amount)
                     .keyboardType(.numberPad)
                     .padding()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            focusField = .amount
+                        }
+                    }
             }
             .padding(.horizontal)
 
             List {
-                NavigationLink(destination: AccountSelectionView(selectedAccount: $account)) {
-                    HStack {
-                        Image(systemName: "banknote")
-                            .foregroundColor(.blue)
-                        Text("Account")
-                        Spacer()
-                        Text(account ?? "")
-                            .foregroundColor(.gray)
-                    }
-                }
-
-                NavigationLink(destination: AccountSelectionView(selectedAccount: $toAccount)) {
-                    HStack {
-                        Image(systemName: "questionmark.circle")
-                            .foregroundColor(.gray)
-                        Text("To account")
-                        Spacer()
-                        if let toAccount = toAccount {
-                            Text(toAccount)
+                // GENERAL SECTION
+                Section(header: Text("General").textCase(.uppercase)) {
+                    NavigationLink(destination: AccountSelectionView(selectedAccount: $account)) {
+                        HStack {
+                            Image(systemName: "banknote")
+                                .foregroundColor(.blue)
+                            Text("Account")
+                            Spacer()
+                            Text(account ?? "")
                                 .foregroundColor(.gray)
-                        } else {
-                            Text("Required")
-                                .foregroundColor(.red)
+                        }
+                    }
+                    
+                    NavigationLink(destination: AccountSelectionView(selectedAccount: $toAccount)) {
+                        HStack {
+                            Image(systemName: "questionmark.circle")
+                                .foregroundColor(.gray)
+                            Text("To account")
+                            Spacer()
+                            if let toAccount = toAccount {
+                                Text(toAccount)
+                                    .foregroundColor(.gray)
+                            } else {
+                                Text("Required")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    
+                    DatePicker(selection: $dateTime, displayedComponents: .date) {
+                        HStack {
+                            Image(systemName: "calendar")
+                            Text("Date & Time")
+                            Spacer()
+                        }
+                    }
+                    
+                    NavigationLink(destination: LabelSelectionView()) {
+                        HStack {
+                            Image(systemName: "tag")
+                                .foregroundColor(.gray)
+                            Text("Labels")
+                            Spacer()
+                            Text("Add Label")
+                                .foregroundColor(.blue)
                         }
                     }
                 }
-
-                DatePicker(selection: $dateTime, displayedComponents: .date) {
-                    HStack {
-                        Image(systemName: "calendar")
-                        Text("Date & Time")
-                        Spacer()
-                        Text("\(dateTime.formatted())")
-                            .foregroundColor(.gray)
+                
+                // MORE DETAIL SECTION
+                Section(header: Text("More details").textCase(.uppercase)) {
+                    NavigationLink(destination: NoteSelectionView(note: $toNote)) {
+                        HStack {
+                            Image(systemName: "note.text")
+                                .foregroundColor(.blue)
+                            Text("Note")
+                            Spacer()
+                            Text(toNote ?? "")
+                                .foregroundColor(.gray)
+                        }
                     }
-                }
-
-                NavigationLink(destination: LabelSelectionView()) {
-                    HStack {
-                        Image(systemName: "tag")
-                            .foregroundColor(.gray)
-                        Text("Labels")
-                        Spacer()
-                        Text("Add label")
-                            .foregroundColor(.blue)
+                    
+                    NavigationLink(destination: AccountSelectionView(selectedAccount: $toAccount)) {
+                        HStack {
+                            Image(systemName: "questionmark.circle")
+                                .foregroundColor(.gray)
+                            Text("Payment Type")
+                            Spacer()
+                            Text("Cash") // TODO: add new page for selection
+                        }
+                    }
+                    
+                    // TODO: Add location
+                    NavigationLink(destination: LabelSelectionView()) {
+                        HStack {
+                            Image(systemName: "location.app")
+                            Text("Add Location")
+                            Spacer()
+                        }
                     }
                 }
             }
@@ -121,69 +165,7 @@ struct AddTransactionView: View {
             .padding(.top, -10)
 
             Spacer()
-
-            NumberPad(amount: $amount)
-                .padding(.bottom, 10)
         }
-    }
-}
-
-struct NumberPad: View {
-    @Binding var amount: String
-
-    var body: some View {
-        VStack(spacing: 10) {
-            ForEach(0..<3) { row in
-                HStack(spacing: 10) {
-                    ForEach(1..<4) { column in
-                        let number = row * 3 + column
-                        Button(action: {
-                            amount.append("\(number)")
-                        }) {
-                            Text("\(number)")
-                                .frame(width: 60, height: 60)
-                                .background(Color.white)
-                                .cornerRadius(8)
-                                .shadow(radius: 1)
-                        }
-                    }
-                }
-            }
-            HStack(spacing: 10) {
-                Button(action: {
-                    amount.append(".")
-                }) {
-                    Text(".")
-                        .frame(width: 60, height: 60)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 1)
-                }
-
-                Button(action: {
-                    amount.append("0")
-                }) {
-                    Text("0")
-                        .frame(width: 60, height: 60)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 1)
-                }
-
-                Button(action: {
-                    if !amount.isEmpty {
-                        amount.removeLast()
-                    }
-                }) {
-                    Image(systemName: "delete.left")
-                        .frame(width: 60, height: 60)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 1)
-                }
-            }
-        }
-        .padding()
     }
 }
 
@@ -191,6 +173,13 @@ struct AccountSelectionView: View {
     @Binding var selectedAccount: String?
     var body: some View {
         Text("Select an Account")
+    }
+}
+
+struct NoteSelectionView: View {
+    @Binding var note: String?
+    var body: some View {
+        Text("Add Note")
     }
 }
 
