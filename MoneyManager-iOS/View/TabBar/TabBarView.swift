@@ -56,7 +56,7 @@ struct TabBarView: View {
                     .tint(Color.white)
                     .padding()
             }
-            .background(Color.green)
+            .background(Color.blue)
             .clipShape(Circle())
         }
         .sheet(isPresented: $presentAddTransactionSheet) {

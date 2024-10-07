@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 class Account {
-    enum AccountType {
+    enum AccountType {        
         case debit
         case credit
         
@@ -27,11 +27,19 @@ class Account {
     private var balance: Double
     private var type: String
     
-    init(name: String, balance: Double, type: AccountType) {
+    private var creditLimit: Double
+    
+    init(
+        name: String,
+        balance: Double,
+        creditLimit: Double = 0,
+        type: AccountType
+    ) {
         id = UUID().uuidString
         self.name = name
         self.balance = balance
         self.type = type.description
+        self.creditLimit = creditLimit
     }
 }
 
@@ -40,5 +48,7 @@ extension Account {
     
     var accountBalance: Double { balance }
     
-    var accountType: String { type }
+    var accountType: AccountType {
+        type == AccountType.credit.description ? .credit : .debit
+    }
 }
