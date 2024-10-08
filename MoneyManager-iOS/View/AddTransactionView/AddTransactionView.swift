@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 enum FocusField {
     case amount
@@ -17,15 +18,19 @@ struct AddTransactionView: View {
     @State private var account: String? = "Cash"
     @State private var category: Category?
     @State private var dateTime: Date = Date()
-    @State private var toNote: String? = ""
+    @Binding var toNote: String
     
     @FocusState private var focusField: FocusField?
+    
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Query var noteText: [NoteText]
 
     var body: some View {
         VStack {
             HStack {
                 Button("Cancel") {
-                    // TODO: handle cancel action
+                    dismiss()
                 }
                 .foregroundStyle(.red)
                 .padding()
@@ -130,14 +135,16 @@ struct AddTransactionView: View {
                 
                 // MORE DETAIL SECTION
                 Section(header: Text("More details").textCase(.uppercase)) {
-                    NavigationLink(destination: NoteSelectionView(note: $toNote)) {
+                    NavigationLink(destination: AddNoteView(noteText: noteText.first ?? .init(text: ""))) {
                         HStack {
                             Image(systemName: "note.text")
                                 .foregroundColor(.blue)
                             Text("Note")
                             Spacer()
-                            Text(toNote ?? "")
+                            Text(addNoteData)
                                 .foregroundColor(.gray)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                         }
                     }
                     
@@ -167,12 +174,9 @@ struct AddTransactionView: View {
             Spacer()
         }
     }
-}
-
-struct NoteSelectionView: View {
-    @Binding var note: String?
-    var body: some View {
-        Text("Add Note")
+    
+    private var addNoteData: String {
+        noteText.first?.text ?? "none"
     }
 }
 
@@ -182,6 +186,6 @@ struct LabelSelectionView: View {
     }
 }
 
-#Preview {
-    AddTransactionView()
-}
+//#Preview {
+//    AddTransactionView()
+//}

@@ -61,7 +61,7 @@ struct TabBarView: View {
         }
         .sheet(isPresented: $presentAddTransactionSheet) {
             NavigationStack {
-                AddTransactionView()
+                AddTransactionView(toNote: .constant(""))
             }
             .presentationDetents([.large, .large])
         }
