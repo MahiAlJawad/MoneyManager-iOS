@@ -15,7 +15,7 @@ struct AddTransactionView: View {
     @State private var selectedTab = 0 // 0: Expense, 1: Income, 2: Transfer
     @State private var amount: String = ""
     @State private var account: String? = "Cash"
-    @State private var toAccount: String? = nil
+    @State private var category: Category?
     @State private var dateTime: Date = Date()
     @State private var toNote: String? = ""
     
@@ -92,14 +92,14 @@ struct AddTransactionView: View {
                         }
                     }
                     
-                    NavigationLink(destination: AccountSelectionView(selectedAccount: $toAccount)) {
+                    NavigationLink(destination: CategorySelectionView(selectedCategory: $category)) {
                         HStack {
                             Image(systemName: "questionmark.circle")
                                 .foregroundColor(.gray)
-                            Text("To account")
+                            Text("Category")
                             Spacer()
-                            if let toAccount = toAccount {
-                                Text(toAccount)
+                            if let category {
+                                Text(category.name)
                                     .foregroundColor(.gray)
                             } else {
                                 Text("Required")
@@ -141,7 +141,7 @@ struct AddTransactionView: View {
                         }
                     }
                     
-                    NavigationLink(destination: AccountSelectionView(selectedAccount: $toAccount)) {
+                    NavigationLink(destination: AccountSelectionView(selectedAccount: $account)) {
                         HStack {
                             Image(systemName: "questionmark.circle")
                                 .foregroundColor(.gray)
@@ -166,13 +166,6 @@ struct AddTransactionView: View {
 
             Spacer()
         }
-    }
-}
-
-struct AccountSelectionView: View {
-    @Binding var selectedAccount: String?
-    var body: some View {
-        Text("Select an Account")
     }
 }
 
