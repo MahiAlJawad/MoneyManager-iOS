@@ -41,7 +41,7 @@ struct TabBarView: View {
                     }
                     .tag(Tab.statistics)
                 
-                Text("More View")
+                MoreView()
                     .tabItem {
                         Label(Tab.more.title, systemImage: Tab.more.icon)
                     }
