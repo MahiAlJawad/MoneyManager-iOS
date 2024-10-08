@@ -6,30 +6,9 @@
 //
 import SwiftUI
 
-struct Category: Identifiable {
-    let id = UUID()
-    let name: String
-    let icon: String
-    let color: Color
-    let parentCategory: String
-}
-
-// Sample categories data
-let allCategories: [Category] = [
-    Category(name: "Groceries", icon: "cart.fill", color: .red, parentCategory: "Food & Drinks"),
-    Category(name: "Restaurant, fast-food", icon: "fork.knife", color: .red, parentCategory: "Food & Drinks"),
-    Category(name: "Food & Drinks", icon: "fork.knife", color: .red, parentCategory: "Food & Drinks"),
-    Category(name: "Shopping", icon: "bag", color: .blue, parentCategory: ""),
-    Category(name: "Housing", icon: "house", color: .orange, parentCategory: ""),
-    Category(name: "Transportation", icon: "car", color: .gray, parentCategory: ""),
-    Category(name: "Vehicle", icon: "car.2.fill", color: .purple, parentCategory: ""),
-    Category(name: "Life & Entertainment", icon: "gamecontroller", color: .green, parentCategory: ""),
-    Category(name: "Communication, PC", icon: "iphone", color: .black, parentCategory: "")
-]
-
 struct CategorySelectionView: View {
     @State private var searchText: String = ""
-    @Binding var selectedCategory: String?
+    @Binding var selectedCategory: Category?
 
     var filteredCategories: [Category] {
         if searchText.isEmpty {
@@ -160,5 +139,5 @@ struct CategorySelectionView: View {
 }
 
 #Preview {
-    CategorySelectionView(selectedCategory: .constant("Transportation"))
+    CategorySelectionView(selectedCategory: .constant(.init(name: "test", icon: "ss", color: .blue, parentCategory: "")))
 }

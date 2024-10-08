@@ -15,7 +15,7 @@ struct AddTransactionView: View {
     @State private var selectedTab = 0 // 0: Expense, 1: Income, 2: Transfer
     @State private var amount: String = ""
     @State private var account: String? = "Cash"
-    @State private var category: String? = nil
+    @State private var category: Category?
     @State private var dateTime: Date = Date()
     @State private var toNote: String? = ""
     
@@ -99,7 +99,7 @@ struct AddTransactionView: View {
                             Text("Category")
                             Spacer()
                             if let category {
-                                Text(category)
+                                Text(category.name)
                                     .foregroundColor(.gray)
                             } else {
                                 Text("Required")
@@ -141,7 +141,7 @@ struct AddTransactionView: View {
                         }
                     }
                     
-                    NavigationLink(destination: AccountSelectionView(selectedAccount: $category)) {
+                    NavigationLink(destination: AccountSelectionView(selectedAccount: $account)) {
                         HStack {
                             Image(systemName: "questionmark.circle")
                                 .foregroundColor(.gray)
