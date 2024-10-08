@@ -19,68 +19,73 @@ struct AddTransactionView: View {
     @State private var amount: String = ""
     @State private var account: String? = "Cash"
     @State private var category: Category?
-    @State private var dateTime: Date = Date()
-    @State private var toNote: String? = ""
+    @State private var date: Date = Date()
+    @State private var toNote: String = ""
+    @State private var paymentMethod: PaymentType = .init(category: .cash)
     
     @FocusState private var focusField: FocusField?
+    
+    @State private var bgColor = Color.gray.opacity(0.2)
 
     var body: some View {
         VStack {
-            HStack {
-                Button("Cancel") {
-                    dismiss()
-                }
-                .foregroundStyle(.red)
-                .padding()
-
-                Spacer()
-
-                Text("Add Transaction")
-                    .font(.headline)
-
-                Spacer()
-
-                Button("Templates") {
-                    // TODO: Handle templates action
-                }
-                .foregroundStyle(.black)
-                .padding()
-            }
-            .background(Color.gray.opacity(0.8))
-
-            Picker(selection: $selectedTab, label: Text("")) {
-                Text("Expense").tag(0)
-                Text("Income").tag(1)
-                Text("Transfer").tag(2)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
-
-            HStack {
-                Text("BDT")
-                    .font(.system(size: 15))
-                    .fontWeight(.medium)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(8)
-                    .keyboardType(.decimalPad)
-                
-                Spacer()
-                
-                TextField("0", text: $amount)
-                    .font(.system(size: 50))
-                    .multilineTextAlignment(.trailing)
-                    .focused($focusField, equals: .amount)
-                    .keyboardType(.numberPad)
-                    .padding()
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            focusField = .amount
-                        }
+            VStack {
+                HStack {
+                    Button("Cancel") {
+                        dismiss()
                     }
-            }
-            .padding(.horizontal)
-
+                    .foregroundStyle(.red)
+                    .padding()
+                    
+                    Spacer()
+                    
+                    Text("Add Transaction")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Button("Templates") {
+                        // TODO: Handle templates action
+                    }
+                    .foregroundStyle(.black)
+                    .padding()
+                }
+                .background(bgColor)
+                
+                Picker(selection: $selectedTab, label: Text("")) {
+                    Text("Expense").tag(0)
+                    Text("Income").tag(1)
+                    Text("Transfer").tag(2)
+                }
+                .pickerStyle(.segmented)
+                .padding()
+                
+                HStack {
+                    Text("BDT")
+                        .font(.system(size: 15))
+                        .fontWeight(.medium)
+                        .padding()
+                        .frame(height: 30)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(15)
+                    
+                    Spacer()
+                    
+                    TextField("0", text: $amount)
+                        .font(.system(size: 50))
+                        .multilineTextAlignment(.trailing)
+                        .focused($focusField, equals: .amount)
+                        .keyboardType(.decimalPad)
+                        .padding()
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                focusField = .amount
+                            }
+                        }
+                }
+                .padding(.horizontal)
+            }.background(bgColor)
+            
             List {
                 // GENERAL SECTION
                 Section(header: Text("General").textCase(.uppercase)) {
@@ -111,7 +116,7 @@ struct AddTransactionView: View {
                         }
                     }
                     
-                    DatePicker(selection: $dateTime, displayedComponents: .date) {
+                    DatePicker(selection: $date, displayedComponents: .date) {
                         HStack {
                             Image(systemName: "calendar")
                             Text("Date & Time")
@@ -133,24 +138,25 @@ struct AddTransactionView: View {
                 
                 // MORE DETAIL SECTION
                 Section(header: Text("More details").textCase(.uppercase)) {
-                    NavigationLink(destination: NoteSelectionView(note: $toNote)) {
+                    NavigationLink(destination: AddNoteView(notes: $toNote)) {
                         HStack {
                             Image(systemName: "note.text")
                                 .foregroundColor(.blue)
                             Text("Note")
                             Spacer()
-                            Text(toNote ?? "")
+                            Text(toNote)
                                 .foregroundColor(.gray)
                         }
                     }
                     
-                    NavigationLink(destination: AccountSelectionView(selectedAccount: $account)) {
+                    NavigationLink(destination: PaymentTypeView(payment: $paymentMethod)) {
                         HStack {
                             Image(systemName: "questionmark.circle")
                                 .foregroundColor(.gray)
                             Text("Payment Type")
                             Spacer()
-                            Text("Cash") // TODO: add new page for selection
+                            Text(paymentMethod.category.description)
+                                .foregroundStyle(.blue)
                         }
                     }
                     
@@ -166,16 +172,9 @@ struct AddTransactionView: View {
             }
             .listStyle(InsetGroupedListStyle())
             .padding(.top, -10)
-
+            
             Spacer()
         }
-    }
-}
-
-struct NoteSelectionView: View {
-    @Binding var note: String?
-    var body: some View {
-        Text("Add Note")
     }
 }
 
@@ -183,8 +182,4 @@ struct LabelSelectionView: View {
     var body: some View {
         Text("Select Labels")
     }
-}
-
-#Preview {
-    AddTransactionView()
 }
