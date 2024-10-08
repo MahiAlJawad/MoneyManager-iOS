@@ -5,6 +5,7 @@
 //  Created by Mahi Al Jawad on 6/10/24.
 //
 
+import SwiftData
 import SwiftUI
 
 enum FocusField {
@@ -12,6 +13,8 @@ enum FocusField {
 }
 
 struct AddTransactionView: View {
+    @Environment(\.dismiss) private var dismiss
+    
     @State private var selectedTab = 0 // 0: Expense, 1: Income, 2: Transfer
     @State private var amount: String = ""
     @State private var account: String? = "Cash"
@@ -25,7 +28,7 @@ struct AddTransactionView: View {
         VStack {
             HStack {
                 Button("Cancel") {
-                    // TODO: handle cancel action
+                    dismiss()
                 }
                 .foregroundStyle(.red)
                 .padding()

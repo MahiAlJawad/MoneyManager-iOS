@@ -41,11 +41,13 @@ struct TabBarView: View {
                     }
                     .tag(Tab.statistics)
                 
-                Text("More View")
-                    .tabItem {
-                        Label(Tab.more.title, systemImage: Tab.more.icon)
-                    }
-                    .tag(Tab.more)
+                NavigationStack {
+                    MoreView()
+                }
+                .tabItem {
+                    Label(Tab.more.title, systemImage: Tab.more.icon)
+                }
+                .tag(Tab.more)
             }
 
             // MARK: Add Transaction button
