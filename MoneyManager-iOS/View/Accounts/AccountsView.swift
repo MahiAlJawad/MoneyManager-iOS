@@ -36,7 +36,7 @@ struct AccountsView: View {
         }
     }
     
-    var accountsListView: some View {
+    private var accountsListView: some View {
         List {
             ForEach(accountTypes, id: \.description) { accountType in
                 Section(accountType.description) {
@@ -52,28 +52,36 @@ struct AccountsView: View {
                     }
                 }
             }
+            .onDelete(perform: dummyDeleteAccount) // TODO: Dummy code, will be replaced
         }
     }
     
-    var accountTypes: [Account.AccountType] {
-        accounts.map(\.accountType)
+    private var accountTypes: [Account.AccountType] {
+        Array(Set(accounts.map(\.accountType)))
     }
     
-    var debitAccounts: [Account] {
+    private var debitAccounts: [Account] {
         accounts.filter({ $0.accountType == .debit })
     }
     
-    var creditAccounts: [Account] {
+    private var creditAccounts: [Account] {
         accounts.filter({ $0.accountType == .credit })
     }
     
-    func accountView(for account: Account) -> some View {
+    private func accountView(for account: Account) -> some View {
         VStack(alignment: .leading) {
             Text(account.accountName)
                 .font(.headline)
             Text(account.accountBalance, format: .currency(code: "BDT"))
             Text(account.accountType.description)
                 .font(.caption)
+        }
+    }
+    
+    // Dummy code just to delete temporarily, will be replaced
+    private func dummyDeleteAccount(at indexSet: IndexSet) {
+        for index in indexSet {
+            modelContext.delete(accounts[index])
         }
     }
 }
