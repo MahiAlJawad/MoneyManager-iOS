@@ -8,49 +8,26 @@
 import SwiftUI
 import SwiftData
 
-struct PaymentType {
-    var category: Category
-    
-    enum Category: CaseIterable, Identifiable {
-        var id : String { UUID().uuidString }
-        
-        case cash, creditCard, debitCard
-        case banktransfer, voucher, mobilePayment
-        case webPayment, other
-        
-        var description: String {
-            switch self {
-            case .cash: return "Cash"
-            case .creditCard: return "Credit Card"
-            case .debitCard: return "Debit Card"
-            case .banktransfer: return "Bank Transfer"
-            case .voucher: return "Voucher"
-            case .mobilePayment: return "Mobile Payment"
-            case .webPayment: return "Web Payment"
-            case .other: return "Other"
-            }
-        }
-    }
-}
-
 struct PaymentTypeView: View {
+    typealias PaymentMethod = Transaction.PaymentMethod
+    
     @Environment(\.dismiss) private var dismiss
-    @Binding var payment: PaymentType
+    @Binding var paymentMethod: PaymentMethod
     
     var body: some View {
-        NavigationStack {
-            List(PaymentType.Category.allCases) { value in
-                Button(value.description) {
-                    payment = .init(category: value)
+        List {
+            ForEach(PaymentMethod.allCases, id: \.self) { paymentMethod in
+                Button(paymentMethod.description) {
+                    self.paymentMethod = paymentMethod
                     dismiss()
                 }
                 .padding()
                 .foregroundStyle (
-                    payment.category == value ? .blue : .black
+                    self.paymentMethod == paymentMethod ? .blue : .black
                 )
             }
-            .navigationTitle("Payment Method")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationTitle("Payment Method")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

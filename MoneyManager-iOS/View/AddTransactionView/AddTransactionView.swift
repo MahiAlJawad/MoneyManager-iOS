@@ -8,173 +8,186 @@
 import SwiftData
 import SwiftUI
 
-enum FocusField {
-    case amount
-}
-
 struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
-    
-    @State private var selectedTab = 0 // 0: Expense, 1: Income, 2: Transfer
-    @State private var amount: String = ""
-    @State private var account: String? = "Cash"
-    @State private var category: Category?
-    @State private var date: Date = Date()
-    @State private var toNote: String = ""
-    @State private var paymentMethod: PaymentType = .init(category: .cash)
-    
+    @State private var addTransactionInfo: AddTransactionInfo = .init()
     @FocusState private var focusField: FocusField?
-    
     @State private var bgColor = Color.gray.opacity(0.2)
-
+    
     var body: some View {
         VStack {
             VStack {
-                HStack {
+                expenseTypePickerView
+                    .padding()
+                expenseAmountTextFieldView
+                    .padding(.horizontal)
+            }
+            .background(bgColor)
+            
+            List {
+                generalSectionView
+                moreDetailsSectionView
+            }
+            .listStyle(InsetGroupedListStyle())
+            .padding(.top, -10)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
                     .foregroundStyle(.red)
-                    .padding()
-                    
-                    Spacer()
-                    
-                    Text("Add Transaction")
-                        .font(.headline)
-                    
-                    Spacer()
-                    
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Templates") {
                         // TODO: Handle templates action
                     }
-                    .foregroundStyle(.black)
-                    .padding()
                 }
-                .background(bgColor)
-                
-                Picker(selection: $selectedTab, label: Text("")) {
-                    Text("Expense").tag(0)
-                    Text("Income").tag(1)
-                    Text("Transfer").tag(2)
-                }
-                .pickerStyle(.segmented)
+            }
+            .navigationTitle("Add Transaction")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    var expenseTypePickerView: some View {
+        Picker(selection: $addTransactionInfo.transactionType, label: Text("")) {
+            Text("Expense").tag(TransactionType.expense)
+            Text("Income").tag(TransactionType.income)
+            Text("Transfer").tag(TransactionType.transfer)
+        }
+        .pickerStyle(.segmented)
+    }
+    
+    var expenseAmountTextFieldView: some View {
+        HStack {
+            Text("BDT")
+                .font(.system(size: 15))
+                .fontWeight(.medium)
                 .padding()
-                
-                HStack {
-                    Text("BDT")
-                        .font(.system(size: 15))
-                        .fontWeight(.medium)
-                        .padding()
-                        .frame(height: 30)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(15)
-                    
-                    Spacer()
-                    
-                    TextField("0", text: $amount)
-                        .font(.system(size: 50))
-                        .multilineTextAlignment(.trailing)
-                        .focused($focusField, equals: .amount)
-                        .keyboardType(.decimalPad)
-                        .padding()
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                focusField = .amount
-                            }
-                        }
-                }
-                .padding(.horizontal)
-            }.background(bgColor)
+                .frame(height: 30)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(15)
             
-            List {
-                // GENERAL SECTION
-                Section(header: Text("General").textCase(.uppercase)) {
-                    NavigationLink(destination: AccountSelectionView(selectedAccount: $account)) {
-                        HStack {
-                            Image(systemName: "banknote")
-                                .foregroundColor(.blue)
-                            Text("Account")
-                            Spacer()
-                            Text(account ?? "")
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    
-                    NavigationLink(destination: CategorySelectionView(selectedCategory: $category)) {
-                        HStack {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundColor(.gray)
-                            Text("Category")
-                            Spacer()
-                            if let category {
-                                Text(category.name)
-                                    .foregroundColor(.gray)
-                            } else {
-                                Text("Required")
-                                    .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    
-                    DatePicker(selection: $date, displayedComponents: .date) {
-                        HStack {
-                            Image(systemName: "calendar")
-                            Text("Date & Time")
-                            Spacer()
-                        }
-                    }
-                    
-                    NavigationLink(destination: LabelSelectionView()) {
-                        HStack {
-                            Image(systemName: "tag")
-                                .foregroundColor(.gray)
-                            Text("Labels")
-                            Spacer()
-                            Text("Add Label")
-                                .foregroundColor(.blue)
-                        }
+            Spacer()
+            
+            TextField("0", text: $addTransactionInfo.amount)
+                .font(.system(size: 50))
+                .multilineTextAlignment(.trailing)
+                .focused($focusField, equals: .amount)
+                .keyboardType(.decimalPad)
+                .padding()
+                .onAppear {
+                    withAnimation {
+                        focusField = .amount
                     }
                 }
-                
-                // MORE DETAIL SECTION
-                Section(header: Text("More details").textCase(.uppercase)) {
-                    NavigationLink(destination: AddNoteView(notes: $toNote)) {
-                        HStack {
-                            Image(systemName: "note.text")
-                                .foregroundColor(.blue)
-                            Text("Note")
-                            Spacer()
-                            Text(toNote)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                    
-                    NavigationLink(destination: PaymentTypeView(payment: $paymentMethod)) {
-                        HStack {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundColor(.gray)
-                            Text("Payment Type")
-                            Spacer()
-                            Text(paymentMethod.category.description)
-                                .foregroundStyle(.blue)
-                        }
-                    }
-                    
-                    // TODO: Add location
-                    NavigationLink(destination: LabelSelectionView()) {
-                        HStack {
-                            Image(systemName: "location.app")
-                            Text("Add Location")
-                            Spacer()
-                        }
+        }
+    }
+    
+    var generalSectionView: some View {
+        Section("General") {
+            NavigationLink(destination: AccountSelectionView(selectedAccount: $addTransactionInfo.account)) {
+                HStack {
+                    Image(systemName: "banknote")
+                        .foregroundColor(.blue)
+                    Text("Account")
+                    Spacer()
+                    Text(addTransactionInfo.account?.accountName ?? "Required")
+                        .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
+                }
+            }
+            
+            NavigationLink(destination: CategorySelectionView(selectedCategory: $addTransactionInfo.category)) {
+                HStack {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundColor(.gray)
+                    Text("Category")
+                    Spacer()
+                    if let category = addTransactionInfo.category {
+                        Text(category.name)
+                            .foregroundColor(.gray)
+                    } else {
+                        Text("Required")
+                            .foregroundColor(.red)
                     }
                 }
             }
-            .listStyle(InsetGroupedListStyle())
-            .padding(.top, -10)
             
-            Spacer()
+            DatePicker(selection: $addTransactionInfo.date, displayedComponents: .date) {
+                HStack {
+                    Image(systemName: "calendar")
+                    Text("Date & Time")
+                    Spacer()
+                }
+            }
+            
+            NavigationLink(destination: LabelSelectionView()) {
+                HStack {
+                    Image(systemName: "tag")
+                        .foregroundColor(.gray)
+                    Text("Labels")
+                    Spacer()
+                    Text("Add Label")
+                        .foregroundColor(.blue)
+                }
+            }
         }
+    }
+    
+    var moreDetailsSectionView: some View {
+        Section("More Details") {
+            NavigationLink(destination: AddNoteView(notes: $addTransactionInfo.toNote)) {
+                HStack {
+                    Image(systemName: "note.text")
+                        .foregroundColor(.blue)
+                    Text("Note")
+                    Spacer()
+                    Text(addTransactionInfo.toNote)
+                        .foregroundColor(.gray)
+                }
+            }
+            
+            NavigationLink(destination: PaymentTypeView(paymentMethod: $addTransactionInfo.paymentMethod)) {
+                HStack {
+                    Image(systemName: "questionmark.circle")
+                        .foregroundColor(.gray)
+                    Text("Payment Type")
+                    Spacer()
+                    Text(addTransactionInfo.paymentMethod.description)
+                        .foregroundStyle(.blue)
+                }
+            }
+            
+            // TODO: Add location
+            NavigationLink(destination: LabelSelectionView()) {
+                HStack {
+                    Image(systemName: "location.app")
+                    Text("Add Location")
+                    Spacer()
+                }
+            }
+        }
+    }
+}
+
+
+extension AddTransactionView {
+    typealias PaymentMethod = Transaction.PaymentMethod
+    typealias TransactionType = Transaction.TransactionType
+    
+    enum FocusField {
+        case amount
+    }
+    
+    struct AddTransactionInfo {
+        var transactionType: TransactionType = .expense
+        var amount: String = ""
+        var account: Account?
+        var transferAccount: Account?
+        var category: Category?
+        var date: Date = Date()
+        var toNote: String = ""
+        var paymentMethod: PaymentMethod = .cash
     }
 }
 

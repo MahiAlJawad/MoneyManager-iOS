@@ -7,18 +7,6 @@
 
 import SwiftUI
 
-struct AddAccountInfo {
-    var name: String = ""
-    var type: Account.AccountType = .debit
-    var balance: String = ""
-    
-    // For Credit type accounts
-    var creditLimit: String = ""
-    var balanceOutstanding: String = ""
-    var billingDate: Int = 1
-    var dueDate: Int = 15
-}
-
 struct AddAccountView: View {
     @Environment(\.dismiss) var dissmiss
     @Environment(\.modelContext) var modelContext
@@ -95,6 +83,20 @@ struct AddAccountView: View {
     private func addAccount() {
         let account = Account.getAccount(with: accountInfo)
         modelContext.insert(account)
+    }
+}
+
+extension AddAccountView {
+    struct AddAccountInfo {
+        var name: String = ""
+        var type: Account.AccountType = .debit
+        var balance: String = ""
+        
+        // For Credit type accounts
+        var creditLimit: String = ""
+        var balanceOutstanding: String = ""
+        var billingDate: Int = 1
+        var dueDate: Int = 15
     }
 }
 
