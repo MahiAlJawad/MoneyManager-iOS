@@ -6,8 +6,10 @@
 //
 import SwiftUI
 
+// TODO: Needs to complete
 struct AccountSelectionView: View {
-    @Binding var selectedAccount: String?
+    @Binding var selectedAccount: Account?
+    
     var body: some View {
         Text("Select an Account")
     }

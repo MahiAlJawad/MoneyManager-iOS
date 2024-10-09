@@ -32,6 +32,9 @@ class Account {
     private var billingDay: Int
     private var dueDay: Int
     
+    @Relationship(deleteRule: .cascade)
+    private var transactions: [Transaction]
+    
     init(
         name: String,
         balance: Double,
@@ -47,6 +50,7 @@ class Account {
         self.creditLimit = creditLimit
         self.billingDay = billingDay
         self.dueDay = dueDay
+        self.transactions = []
     }
 }
 
@@ -59,7 +63,7 @@ extension Account {
         type == AccountType.credit.description ? .credit : .debit
     }
     
-    static func getAccount(with accountInfo: AddAccountInfo) -> Account {
+    static func getAccount(with accountInfo: AddAccountView.AddAccountInfo) -> Account {
         switch accountInfo.type {
         case .debit:
             return Account(

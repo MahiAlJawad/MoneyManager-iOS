@@ -45,19 +45,25 @@ struct AccountsView: View {
                         ForEach(debitAccounts) { account in
                             accountView(for: account)
                         }
+                        .onDelete { deleteAccount(at: $0, type: .debit) }
                     case .credit:
                         ForEach(creditAccounts) { account in
                             accountView(for: account)
                         }
+                        .onDelete { deleteAccount(at: $0, type: .credit) }
                     }
                 }
             }
-            .onDelete(perform: dummyDeleteAccount) // TODO: Dummy code, will be replaced
+            
         }
     }
     
     private var accountTypes: [Account.AccountType] {
-        Array(Set(accounts.map(\.accountType)))
+        let availableAccountTypes = accounts.map(\.accountType)
+        
+        return Account.AccountType.allCases.filter {
+            availableAccountTypes.contains($0)
+        }
     }
     
     private var debitAccounts: [Account] {
@@ -78,10 +84,14 @@ struct AccountsView: View {
         }
     }
     
-    // Dummy code just to delete temporarily, will be replaced
-    private func dummyDeleteAccount(at indexSet: IndexSet) {
+    private func deleteAccount(at indexSet: IndexSet, type: Account.AccountType) {
         for index in indexSet {
-            modelContext.delete(accounts[index])
+            switch type {
+            case .credit:
+                modelContext.delete(creditAccounts[index])
+            case .debit:
+                modelContext.delete(debitAccounts[index])
+            }
         }
     }
 }
