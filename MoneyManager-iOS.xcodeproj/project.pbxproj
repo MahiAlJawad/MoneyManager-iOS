@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXFileReference section */
@@ -11,11 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5AD24D332CAC465A00775335 /* MoneyManager-iOS */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "MoneyManager-iOS";
-			sourceTree = "<group>";
-		};
+		5AD24D332CAC465A00775335 /* MoneyManager-iOS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "MoneyManager-iOS"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +82,7 @@
 				};
 			};
 			buildConfigurationList = 5AD24D2C2CAC465A00775335 /* Build configuration list for PBXProject "MoneyManager-iOS" */;
+			compatibilityVersion = "Xcode 15.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -94,7 +91,6 @@
 			);
 			mainGroup = 5AD24D282CAC465A00775335;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = 5AD24D322CAC465A00775335 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
