@@ -6,7 +6,7 @@
 //
 import SwiftUI
 
-struct Category: Identifiable {
+struct Category: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let icon: String
