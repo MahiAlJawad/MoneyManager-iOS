@@ -62,10 +62,8 @@ struct TabBarView: View {
             .clipShape(Circle())
         }
         .sheet(isPresented: $presentAddTransactionSheet) {
-            NavigationStack {
-                AddTransactionView()
-            }
-            .presentationDetents([.large, .large])
+            TransactionTabView()
+                .presentationDetents([.large])
         }
     }
 }
