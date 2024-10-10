@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		750060C82CB82BA800F23676 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750060C72CB82BA800F23676 /* StatisticsView.swift */; };
+		750060CA2CB82C2300F23676 /* CategoryDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750060C92CB82C2300F23676 /* CategoryDetailsView.swift */; };
 		75F9AC4C2CB81BE000CC9E5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75F9AC312CB81BE000CC9E5F /* Assets.xcassets */; };
 		75F9AC4D2CB81BE000CC9E5F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75F9AC332CB81BE000CC9E5F /* Preview Assets.xcassets */; };
 		75F9AC4E2CB81BE000CC9E5F /* MoneyManagerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC342CB81BE000CC9E5F /* MoneyManagerApp.swift */; };
@@ -27,6 +29,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		750060C72CB82BA800F23676 /* StatisticsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
+		750060C92CB82C2300F23676 /* CategoryDetailsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CategoryDetailsView.swift; sourceTree = "<group>"; };
 		755974F52CB819B900ED2BF4 /* MoneyManager-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MoneyManager-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		75F9AC312CB81BE000CC9E5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		75F9AC332CB81BE000CC9E5F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -58,6 +62,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		750060C62CB82BA800F23676 /* Statistics */ = {
+			isa = PBXGroup;
+			children = (
+				750060C72CB82BA800F23676 /* StatisticsView.swift */,
+			);
+			path = Statistics;
+			sourceTree = "<group>";
+		};
 		755974EC2CB819B900ED2BF4 = {
 			isa = PBXGroup;
 			children = (
@@ -109,6 +121,7 @@
 		75F9AC3B2CB81BE000CC9E5F /* View */ = {
 			isa = PBXGroup;
 			children = (
+				750060C62CB82BA800F23676 /* Statistics */,
 				75F9AC3C2CB81BE000CC9E5F /* TabBar */,
 				75F9AC3E2CB81BE000CC9E5F /* More */,
 				75F9AC402CB81BE000CC9E5F /* Accounts */,
@@ -157,6 +170,7 @@
 		75F9AC442CB81BE000CC9E5F /* Category */ = {
 			isa = PBXGroup;
 			children = (
+				750060C92CB82C2300F23676 /* CategoryDetailsView.swift */,
 				75F9AC452CB81BE000CC9E5F /* CategorySelectionView.swift */,
 			);
 			path = Category;
@@ -253,10 +267,12 @@
 				75F9AC502CB81BE000CC9E5F /* More.swift in Sources */,
 				75F9AC562CB81BE000CC9E5F /* AddAccountView.swift in Sources */,
 				75F9AC542CB81BE000CC9E5F /* TabBarView.swift in Sources */,
+				750060C82CB82BA800F23676 /* StatisticsView.swift in Sources */,
 				75F9AC4F2CB81BE000CC9E5F /* TabBarModel.swift in Sources */,
 				75F9AC512CB81BE000CC9E5F /* Category.swift in Sources */,
 				75F9AC522CB81BE000CC9E5F /* Transaction.swift in Sources */,
 				75F9AC5A2CB81BE000CC9E5F /* PaymentTypeView.swift in Sources */,
+				750060CA2CB82C2300F23676 /* CategoryDetailsView.swift in Sources */,
 				75F9AC5C2CB81BE000CC9E5F /* AddTransactionView.swift in Sources */,
 				75F9AC582CB81BE000CC9E5F /* CategorySelectionView.swift in Sources */,
 				75F9AC532CB81BE000CC9E5F /* Account.swift in Sources */,
