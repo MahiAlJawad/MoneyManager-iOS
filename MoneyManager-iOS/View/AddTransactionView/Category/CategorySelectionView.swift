@@ -44,13 +44,12 @@ struct CategorySelectionView: View {
                                     .foregroundColor(.gray)
                             }
                         }
-                        
-                        Spacer()
                     }
                 }
             }
             .listStyle(InsetGroupedListStyle())
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+            .textInputAutocapitalization(.never)
             .overlay(alignment: .center) {
                 if !searchText.isEmpty && filteredCategories.isEmpty {
                     ContentUnavailableView("Search result not found", systemImage: "magnifyingglass.circle.fill")
