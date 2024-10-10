@@ -1,0 +1,473 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		75F9AC4C2CB81BE000CC9E5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75F9AC312CB81BE000CC9E5F /* Assets.xcassets */; };
+		75F9AC4D2CB81BE000CC9E5F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 75F9AC332CB81BE000CC9E5F /* Preview Assets.xcassets */; };
+		75F9AC4E2CB81BE000CC9E5F /* MoneyManagerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC342CB81BE000CC9E5F /* MoneyManagerApp.swift */; };
+		75F9AC4F2CB81BE000CC9E5F /* TabBarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC362CB81BE000CC9E5F /* TabBarModel.swift */; };
+		75F9AC502CB81BE000CC9E5F /* More.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC372CB81BE000CC9E5F /* More.swift */; };
+		75F9AC512CB81BE000CC9E5F /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC382CB81BE000CC9E5F /* Category.swift */; };
+		75F9AC522CB81BE000CC9E5F /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC392CB81BE000CC9E5F /* Transaction.swift */; };
+		75F9AC532CB81BE000CC9E5F /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC3A2CB81BE000CC9E5F /* Account.swift */; };
+		75F9AC542CB81BE000CC9E5F /* TabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC3D2CB81BE000CC9E5F /* TabBarView.swift */; };
+		75F9AC552CB81BE000CC9E5F /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC3F2CB81BE000CC9E5F /* MoreView.swift */; };
+		75F9AC562CB81BE000CC9E5F /* AddAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC412CB81BE000CC9E5F /* AddAccountView.swift */; };
+		75F9AC572CB81BE000CC9E5F /* AccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC422CB81BE000CC9E5F /* AccountsView.swift */; };
+		75F9AC582CB81BE000CC9E5F /* CategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC452CB81BE000CC9E5F /* CategorySelectionView.swift */; };
+		75F9AC592CB81BE000CC9E5F /* AccountSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC462CB81BE000CC9E5F /* AccountSelectionView.swift */; };
+		75F9AC5A2CB81BE000CC9E5F /* PaymentTypeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC482CB81BE000CC9E5F /* PaymentTypeView.swift */; };
+		75F9AC5B2CB81BE000CC9E5F /* AddNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC4A2CB81BE000CC9E5F /* AddNoteView.swift */; };
+		75F9AC5C2CB81BE000CC9E5F /* AddTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9AC4B2CB81BE000CC9E5F /* AddTransactionView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		755974F52CB819B900ED2BF4 /* MoneyManager-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MoneyManager-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		75F9AC312CB81BE000CC9E5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		75F9AC332CB81BE000CC9E5F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		75F9AC342CB81BE000CC9E5F /* MoneyManagerApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoneyManagerApp.swift; sourceTree = "<group>"; };
+		75F9AC362CB81BE000CC9E5F /* TabBarModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarModel.swift; sourceTree = "<group>"; };
+		75F9AC372CB81BE000CC9E5F /* More.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = More.swift; sourceTree = "<group>"; };
+		75F9AC382CB81BE000CC9E5F /* Category.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
+		75F9AC392CB81BE000CC9E5F /* Transaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		75F9AC3A2CB81BE000CC9E5F /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
+		75F9AC3D2CB81BE000CC9E5F /* TabBarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarView.swift; sourceTree = "<group>"; };
+		75F9AC3F2CB81BE000CC9E5F /* MoreView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
+		75F9AC412CB81BE000CC9E5F /* AddAccountView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddAccountView.swift; sourceTree = "<group>"; };
+		75F9AC422CB81BE000CC9E5F /* AccountsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
+		75F9AC452CB81BE000CC9E5F /* CategorySelectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CategorySelectionView.swift; sourceTree = "<group>"; };
+		75F9AC462CB81BE000CC9E5F /* AccountSelectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountSelectionView.swift; sourceTree = "<group>"; };
+		75F9AC482CB81BE000CC9E5F /* PaymentTypeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaymentTypeView.swift; sourceTree = "<group>"; };
+		75F9AC4A2CB81BE000CC9E5F /* AddNoteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddNoteView.swift; sourceTree = "<group>"; };
+		75F9AC4B2CB81BE000CC9E5F /* AddTransactionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddTransactionView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		755974F22CB819B900ED2BF4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		755974EC2CB819B900ED2BF4 = {
+			isa = PBXGroup;
+			children = (
+				75F9AC302CB81BE000CC9E5F /* MoneyManager-iOS */,
+				755974F62CB819B900ED2BF4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		755974F62CB819B900ED2BF4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				755974F52CB819B900ED2BF4 /* MoneyManager-iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		75F9AC302CB81BE000CC9E5F /* MoneyManager-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC312CB81BE000CC9E5F /* Assets.xcassets */,
+				75F9AC322CB81BE000CC9E5F /* Preview Content */,
+				75F9AC352CB81BE000CC9E5F /* Model */,
+				75F9AC3B2CB81BE000CC9E5F /* View */,
+				75F9AC342CB81BE000CC9E5F /* MoneyManagerApp.swift */,
+			);
+			path = "MoneyManager-iOS";
+			sourceTree = "<group>";
+		};
+		75F9AC322CB81BE000CC9E5F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC332CB81BE000CC9E5F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		75F9AC352CB81BE000CC9E5F /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC362CB81BE000CC9E5F /* TabBarModel.swift */,
+				75F9AC372CB81BE000CC9E5F /* More.swift */,
+				75F9AC382CB81BE000CC9E5F /* Category.swift */,
+				75F9AC392CB81BE000CC9E5F /* Transaction.swift */,
+				75F9AC3A2CB81BE000CC9E5F /* Account.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		75F9AC3B2CB81BE000CC9E5F /* View */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC3C2CB81BE000CC9E5F /* TabBar */,
+				75F9AC3E2CB81BE000CC9E5F /* More */,
+				75F9AC402CB81BE000CC9E5F /* Accounts */,
+				75F9AC432CB81BE000CC9E5F /* AddTransactionView */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		75F9AC3C2CB81BE000CC9E5F /* TabBar */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC3D2CB81BE000CC9E5F /* TabBarView.swift */,
+			);
+			path = TabBar;
+			sourceTree = "<group>";
+		};
+		75F9AC3E2CB81BE000CC9E5F /* More */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC3F2CB81BE000CC9E5F /* MoreView.swift */,
+			);
+			path = More;
+			sourceTree = "<group>";
+		};
+		75F9AC402CB81BE000CC9E5F /* Accounts */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC412CB81BE000CC9E5F /* AddAccountView.swift */,
+				75F9AC422CB81BE000CC9E5F /* AccountsView.swift */,
+			);
+			path = Accounts;
+			sourceTree = "<group>";
+		};
+		75F9AC432CB81BE000CC9E5F /* AddTransactionView */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC442CB81BE000CC9E5F /* Category */,
+				75F9AC462CB81BE000CC9E5F /* AccountSelectionView.swift */,
+				75F9AC472CB81BE000CC9E5F /* Payment */,
+				75F9AC492CB81BE000CC9E5F /* AddNote */,
+				75F9AC4B2CB81BE000CC9E5F /* AddTransactionView.swift */,
+			);
+			path = AddTransactionView;
+			sourceTree = "<group>";
+		};
+		75F9AC442CB81BE000CC9E5F /* Category */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC452CB81BE000CC9E5F /* CategorySelectionView.swift */,
+			);
+			path = Category;
+			sourceTree = "<group>";
+		};
+		75F9AC472CB81BE000CC9E5F /* Payment */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC482CB81BE000CC9E5F /* PaymentTypeView.swift */,
+			);
+			path = Payment;
+			sourceTree = "<group>";
+		};
+		75F9AC492CB81BE000CC9E5F /* AddNote */ = {
+			isa = PBXGroup;
+			children = (
+				75F9AC4A2CB81BE000CC9E5F /* AddNoteView.swift */,
+			);
+			path = AddNote;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		755974F42CB819B900ED2BF4 /* MoneyManager-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 755975052CB819BA00ED2BF4 /* Build configuration list for PBXNativeTarget "MoneyManager-iOS" */;
+			buildPhases = (
+				755974F12CB819B900ED2BF4 /* Sources */,
+				755974F22CB819B900ED2BF4 /* Frameworks */,
+				755974F32CB819B900ED2BF4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "MoneyManager-iOS";
+			productName = "MoneyManager-iOS";
+			productReference = 755974F52CB819B900ED2BF4 /* MoneyManager-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		755974ED2CB819B900ED2BF4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					755974F42CB819B900ED2BF4 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+				};
+			};
+			buildConfigurationList = 755974F02CB819B900ED2BF4 /* Build configuration list for PBXProject "MoneyManager-iOS_15" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 755974EC2CB819B900ED2BF4;
+			productRefGroup = 755974F62CB819B900ED2BF4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				755974F42CB819B900ED2BF4 /* MoneyManager-iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		755974F32CB819B900ED2BF4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75F9AC4D2CB81BE000CC9E5F /* Preview Assets.xcassets in Resources */,
+				75F9AC4C2CB81BE000CC9E5F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		755974F12CB819B900ED2BF4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				75F9AC572CB81BE000CC9E5F /* AccountsView.swift in Sources */,
+				75F9AC4E2CB81BE000CC9E5F /* MoneyManagerApp.swift in Sources */,
+				75F9AC502CB81BE000CC9E5F /* More.swift in Sources */,
+				75F9AC562CB81BE000CC9E5F /* AddAccountView.swift in Sources */,
+				75F9AC542CB81BE000CC9E5F /* TabBarView.swift in Sources */,
+				75F9AC4F2CB81BE000CC9E5F /* TabBarModel.swift in Sources */,
+				75F9AC512CB81BE000CC9E5F /* Category.swift in Sources */,
+				75F9AC522CB81BE000CC9E5F /* Transaction.swift in Sources */,
+				75F9AC5A2CB81BE000CC9E5F /* PaymentTypeView.swift in Sources */,
+				75F9AC5C2CB81BE000CC9E5F /* AddTransactionView.swift in Sources */,
+				75F9AC582CB81BE000CC9E5F /* CategorySelectionView.swift in Sources */,
+				75F9AC532CB81BE000CC9E5F /* Account.swift in Sources */,
+				75F9AC552CB81BE000CC9E5F /* MoreView.swift in Sources */,
+				75F9AC5B2CB81BE000CC9E5F /* AddNoteView.swift in Sources */,
+				75F9AC592CB81BE000CC9E5F /* AccountSelectionView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		755975032CB819BA00ED2BF4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		755975042CB819BA00ED2BF4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		755975062CB819BA00ED2BF4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"MoneyManager-iOS/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.moneymanager-iOS.MoneyManager-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		755975072CB819BA00ED2BF4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"MoneyManager-iOS/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.moneymanager-iOS.MoneyManager-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		755974F02CB819B900ED2BF4 /* Build configuration list for PBXProject "MoneyManager-iOS_15" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				755975032CB819BA00ED2BF4 /* Debug */,
+				755975042CB819BA00ED2BF4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		755975052CB819BA00ED2BF4 /* Build configuration list for PBXNativeTarget "MoneyManager-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				755975062CB819BA00ED2BF4 /* Debug */,
+				755975072CB819BA00ED2BF4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 755974ED2CB819B900ED2BF4 /* Project object */;
+}
