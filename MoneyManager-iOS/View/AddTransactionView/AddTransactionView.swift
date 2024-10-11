@@ -9,6 +9,11 @@ import SwiftData
 import SwiftUI
 
 struct AddTransactionView: View {
+    private typealias Destination = TransactionTabView.Router.Destination
+    
+    // Not being used till now but you can navigate using `router.navigateTo(Destination)
+    @Environment(TransactionTabView.Router.self) private var router
+    
     @Environment(\.dismiss) private var dismiss
     @State private var addTransactionInfo = AddTransactionInfo()
     @FocusState private var focusField: FocusField?
@@ -86,7 +91,7 @@ struct AddTransactionView: View {
     
     var generalSectionView: some View {
         Section("General") {
-            NavigationLink(destination: AccountSelectionView(selectedAccount: $addTransactionInfo.account)) {
+            NavigationLink(value: Destination.accountSelectionView(account: $addTransactionInfo.account)) {
                 HStack {
                     Image(systemName: "banknote")
                         .foregroundColor(.blue)
@@ -97,7 +102,7 @@ struct AddTransactionView: View {
                 }
             }
             
-            NavigationLink(destination: CategorySelectionView(selectedCategory: $addTransactionInfo.category)) {
+            NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
                 HStack {
                     Image(systemName: "questionmark.circle")
                         .foregroundColor(.gray)
@@ -121,7 +126,7 @@ struct AddTransactionView: View {
                 }
             }
             
-            NavigationLink(destination: LabelSelectionView()) {
+            NavigationLink(value: Destination.labelSelectionView) {
                 HStack {
                     Image(systemName: "tag")
                         .foregroundColor(.gray)
@@ -136,7 +141,7 @@ struct AddTransactionView: View {
     
     var moreDetailsSectionView: some View {
         Section("More Details") {
-            NavigationLink(destination: AddNoteView(notes: $addTransactionInfo.toNote)) {
+            NavigationLink(value: Destination.addNoteView(note: $addTransactionInfo.toNote)) {
                 HStack {
                     Image(systemName: "note.text")
                         .foregroundColor(.blue)
@@ -147,7 +152,7 @@ struct AddTransactionView: View {
                 }
             }
             
-            NavigationLink(destination: PaymentTypeView(paymentMethod: $addTransactionInfo.paymentMethod)) {
+            NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
                 HStack {
                     Image(systemName: "questionmark.circle")
                         .foregroundColor(.gray)
@@ -155,15 +160,6 @@ struct AddTransactionView: View {
                     Spacer()
                     Text(addTransactionInfo.paymentMethod.description)
                         .foregroundStyle(.blue)
-                }
-            }
-            
-            // TODO: Add location
-            NavigationLink(destination: LabelSelectionView()) {
-                HStack {
-                    Image(systemName: "location.app")
-                    Text("Add Location")
-                    Spacer()
                 }
             }
         }
