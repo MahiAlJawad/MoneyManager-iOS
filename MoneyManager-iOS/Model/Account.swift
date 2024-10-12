@@ -63,6 +63,10 @@ extension Account {
         type == AccountType.credit.description ? .credit : .debit
     }
     
+    var iconName: String {
+        accountType == .debit ? "dollarsign.bank.building.fill" : "creditcard.fill"
+    }
+    
     static func getAccount(with accountInfo: AddAccountView.AddAccountInfo) -> Account {
         switch accountInfo.type {
         case .debit:
