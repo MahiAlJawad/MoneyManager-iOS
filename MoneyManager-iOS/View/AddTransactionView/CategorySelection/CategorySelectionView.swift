@@ -13,9 +13,9 @@ struct CategorySelectionView: View {
     
     var filteredCategories: [Category] {
         if searchText.isEmpty {
-            return allCategories
+            return Category.allCategories
         } else {
-            return allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return Category.allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     

@@ -15,21 +15,28 @@ struct CategoryDetailsView: View {
     var body: some View {
         Form {
             CategoryCellView(category: category)
-                .onTapGesture {
-                    selectedCategory = category
-                    router.navigateToRoot()
-                }
+                .modifier(
+                    FullWidthListItemTapableModifier{
+                        selectedCategory = category
+                        router.navigateToRoot()
+                    }
+                )
+                .modifier(ListItemHeightModifier())
+            
             Text("SUBCATEGORIES")
                 .fontWeight(.semibold)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .padding(.top)
+            
             List(category.subCategories) { subcategory in
                 CategoryCellView(category: subcategory)
-                    .onTapGesture {
-                        selectedCategory = subcategory
-                        router.navigateToRoot()
-                    }
-            }
+                    .modifier(
+                        FullWidthListItemTapableModifier{
+                            selectedCategory = subcategory
+                            router.navigateToRoot()
+                        }
+                    )
+            }.modifier(ListItemHeightModifier())
         }
     }
 }
