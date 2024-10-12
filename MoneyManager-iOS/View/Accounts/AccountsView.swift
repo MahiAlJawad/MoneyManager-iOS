@@ -18,14 +18,10 @@ struct AccountsView: View {
             if accounts.isEmpty {
                 Text("No accounts available yet. Please add an account to get started.")
                     .font(.title3)
+                addAccountButton
             } else {
                 accountsListView
             }
-            Button("Add Account") {
-                presentAddAccountView.toggle()
-            }
-            .buttonStyle(.borderedProminent)
-            .padding()
         }
         .navigationTitle("Accounts")
         .navigationTitle("Accounts")
@@ -36,6 +32,18 @@ struct AccountsView: View {
         }
     }
     
+    var addAccountButton: some View {
+        Button {
+            presentAddAccountView.toggle()
+        } label: {
+            Text("Add Account")
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 35)
+        }
+        .buttonStyle(.borderedProminent)
+        .padding(.horizontal)
+    }
+
     private var accountsListView: some View {
         List {
             ForEach(accountTypes, id: \.description) { accountType in
@@ -54,7 +62,8 @@ struct AccountsView: View {
                     }
                 }
             }
-            
+            addAccountButton
+                .listRowBackground(Color.clear)
         }
     }
     
@@ -75,12 +84,16 @@ struct AccountsView: View {
     }
     
     private func accountView(for account: Account) -> some View {
-        VStack(alignment: .leading) {
-            Text(account.accountName)
-                .font(.headline)
-            Text(account.accountBalance, format: .currency(code: "BDT"))
-            Text(account.accountType.description)
-                .font(.caption)
+        Label {
+            VStack(alignment: .leading) {
+                Text(account.accountName)
+                    .font(.headline)
+                Text(account.accountBalance, format: .currency(code: "BDT"))
+                Text(account.accountType.description)
+                    .font(.caption)
+            }
+        } icon: {
+            Image(systemName: account.iconName)
         }
     }
     
