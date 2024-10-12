@@ -22,7 +22,7 @@ struct CategorySelectionView: View {
     var body: some View {
         VStack {
             List(filteredCategories) { category in
-                NavigationLink(destination: CategoryDetailsView(category: category)) {
+                NavigationLink(destination: CategoryDetailsView(category: category, selectedCategory: $selectedCategory)) {
                     HStack {
                         Circle()
                             .fill(category.color)
