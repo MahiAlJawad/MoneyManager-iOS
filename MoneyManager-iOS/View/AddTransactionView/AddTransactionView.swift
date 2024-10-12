@@ -19,41 +19,58 @@ struct AddTransactionView: View {
     @FocusState private var focusField: FocusField?
     @State private var bgColor = Color.gray.opacity(0.2)
     
+    // TODO: Logic needs to update after all data are prepared
+    var isSaveButtonEnabled: Bool {
+        !addTransactionInfo.amount.isEmpty
+    }
+    
     var body: some View {
         VStack {
-            VStack {
-                expenseTypePickerView
-                    .padding()
-                expenseAmountTextFieldView
-                    .padding(.horizontal)
-            }
-            .background(bgColor)
-            
+            expenseTypePickerView
+                .padding()
             List {
+                expenseAmountTextFieldView
                 generalSectionView
                 moreDetailsSectionView
             }
-            .listStyle(InsetGroupedListStyle())
-            .padding(.top, -10)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundStyle(.red)
+            .listStyle(.grouped)
+            saveButton
+        }
+        .onTapGesture {
+            focusField = nil
+        }
+        .listStyle(InsetGroupedListStyle())
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Cancel") {
+                    dismiss()
                 }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Templates") {
-                        // TODO: Handle templates action
-                    }
+                .foregroundStyle(.red)
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Templates") {
+                    // TODO: Handle templates action
                 }
             }
-            .navigationTitle("Add Transaction")
-            .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationTitle("Add Transaction")
+        .navigationBarTitleDisplayMode(.inline)
     }
-
+    
+    var saveButton: some View {
+        Button {
+            // Save button action
+        } label: {
+            Text("Save")
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 35)
+        }
+        .buttonStyle(.borderedProminent)
+        .padding(.horizontal)
+        .disabled(!isSaveButtonEnabled)
+    }
+    
     var expenseTypePickerView: some View {
         Picker(selection: $addTransactionInfo.transactionType, label: Text("")) {
             Text("Expense").tag(TransactionType.expense)
@@ -64,28 +81,24 @@ struct AddTransactionView: View {
     }
     
     var expenseAmountTextFieldView: some View {
-        HStack {
-            Text("BDT")
-                .font(.system(size: 15))
-                .fontWeight(.medium)
-                .padding()
-                .frame(height: 30)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(15)
-            
-            Spacer()
-            
-            TextField("0", text: $addTransactionInfo.amount)
-                .font(.system(size: 50))
-                .multilineTextAlignment(.trailing)
-                .focused($focusField, equals: .amount)
-                .keyboardType(.decimalPad)
-                .padding()
-                .onAppear {
-                    withAnimation {
-                        focusField = .amount
-                    }
-                }
+        Section("Amount") {
+            HStack {
+                Text("BDT")
+                    .font(.system(size: 15))
+                    .fontWeight(.medium)
+                    .padding()
+                    .frame(height: 30)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(15)
+                
+                Spacer()
+                
+                TextField("0", text: $addTransactionInfo.amount)
+                    .font(.system(size: 50))
+                    .multilineTextAlignment(.trailing)
+                    .focused($focusField, equals: .amount)
+                    .keyboardType(.decimalPad)
+            }
         }
     }
     
@@ -100,7 +113,7 @@ struct AddTransactionView: View {
                     Text(addTransactionInfo.account?.accountName ?? "Required")
                         .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
                 }
-            }
+            }.modifier(ListItemHeightModifier())
             
             NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
                 HStack {
@@ -116,15 +129,16 @@ struct AddTransactionView: View {
                             .foregroundColor(.red)
                     }
                 }
-            }
+            }.modifier(ListItemHeightModifier())
             
             DatePicker(selection: $addTransactionInfo.date, displayedComponents: .date) {
                 HStack {
                     Image(systemName: "calendar")
-                    Text("Date & Time")
-                    Spacer()
+                    Text("Date")
                 }
             }
+            .modifier(ListItemHeightModifier())
+            .backgroundStyle(.clear)
             
             NavigationLink(value: Destination.labelSelectionView) {
                 HStack {
@@ -135,7 +149,7 @@ struct AddTransactionView: View {
                     Text("Add Label")
                         .foregroundColor(.blue)
                 }
-            }
+            }.modifier(ListItemHeightModifier())
         }
     }
     
@@ -150,7 +164,7 @@ struct AddTransactionView: View {
                     Text(addTransactionInfo.toNote)
                         .foregroundColor(.gray)
                 }
-            }
+            }.modifier(ListItemHeightModifier())
             
             NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
                 HStack {
@@ -161,7 +175,7 @@ struct AddTransactionView: View {
                     Text(addTransactionInfo.paymentMethod.description)
                         .foregroundStyle(.blue)
                 }
-            }
+            }.modifier(ListItemHeightModifier())
         }
     }
 }
