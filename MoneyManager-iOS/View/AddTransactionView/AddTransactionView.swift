@@ -11,12 +11,11 @@ import SwiftUI
 struct AddTransactionView: View {
     private typealias Destination = TransactionTabView.Router.Destination
     
-    // Not being used till now but you can navigate using `router.navigateTo(Destination)
     @Environment(TransactionTabView.Router.self) private var router
     
     @Environment(\.dismiss) private var dismiss
     @State private var addTransactionInfo = AddTransactionInfo()
-    @FocusState private var focusField: FocusField?
+    @FocusState private var isFocusedAmount: Bool
     @State private var bgColor = Color.gray.opacity(0.2)
     
     // TODO: Logic needs to update after all data are prepared
@@ -27,7 +26,6 @@ struct AddTransactionView: View {
     var body: some View {
         VStack {
             expenseTypePickerView
-                .padding()
             List {
                 expenseAmountTextFieldView
                 generalSectionView
@@ -36,9 +34,11 @@ struct AddTransactionView: View {
             .listStyle(.grouped)
             saveButton
         }
-        .onTapGesture {
-            focusField = nil
-        }
+        .onAppear(perform: {
+            if addTransactionInfo.amount.isEmpty {
+                isFocusedAmount = true
+            }
+        })
         .listStyle(InsetGroupedListStyle())
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -53,6 +53,13 @@ struct AddTransactionView: View {
                     // TODO: Handle templates action
                 }
             }
+            
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    isFocusedAmount = false
+                }
+            }
         }
         .navigationTitle("Add Transaction")
         .navigationBarTitleDisplayMode(.inline)
@@ -61,6 +68,7 @@ struct AddTransactionView: View {
     var saveButton: some View {
         Button {
             // Save button action
+            dismiss()
         } label: {
             Text("Save")
                 .frame(maxWidth: .infinity)
@@ -78,6 +86,7 @@ struct AddTransactionView: View {
             Text("Transfer").tag(TransactionType.transfer)
         }
         .pickerStyle(.segmented)
+        .padding()
     }
     
     var expenseAmountTextFieldView: some View {
@@ -96,7 +105,7 @@ struct AddTransactionView: View {
                 TextField("0", text: $addTransactionInfo.amount)
                     .font(.system(size: 50))
                     .multilineTextAlignment(.trailing)
-                    .focused($focusField, equals: .amount)
+                    .focused($isFocusedAmount)
                     .keyboardType(.decimalPad)
             }
         }
@@ -106,9 +115,7 @@ struct AddTransactionView: View {
         Section("General") {
             NavigationLink(value: Destination.accountSelectionView(account: $addTransactionInfo.account)) {
                 HStack {
-                    Image(systemName: "banknote")
-                        .foregroundColor(.blue)
-                    Text("Account")
+                    Label("Account", systemImage: "banknote")
                     Spacer()
                     Text(addTransactionInfo.account?.accountName ?? "Required")
                         .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
@@ -117,9 +124,13 @@ struct AddTransactionView: View {
             
             NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
                 HStack {
-                    Image(systemName: "questionmark.circle")
-                        .foregroundColor(.gray)
-                    Text("Category")
+                    Label {
+                        Text("Category")
+                    } icon: {
+                        Image(systemName: "questionmark.circle")
+                            .foregroundStyle(.gray)
+                    }
+                    
                     Spacer()
                     if let category = addTransactionInfo.category {
                         Text(category.name)
@@ -131,25 +142,30 @@ struct AddTransactionView: View {
                 }
             }.modifier(ListItemHeightModifier())
             
-            DatePicker(selection: $addTransactionInfo.date, displayedComponents: .date) {
-                HStack {
-                    Image(systemName: "calendar")
+            HStack {
+                Label {
                     Text("Date")
+                } icon: {
+                    Image(systemName: "calendar")
                 }
+                Spacer()
+                DatePicker("",selection: $addTransactionInfo.date, displayedComponents: .date)
+                    .labelsHidden()
             }
             .modifier(ListItemHeightModifier())
-            .backgroundStyle(.clear)
             
-            NavigationLink(value: Destination.labelSelectionView) {
-                HStack {
-                    Image(systemName: "tag")
-                        .foregroundColor(.gray)
-                    Text("Labels")
-                    Spacer()
-                    Text("Add Label")
-                        .foregroundColor(.blue)
-                }
-            }.modifier(ListItemHeightModifier())
+            HStack {
+                Label("Labels", systemImage: "tag")
+                Spacer()
+                Image(systemName: "plus.circle.fill")
+                    .resizable()
+                    .frame(width: 25, height: 25)
+                    .foregroundStyle(.blue)
+                    .onTapGesture {
+                        router.navigate(to: .labelSelectionView)
+                    }
+            }
+            .modifier(ListItemHeightModifier())
         }
     }
     
@@ -157,9 +173,12 @@ struct AddTransactionView: View {
         Section("More Details") {
             NavigationLink(value: Destination.addNoteView(note: $addTransactionInfo.toNote)) {
                 HStack {
-                    Image(systemName: "note.text")
-                        .foregroundColor(.blue)
-                    Text("Note")
+                    Label {
+                        Text("Note")
+                    } icon: {
+                        Image(systemName: "note.text")
+                            .foregroundColor(.blue)
+                    }
                     Spacer()
                     Text(addTransactionInfo.toNote)
                         .foregroundColor(.gray)
@@ -168,12 +187,15 @@ struct AddTransactionView: View {
             
             NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
                 HStack {
-                    Image(systemName: "questionmark.circle")
-                        .foregroundColor(.gray)
-                    Text("Payment Type")
+                    Label {
+                        Text("Payment Type")
+                    } icon: {
+                        Image(systemName: "questionmark.circle")
+                            .foregroundColor(.gray)
+                    }
                     Spacer()
                     Text(addTransactionInfo.paymentMethod.description)
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(.gray)
                 }
             }.modifier(ListItemHeightModifier())
         }
@@ -184,10 +206,6 @@ struct AddTransactionView: View {
 extension AddTransactionView {
     typealias PaymentMethod = Transaction.PaymentMethod
     typealias TransactionType = Transaction.TransactionType
-    
-    enum FocusField {
-        case amount
-    }
     
     struct AddTransactionInfo {
         var transactionType: TransactionType = .expense
