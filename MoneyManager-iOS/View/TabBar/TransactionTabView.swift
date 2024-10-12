@@ -44,32 +44,32 @@ extension TransactionTabView {
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
-                case let (.accountSelectionView(lhsAccount), .accountSelectionView(rhsAccount)):
-                    return lhsAccount.wrappedValue == rhsAccount.wrappedValue
-                case let (.categorySelectionView(lhsCategory), .categorySelectionView(rhsCategory)):
-                    return lhsCategory.wrappedValue == rhsCategory.wrappedValue
+                case (.accountSelectionView, .accountSelectionView):
+                    return true
+                case (.categorySelectionView, .categorySelectionView):
+                    return true
                 case (.labelSelectionView, .labelSelectionView):
                     return true
-                case let (.addNoteView(lhsNote), .addNoteView(rhsNote)):
-                    return lhsNote.wrappedValue == rhsNote.wrappedValue
-                case let (.selectPaymentMethodView(lhsPaymentMethod), .selectPaymentMethodView(rhsPaymentMethod)):
-                    return lhsPaymentMethod.wrappedValue == rhsPaymentMethod.wrappedValue
+                case (.addNoteView, .addNoteView):
+                    return true
+                case (.selectPaymentMethodView, .selectPaymentMethodView):
+                    return true
                 default: return false
                 }
             }
             
             func hash(into hasher: inout Hasher) {
                 switch self {
-                case .accountSelectionView(let account):
-                    hasher.combine(account.wrappedValue?.id)
-                case .categorySelectionView(let category):
-                    hasher.combine(category.wrappedValue?.id)
+                case .accountSelectionView:
+                    hasher.combine("account")
+                case .categorySelectionView:
+                    hasher.combine("category")
                 case .labelSelectionView:
-                    hasher.combine(self)
-                case .addNoteView(let note):
-                    hasher.combine(note.wrappedValue) // Note should have some ID
-                case .selectPaymentMethodView(let paymentMethod):
-                    hasher.combine(paymentMethod.wrappedValue.description)
+                    hasher.combine("label")
+                case .addNoteView:
+                    hasher.combine("note")
+                case .selectPaymentMethodView:
+                    hasher.combine("paymentMethod")
                 }
             }
         }
