@@ -13,16 +13,16 @@ struct CategorySelectionView: View {
     
     var filteredCategories: [Category] {
         if searchText.isEmpty {
-            return allCategories
+            return Category.allCategories
         } else {
-            return allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return Category.allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
     var body: some View {
         VStack {
             List(filteredCategories) { category in
-                NavigationLink(destination: CategoryDetailsView(category: category)) {
+                NavigationLink(destination: CategoryDetailsView(category: category, selectedCategory: $selectedCategory)) {
                     HStack {
                         Circle()
                             .fill(category.color)
