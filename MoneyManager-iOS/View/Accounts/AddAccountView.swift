@@ -81,8 +81,7 @@ struct AddAccountView: View {
     }
     
     private func addAccount() {
-        let account = Account.getAccount(with: accountInfo)
-        modelContext.insert(account)
+        Account.addAccount(in: modelContext, with: accountInfo)
     }
 }
 

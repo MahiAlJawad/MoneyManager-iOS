@@ -33,7 +33,7 @@ class Account {
     private var dueDay: Int
     
     @Relationship(deleteRule: .cascade)
-    private var transactions: [Transaction]
+    var transactions: [Transaction]
     
     init(
         name: String,
@@ -67,26 +67,35 @@ extension Account {
         accountType == .debit ? "dollarsign.bank.building.fill" : "creditcard.fill"
     }
     
-    static func getAccount(with accountInfo: AddAccountView.AddAccountInfo) -> Account {
-        switch accountInfo.type {
-        case .debit:
-            return Account(
-                name: accountInfo.name,
-                balance: Double(accountInfo.balance) ?? 0,
-                type: .debit
-            )
-            
-        case .credit:
-            let balance = (Double(accountInfo.balanceOutstanding) ?? 0) * (-1)
-            
-            return Account(
-                name: accountInfo.name,
-                balance: balance,
-                creditLimit: Double(accountInfo.creditLimit) ?? 0,
-                billingDay: Int(accountInfo.billingDate),
-                dueDay: Int(accountInfo.dueDate),
-                type: .credit
-            )
-        }
+    func addTransaction(_ transaction: Transaction) {
+        balance += transaction.transactionAmount
+        transactions.append(transaction)
+    }
+    
+    static func addAccount(in modelContext: ModelContext, with accountInfo: AddAccountView.AddAccountInfo) {
+        let account: Account = {
+            switch accountInfo.type {
+            case .debit:
+                return Account(
+                    name: accountInfo.name,
+                    balance: Double(accountInfo.balance) ?? 0,
+                    type: .debit
+                )
+                
+            case .credit:
+                let balance = (Double(accountInfo.balanceOutstanding) ?? 0) * (-1)
+                
+                return Account(
+                    name: accountInfo.name,
+                    balance: balance,
+                    creditLimit: Double(accountInfo.creditLimit) ?? 0,
+                    billingDay: Int(accountInfo.billingDate),
+                    dueDay: Int(accountInfo.dueDate),
+                    type: .credit
+                )
+            }
+        }()
+        
+        modelContext.insert(account)
     }
 }

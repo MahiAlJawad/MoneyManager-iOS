@@ -7,12 +7,14 @@
 
 import SwiftUI
 
+// TODO: Move this inside Transaction Model as done with payment method
 struct Category: Identifiable, Hashable {
     let id = UUID()
     let name: String
     let icon: String
     let color: Color
     let parentCategory: String
+    // TODO: Make a type SubCategory for this
     let subCategories: [Category]
 }
 

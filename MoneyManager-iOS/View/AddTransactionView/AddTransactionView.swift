@@ -20,7 +20,9 @@ struct AddTransactionView: View {
     
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
-        !addTransactionInfo.amount.isEmpty
+        !addTransactionInfo.amount.isEmpty &&
+        addTransactionInfo.account != nil &&
+        addTransactionInfo.category != nil
     }
     
     var body: some View {
@@ -65,7 +67,7 @@ struct AddTransactionView: View {
     
     var saveButton: some View {
         Button {
-            // Save button action
+            Transaction.addTransaction(from: addTransactionInfo)
             dismiss()
         } label: {
             Text("Save")
