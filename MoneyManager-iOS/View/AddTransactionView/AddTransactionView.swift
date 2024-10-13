@@ -67,7 +67,13 @@ struct AddTransactionView: View {
     
     var saveButton: some View {
         Button {
-            Transaction.addTransaction(from: addTransactionInfo)
+            do {
+                try Transaction.addTransaction(from: addTransactionInfo)
+            } catch {
+                // TODO: show error alert once the UI is ready
+                print("Error: \(error)")
+            }
+            
             dismiss()
         } label: {
             Text("Save")

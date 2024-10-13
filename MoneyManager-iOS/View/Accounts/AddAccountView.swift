@@ -81,7 +81,12 @@ struct AddAccountView: View {
     }
     
     private func addAccount() {
-        Account.addAccount(in: modelContext, with: accountInfo)
+        do {
+            try Account.addAccount(in: modelContext, with: accountInfo)
+        } catch {
+            // TODO: Show error alert when UI is ready
+            print("Error: \(error)")
+        }
     }
 }
 

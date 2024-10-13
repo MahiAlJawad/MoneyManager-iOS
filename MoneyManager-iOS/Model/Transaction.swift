@@ -50,7 +50,7 @@ class Transaction {
     
     var id: String
     private var type: String
-    private var ammount: Double
+    private(set) var amount: Double
     private var category: String
     private var date: Date
     private var paymentMethod: String
@@ -62,8 +62,8 @@ class Transaction {
     
     init(
         type: TransactionType,
-        account: Account?,
-        amount: String,
+        account: Account,
+        amount: Double,
         category: Category?,
         date: Date,
         labels: [String],
@@ -74,9 +74,9 @@ class Transaction {
         self.account = account
         
         if type == .income {
-            self.ammount = Double(amount) ?? 0
+            self.amount = amount
         } else {
-            self.ammount = (Double(amount) ?? 0) * (-1)
+            self.amount = amount * (-1)
         }
         
         self.category = category?.name ?? ""
@@ -85,19 +85,26 @@ class Transaction {
     }
 }
 
+// MARK: Handles Add Transaction
 extension Transaction {
-    var transactionAmount: Double { ammount }
+    enum AddTransactionError: Error {
+        case accountNotFound
+        case invalidAmount
+    }
     
-    static func addTransaction(from info: AddTransactionView.AddTransactionInfo) {
+    static func addTransaction(from info: AddTransactionView.AddTransactionInfo) throws {
         guard let account = info.account else {
-            print("Error: account not found")
-            return
+            throw AddTransactionError.accountNotFound
+        }
+        
+        guard let amount = Double(info.amount) else {
+            throw AddTransactionError.invalidAmount
         }
         
         let transaction = Transaction(
             type: info.transactionType,
-            account: info.account,
-            amount: info.amount,
+            account: account,
+            amount: amount,
             category: info.category,
             date: info.date,
             labels: [], // TODO: UI not ready

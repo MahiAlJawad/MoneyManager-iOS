@@ -66,36 +66,59 @@ extension Account {
     var iconName: String {
         accountType == .debit ? "dollarsign.bank.building.fill" : "creditcard.fill"
     }
+}
+
+// MARK: Handles Account related DB manipulations
+extension Account {
+    enum AddAccountError: Error {
+        case invalidBalance
+        case invalidName
+        case invalidCreditLimit
+    }
     
     func addTransaction(_ transaction: Transaction) {
-        balance += transaction.transactionAmount
+        balance += transaction.amount
         transactions.append(transaction)
     }
     
-    static func addAccount(in modelContext: ModelContext, with accountInfo: AddAccountView.AddAccountInfo) {
-        let account: Account = {
-            switch accountInfo.type {
-            case .debit:
-                return Account(
-                    name: accountInfo.name,
-                    balance: Double(accountInfo.balance) ?? 0,
-                    type: .debit
-                )
+    static func addAccount(in modelContext: ModelContext, with accountInfo: AddAccountView.AddAccountInfo) throws {
+        guard !accountInfo.name.isEmpty else {
+            throw AddAccountError.invalidName
+        }
                 
-            case .credit:
-                let balance = (Double(accountInfo.balanceOutstanding) ?? 0) * (-1)
-                
-                return Account(
+        switch accountInfo.type {
+        case .debit:
+            guard let balance = Double(accountInfo.balance) else {
+                throw AddAccountError.invalidBalance
+            }
+            
+            modelContext.insert(
+                Account(
                     name: accountInfo.name,
                     balance: balance,
-                    creditLimit: Double(accountInfo.creditLimit) ?? 0,
-                    billingDay: Int(accountInfo.billingDate),
-                    dueDay: Int(accountInfo.dueDate),
+                    type: .debit
+                )
+            )
+            
+        case .credit:
+            guard let creditLimit = Double(accountInfo.creditLimit) else {
+                throw AddAccountError.invalidCreditLimit
+            }
+            
+            guard let balance = Double(accountInfo.balanceOutstanding) else {
+                throw AddAccountError.invalidBalance
+            }
+            
+            modelContext.insert(
+                Account(
+                    name: accountInfo.name,
+                    balance: balance * (-1),
+                    creditLimit: creditLimit,
+                    billingDay: accountInfo.billingDate,
+                    dueDay: accountInfo.dueDate,
                     type: .credit
                 )
-            }
-        }()
-        
-        modelContext.insert(account)
+            )
+        }
     }
 }
