@@ -13,3 +13,9 @@ struct ListItemHeightModifier: ViewModifier {
             .frame(minHeight: 44)
     }
 }
+
+extension View {
+    public func applyListItemHeight() -> some View {
+        modifier(ListItemHeightModifier())
+    }
+}

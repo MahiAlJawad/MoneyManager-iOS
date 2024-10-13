@@ -45,7 +45,7 @@ struct CategorySelectionView: View {
                             }
                         }
                     }
-                }.modifier(ListItemHeightModifier())
+                }.applyListItemHeight()
             }
             .listStyle(InsetGroupedListStyle())
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))

@@ -38,3 +38,12 @@ struct FullWidthListItemTapableModifier: ViewModifier {
         }
     }
 }
+
+extension View {
+    func fullWidthListItemTapable(
+        alignment: FullWidthListItemTapableModifier.Alignment = .left,
+        onTapAction: (() -> Void)? = nil
+    ) -> some View {
+        modifier(FullWidthListItemTapableModifier(alignment: alignment, onTapAction: onTapAction))
+    }
+}
