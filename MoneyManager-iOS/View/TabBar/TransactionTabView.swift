@@ -21,8 +21,6 @@ struct TransactionTabView: View {
                         CategorySelectionView(selectedCategory: category)
                     case .labelSelectionView:
                         LabelSelectionView()
-                    case .addNoteView(let note):
-                        AddNoteView(notes: note)
                     case .selectPaymentMethodView(let paymentMethod):
                         PaymentTypeView(paymentMethod: paymentMethod)
                     }
@@ -39,7 +37,6 @@ extension TransactionTabView {
             case accountSelectionView(account: Binding<Account?>)
             case categorySelectionView(category: Binding<Category?>)
             case labelSelectionView
-            case addNoteView(note: Binding<String>)
             case selectPaymentMethodView(paymentMethod: Binding<Transaction.PaymentMethod>)
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
@@ -49,8 +46,6 @@ extension TransactionTabView {
                 case (.categorySelectionView, .categorySelectionView):
                     return true
                 case (.labelSelectionView, .labelSelectionView):
-                    return true
-                case (.addNoteView, .addNoteView):
                     return true
                 case (.selectPaymentMethodView, .selectPaymentMethodView):
                     return true
@@ -66,8 +61,6 @@ extension TransactionTabView {
                     hasher.combine("category")
                 case .labelSelectionView:
                     hasher.combine("label")
-                case .addNoteView:
-                    hasher.combine("note")
                 case .selectPaymentMethodView:
                     hasher.combine("paymentMethod")
                 }

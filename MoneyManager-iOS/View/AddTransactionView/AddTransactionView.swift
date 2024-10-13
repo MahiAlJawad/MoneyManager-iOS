@@ -109,6 +109,9 @@ struct AddTransactionView: View {
                     .multilineTextAlignment(.trailing)
                     .focused($focusedField, equals: .amount)
                     .keyboardType(.decimalPad)
+                    .onAppear {
+                        UITextField.appearance().clearButtonMode = .never
+                    }
             }
         }
     }
