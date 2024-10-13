@@ -15,7 +15,7 @@ struct CategoryDetailsView: View {
     var body: some View {
         Form {
             CategoryCellView(category: category)
-                .fullWidthListItemTapable() {
+                .makeFullWidthListItemTappable() {
                     selectedCategory = category
                     router.navigateToRoot()
                 }
@@ -28,7 +28,7 @@ struct CategoryDetailsView: View {
             
             List(category.subCategories) { subcategory in
                 CategoryCellView(category: subcategory)
-                    .fullWidthListItemTapable() {
+                    .makeFullWidthListItemTappable() {
                         selectedCategory = subcategory
                         router.navigateToRoot()
                     }

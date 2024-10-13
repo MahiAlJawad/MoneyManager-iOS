@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-struct ViewDidLoadModifier: ViewModifier {
+struct ViewOnLoadModifier: ViewModifier {
     @State private var didLoad = false
     private let action: (() -> Void)
 
-    init(perform action: @escaping (() -> Void)) {
+    fileprivate init(perform action: @escaping (() -> Void)) {
         self.action = action
     }
 
@@ -30,6 +30,6 @@ extension View {
     /// Not in the each time it appears
     /// It can be used as `ViewDidLoad()` alternative in SwiftUI views
     func onLoad(perform action: @escaping (() -> Void)) -> some View {
-        modifier(ViewDidLoadModifier(perform: action))
+        modifier(ViewOnLoadModifier(perform: action))
     }
 }

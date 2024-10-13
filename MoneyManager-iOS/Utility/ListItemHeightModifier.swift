@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ListItemHeightModifier: ViewModifier {
+    fileprivate init() { }
+    
     func body(content: Content) -> some View {
         content
             .frame(minHeight: 44)

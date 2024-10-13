@@ -16,7 +16,7 @@ struct AccountSelectionView: View {
     var body: some View {
         List(accounts) { account in
             accountView(for: account)
-                .fullWidthListItemTapable() {
+                .makeFullWidthListItemTappable() {
                     selectedAccount = account
                     router.navigateBack()
                 }
