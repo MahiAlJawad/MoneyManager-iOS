@@ -43,15 +43,13 @@ struct TabBarView: View {
                 }
                 .tag(Tab.statistics)
                 
-                NavigationStack {
-                    MoreView()
-                }
-                .tabItem {
-                    Label(Tab.more.title, systemImage: Tab.more.icon)
-                }
-                .tag(Tab.more)
+                MoreTabBarView()
+                    .tabItem {
+                        Label(Tab.more.title, systemImage: Tab.more.icon)
+                    }
+                    .tag(Tab.more)
             }
-
+            
             // MARK: Add Transaction button
             Button {
                 presentAddTransactionSheet.toggle()
