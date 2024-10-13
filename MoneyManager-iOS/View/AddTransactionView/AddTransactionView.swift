@@ -11,11 +11,15 @@ import SwiftUI
 struct AddTransactionView: View {
     private typealias Destination = TransactionTabView.Router.Destination
     
+    enum FocusedField {
+        case amount, note
+    }
+    
     @Environment(TransactionTabView.Router.self) private var router
     
     @Environment(\.dismiss) private var dismiss
     @State private var addTransactionInfo = AddTransactionInfo()
-    @FocusState private var isFocusedAmount: Bool
+    @FocusState private var focusedField: FocusedField?
     @State private var bgColor = Color.gray.opacity(0.2)
     
     // TODO: Logic needs to update after all data are prepared
@@ -35,7 +39,7 @@ struct AddTransactionView: View {
             saveButton
         }
         .onLoad {
-            isFocusedAmount = true
+            focusedField = .amount
         }
         .listStyle(InsetGroupedListStyle())
         .toolbar {
@@ -55,7 +59,7 @@ struct AddTransactionView: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") {
-                    isFocusedAmount = false
+                    focusedField = nil
                 }
             }
         }
@@ -103,7 +107,7 @@ struct AddTransactionView: View {
                 TextField("0", text: $addTransactionInfo.amount)
                     .font(.system(size: 50))
                     .multilineTextAlignment(.trailing)
-                    .focused($isFocusedAmount)
+                    .focused($focusedField, equals: .amount)
                     .keyboardType(.decimalPad)
             }
         }
@@ -169,20 +173,21 @@ struct AddTransactionView: View {
     
     var moreDetailsSectionView: some View {
         Section("More Details") {
-            NavigationLink(value: Destination.addNoteView(note: $addTransactionInfo.toNote)) {
-                HStack {
-                    Label {
-                        Text("Note")
-                    } icon: {
-                        Image(systemName: "note.text")
-                            .foregroundColor(.blue)
-                    }
-                    Spacer()
-                    Text(addTransactionInfo.toNote)
-                        .foregroundColor(.gray)
+            HStack {
+                Label {
+                    TextField("Add your note", text: $addTransactionInfo.toNote)
+                        .textInputAutocapitalization(.never)
+                        .textFieldStyle(.roundedBorder)
+                        .focused($focusedField, equals: .note)
+                        .onAppear {
+                            UITextField.appearance().clearButtonMode = .whileEditing
+                        }
+                } icon: {
+                    Image(systemName: "note.text")
+                        .foregroundColor(.blue)
                 }
             }.applyListItemHeight()
-            
+
             NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
                 HStack {
                     Label {
@@ -199,7 +204,6 @@ struct AddTransactionView: View {
         }
     }
 }
-
 
 extension AddTransactionView {
     typealias PaymentMethod = Transaction.PaymentMethod
