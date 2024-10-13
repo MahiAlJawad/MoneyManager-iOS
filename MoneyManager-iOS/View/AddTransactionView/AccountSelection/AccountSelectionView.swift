@@ -16,12 +16,10 @@ struct AccountSelectionView: View {
     var body: some View {
         List(accounts) { account in
             accountView(for: account)
-                .modifier(
-                    FullWidthListItemTapableModifier {
-                        selectedAccount = account
-                        router.navigateBack()
-                    }
-                )
+                .makeFullWidthListItemTappable() {
+                    selectedAccount = account
+                    router.navigateBack()
+                }
         }
         .navigationTitle("Select Account")
     }

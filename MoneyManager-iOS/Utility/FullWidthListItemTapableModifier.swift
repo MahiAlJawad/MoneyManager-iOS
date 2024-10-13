@@ -17,7 +17,7 @@ struct FullWidthListItemTapableModifier: ViewModifier {
     var alignment: Alignment
     var onTapAction: (() -> Void)?
     
-    init(alignment: Alignment = .left, onTapAction: (() -> Void)? = nil) {
+    fileprivate init(alignment: Alignment = .left, onTapAction: (() -> Void)? = nil) {
         self.alignment = alignment
         self.onTapAction = onTapAction
     }
@@ -36,5 +36,14 @@ struct FullWidthListItemTapableModifier: ViewModifier {
         .onTapGesture {
             onTapAction?()
         }
+    }
+}
+
+extension View {
+    func makeFullWidthListItemTappable(
+        alignment: FullWidthListItemTapableModifier.Alignment = .left,
+        onTapAction: (() -> Void)? = nil
+    ) -> some View {
+        modifier(FullWidthListItemTapableModifier(alignment: alignment, onTapAction: onTapAction))
     }
 }

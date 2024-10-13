@@ -34,11 +34,9 @@ struct AddTransactionView: View {
             .listStyle(.grouped)
             saveButton
         }
-        .onAppear(perform: {
-            if addTransactionInfo.amount.isEmpty {
-                isFocusedAmount = true
-            }
-        })
+        .onLoad {
+            isFocusedAmount = true
+        }
         .listStyle(InsetGroupedListStyle())
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -120,7 +118,7 @@ struct AddTransactionView: View {
                     Text(addTransactionInfo.account?.accountName ?? "Required")
                         .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
                 }
-            }.modifier(ListItemHeightModifier())
+            }.applyListItemHeight()
             
             NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
                 HStack {
@@ -140,7 +138,7 @@ struct AddTransactionView: View {
                             .foregroundColor(.red)
                     }
                 }
-            }.modifier(ListItemHeightModifier())
+            }.applyListItemHeight()
             
             HStack {
                 Label {
@@ -152,7 +150,7 @@ struct AddTransactionView: View {
                 DatePicker("",selection: $addTransactionInfo.date, displayedComponents: .date)
                     .labelsHidden()
             }
-            .modifier(ListItemHeightModifier())
+            .applyListItemHeight()
             
             HStack {
                 Label("Labels", systemImage: "tag")
@@ -165,7 +163,7 @@ struct AddTransactionView: View {
                         router.navigate(to: .labelSelectionView)
                     }
             }
-            .modifier(ListItemHeightModifier())
+            .applyListItemHeight()
         }
     }
     
@@ -183,7 +181,7 @@ struct AddTransactionView: View {
                     Text(addTransactionInfo.toNote)
                         .foregroundColor(.gray)
                 }
-            }.modifier(ListItemHeightModifier())
+            }.applyListItemHeight()
             
             NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
                 HStack {
@@ -197,7 +195,7 @@ struct AddTransactionView: View {
                     Text(addTransactionInfo.paymentMethod.description)
                         .foregroundStyle(.gray)
                 }
-            }.modifier(ListItemHeightModifier())
+            }.applyListItemHeight()
         }
     }
 }

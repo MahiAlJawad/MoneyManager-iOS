@@ -15,13 +15,11 @@ struct CategoryDetailsView: View {
     var body: some View {
         Form {
             CategoryCellView(category: category)
-                .modifier(
-                    FullWidthListItemTapableModifier{
-                        selectedCategory = category
-                        router.navigateToRoot()
-                    }
-                )
-                .modifier(ListItemHeightModifier())
+                .makeFullWidthListItemTappable() {
+                    selectedCategory = category
+                    router.navigateToRoot()
+                }
+                .applyListItemHeight()
             
             Text("SUBCATEGORIES")
                 .fontWeight(.semibold)
@@ -30,13 +28,11 @@ struct CategoryDetailsView: View {
             
             List(category.subCategories) { subcategory in
                 CategoryCellView(category: subcategory)
-                    .modifier(
-                        FullWidthListItemTapableModifier{
-                            selectedCategory = subcategory
-                            router.navigateToRoot()
-                        }
-                    )
-            }.modifier(ListItemHeightModifier())
+                    .makeFullWidthListItemTappable() {
+                        selectedCategory = subcategory
+                        router.navigateToRoot()
+                    }
+            }.applyListItemHeight()
         }
     }
 }
