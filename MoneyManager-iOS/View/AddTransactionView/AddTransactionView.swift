@@ -99,7 +99,7 @@ struct AddTransactionView: View {
                     .fontWeight(.medium)
                     .padding()
                     .frame(height: 30)
-                    .background(Color.gray.opacity(0.2))
+                    .background(addTransactionInfo.transactionType.color)
                     .cornerRadius(15)
                 
                 Spacer()

@@ -21,18 +21,15 @@ struct CategoryDetailsView: View {
                 }
                 .applyListItemHeight()
             
-            Text("SUBCATEGORIES")
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
-                .padding(.top)
-            
-            List(category.subCategories) { subcategory in
-                CategoryCellView(category: subcategory)
-                    .makeFullWidthListItemTappable() {
-                        selectedCategory = subcategory
-                        router.navigateToRoot()
-                    }
-            }.applyListItemHeight()
+            Section(header: Text("Subcategories")) {
+                List(category.subCategories) { subcategory in
+                    CategoryCellView(category: subcategory)
+                        .makeFullWidthListItemTappable() {
+                            selectedCategory = subcategory
+                            router.navigateToRoot()
+                        }
+                }.applyListItemHeight()
+            }
         }
     }
 }
