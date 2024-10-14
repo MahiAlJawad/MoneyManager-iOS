@@ -59,23 +59,68 @@ class Transaction {
     
     var id: String
     private var type: String
-    private var ammount: Double
+    private(set) var amount: Double
     private var category: String
     private var date: Date
+    private var paymentMethod: String
     
     // TODO: Add labels, notes when their corresponding model is created
     
+    @Relationship(inverse: \Account.transactions)
+    private var account: Account?
+    
     init(
         type: TransactionType,
-        amount: String,
-        category: Category,
+        account: Account,
+        amount: Double,
+        category: Category?,
         date: Date,
-        labels: [String]
+        labels: [String],
+        paymentMethod: PaymentMethod
     ) {
         self.id = UUID().uuidString
         self.type = type.description
-        self.ammount = Double(amount) ?? 0
-        self.category = category.name
+        self.account = account
+        
+        if type == .income {
+            self.amount = amount
+        } else {
+            self.amount = amount * (-1)
+        }
+        
+        self.category = category?.name ?? ""
         self.date = date
+        self.paymentMethod = paymentMethod.description
+    }
+}
+
+// MARK: Handles Add Transaction
+extension Transaction {
+    enum AddTransactionError: Error {
+        case accountNotFound
+        case invalidAmount
+    }
+    
+    static func addTransaction(from info: AddTransactionView.AddTransactionInfo) throws {
+        guard let account = info.account else {
+            throw AddTransactionError.accountNotFound
+        }
+        
+        guard let amount = Double(info.amount) else {
+            throw AddTransactionError.invalidAmount
+        }
+        
+        let transaction = Transaction(
+            type: info.transactionType,
+            account: account,
+            amount: amount,
+            category: info.category,
+            date: info.date,
+            labels: [], // TODO: UI not ready
+            paymentMethod: info.paymentMethod
+        )
+        
+        // TODO: Handle Transfer type transaction not done yet as UI not ready
+        account.addTransaction(transaction)
     }
 }
