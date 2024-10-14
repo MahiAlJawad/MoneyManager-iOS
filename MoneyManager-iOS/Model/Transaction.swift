@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 class Transaction {
@@ -44,6 +45,14 @@ class Transaction {
             case .expense:          return "Expense"
             case .income:           return "Income"
             case .transfer:         return "Transfer"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .expense: return .red.opacity(0.2)
+            case .income:  return .green.opacity(0.2)
+            default:       return .gray.opacity(0.2)
             }
         }
     }
