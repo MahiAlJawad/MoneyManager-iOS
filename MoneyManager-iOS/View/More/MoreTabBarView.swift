@@ -12,10 +12,11 @@ struct MoreTabBarView: View {
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            MoreView().navigationDestination(for: Router.Destination.self) { destination in
+            MoreView()
+                .navigationDestination(for: Router.Destination.self) { destination in
                 switch destination {
                 case .settingsView:
-                    SettingsView()
+                    SettingsDetails()
                 case .aboutWalletView:
                     AboutWalletView()
                 case .recordsView:
@@ -24,6 +25,8 @@ struct MoreTabBarView: View {
                     InvestmentView()
                 case .helpView:
                     HelpView()
+                case .particularSettingsView(let settings):
+                    ParticularSettingsDetails(settings: settings)
                 }
             }
         }
@@ -33,12 +36,48 @@ struct MoreTabBarView: View {
 extension MoreTabBarView {
     @Observable
     final class Router {
-        public enum Destination: Codable, Hashable {
+        public enum Destination: Hashable {
             case settingsView
             case aboutWalletView
             case recordsView
             case investmentsView
             case helpView
+            case particularSettingsView(settings: Settings)
+            
+            static func ==(lhs: Destination, rhs: Destination) -> Bool {
+                switch (lhs, rhs) {
+                case (.settingsView, .settingsView):
+                    return true
+                case (.aboutWalletView, .aboutWalletView):
+                    return true
+                case (.recordsView, .recordsView):
+                    return true
+                case (.investmentsView, .investmentsView):
+                    return true
+                case (.helpView, .helpView):
+                    return true
+                case (.particularSettingsView, .particularSettingsView):
+                    return true
+                default: return false
+                }
+            }
+            
+            func hash(into hasher: inout Hasher) {
+                switch self {
+                case .settingsView:
+                    hasher.combine("settingsView")
+                case .aboutWalletView:
+                    hasher.combine("aboutWalletView")
+                case .recordsView:
+                    hasher.combine("recordsView")
+                case .investmentsView:
+                    hasher.combine("investmentsView")
+                case .helpView:
+                    hasher.combine("helpView")
+                case .particularSettingsView:
+                    hasher.combine("individualSettingsView")
+                }
+            }
         }
         
         var path = NavigationPath()
@@ -60,17 +99,17 @@ extension MoreTabBarView {
 
 // TODO: Will create separate files for all these Views
 
-struct SettingsView: View {
+struct ParticularSettingsDetails: View {
+    let settings: Settings
+
     var body: some View {
-        HStack {
-            Image(systemName: "gear")
+        VStack {
+            Image(systemName: settings.image)
                 .resizable()
-                .frame(width: 50,height: 50)
-            Text("Settings View")
-                .fontWeight(.bold)
+                .frame(width: 80, height: 80)
+            Text(settings.title)
+                .font(.headline)
         }
-        .padding(50)
-        
     }
 }
 
