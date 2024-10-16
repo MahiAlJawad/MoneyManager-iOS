@@ -48,11 +48,19 @@ class Transaction {
             }
         }
         
+        var iconName: String {
+            switch self {
+            case .expense: return "arrow.up.square.fill"
+            case .income: return "arrow.down.app.fill"
+            case .transfer: return "arrow.left.arrow.right.square"
+            }
+        }
+        
         var color: Color {
             switch self {
-            case .expense: return .red.opacity(0.2)
-            case .income:  return .green.opacity(0.2)
-            default:       return .gray.opacity(0.2)
+            case .expense: return .red
+            case .income:  return .green
+            default:       return .gray
             }
         }
     }
@@ -61,7 +69,7 @@ class Transaction {
     private var type: String
     private(set) var amount: Double
     private var category: String
-    private var date: Date
+    private(set) var date: Date
     private var paymentMethod: String
     
     // TODO: Add labels, notes when their corresponding model is created
@@ -91,6 +99,26 @@ class Transaction {
         self.category = category?.name ?? ""
         self.date = date
         self.paymentMethod = paymentMethod.description
+    }
+}
+
+extension Transaction {
+    // TODO: When Category model is refactored it should return a type Category so that we can fetch the category image and all details
+    var transactionCategory: String { category }
+    
+    var accountName: String {
+        account?.accountName ?? "Unknown"
+    }
+    
+    var transactionType: TransactionType {
+        switch type {
+        case TransactionType.income.description:
+            return .income
+        case TransactionType.expense.description:
+            return .expense
+        default:
+            return .transfer
+        }
     }
 }
 

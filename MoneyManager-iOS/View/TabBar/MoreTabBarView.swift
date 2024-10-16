@@ -147,15 +147,3 @@ struct InvestmentView: View {
         }.padding()
     }
 }
-
-struct RecordsView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "lock.desktopcomputer")
-                .resizable()
-                .frame(width: 100, height: 100)
-            Text("Records View")
-                .font(.subheadline)
-        }.padding()
-    }
-}
