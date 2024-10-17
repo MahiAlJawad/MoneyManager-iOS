@@ -11,11 +11,11 @@ struct CategorySelectionView: View {
     @State private var searchText: String = ""
     @Binding var selectedCategory: Category?
     
-    var filteredCategories: [Category] {
+    var filteredCategories: [MainCategory] {
         if searchText.isEmpty {
-            return Category.allCategories
+            return allCategories
         } else {
-            return Category.allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
@@ -38,11 +38,6 @@ struct CategorySelectionView: View {
                         VStack(alignment: .leading) {
                             Text(category.name)
                                 .font(.body)
-                            if !category.parentCategory.isEmpty {
-                                Text(category.parentCategory)
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
                         }
                     }
                 }.applyListItemHeight()
