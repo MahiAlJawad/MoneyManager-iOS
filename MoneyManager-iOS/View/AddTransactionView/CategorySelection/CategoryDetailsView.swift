@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CategoryDetailsView: View {
-    let category: Category
+    let category: MainCategory
     @Environment(TransactionTabView.Router.self) private var router
     @Binding var selectedCategory: Category?
     
@@ -22,7 +22,7 @@ struct CategoryDetailsView: View {
                 .applyListItemHeight()
             
             Section(header: Text("Subcategories")) {
-                List(category.subCategories) { subcategory in
+                List(category.Subcategories) { subcategory in
                     CategoryCellView(category: subcategory)
                         .makeFullWidthListItemTappable() {
                             selectedCategory = subcategory
