@@ -48,18 +48,17 @@ struct RecordsView: View {
         HStack {
             Label {
                 VStack(alignment: .leading) {
-                    Text(transaction.transactionCategory)
+                    Text(transaction.transactionCategory?.name ?? "")
                         .font(.headline)
                     Text(transaction.accountName)
                         .font(.caption)
                 }
             } icon: {
-                Image(systemName: transaction.transactionType.iconName)
-                    .foregroundStyle(transaction.transactionType.color)
+                Image(systemName: transaction.transactionCategory?.icon ?? "")
+                    .foregroundStyle(transaction.transactionCategory?.color ?? .secondary)
             }
             Spacer()
             VStack(alignment: .trailing) {
-                // TODO: Transaction should store currency name
                 Text(transaction.amount, format: .currency(code: "BDT"))
                     .fontWeight(.semibold)
                     .foregroundStyle(transaction.transactionType.color)
