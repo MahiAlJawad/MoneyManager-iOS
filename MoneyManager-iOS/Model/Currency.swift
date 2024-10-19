@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct Currency:Identifiable, Codable, Equatable {
+struct Currency: Identifiable, Codable, Equatable {
     var id = UUID()
     
-    var countryName:String?
-    var countryCode:String?
-    var currencyCode:String?
-    var currencyName:String?
+    var countryName: String?
+    var countryCode: String?
+    var currencyCode: String?
+    var currencyName: String?
     
     init(countryName: String? = nil, countryCode: String? = nil, currencyCode: String? = nil, currencyName: String? = nil) {
         self.countryName = countryName
@@ -24,7 +24,7 @@ struct Currency:Identifiable, Codable, Equatable {
 }
 
 extension Currency {
-   static func countryFlag(countryCode: String) -> String {
+    static func countryFlag(countryCode: String) -> String {
         return String(String.UnicodeScalarView(
             countryCode.unicodeScalars.compactMap( { UnicodeScalar(127397 + $0.value) } ))
         )
