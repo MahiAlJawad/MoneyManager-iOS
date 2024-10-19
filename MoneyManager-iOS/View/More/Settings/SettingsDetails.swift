@@ -10,24 +10,14 @@ import SwiftUI
 struct SettingsDetails: View {
     var body: some View {
         List(Settings.allSettingsData) { item in
-            NavigationLink(value: MoreTabBarView.Router.Destination.particularSettingsView(settings: item)) {
-                HStack {
-                    Circle()
-                        .fill(.blue)
-                        .frame(width: 30, height: 30)
-                        .overlay(
-                            Image(systemName: item.image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 16, height: 16)
-                                .foregroundColor(.white)
-                        )
-                    
-                    VStack(alignment: .leading) {
-                        Text(item.title)
-                            .font(.body)
-                    }
-                }.applyListItemHeight()
+            if item.title == "Currency" {
+                NavigationLink(value: MoreTabBarView.Router.Destination.currencyView) {
+                    SettingsDetailsCommon(settingsItem: item)
+                }
+            } else {
+                NavigationLink(value: MoreTabBarView.Router.Destination.particularSettingsView(settings: item)) {
+                    SettingsDetailsCommon(settingsItem: item)
+                }
             }
         }
     }
@@ -37,3 +27,26 @@ struct SettingsDetails: View {
     SettingsDetails()
 }
 
+struct SettingsDetailsCommon: View {
+    let settingsItem: Settings
+    
+    var body: some View {
+        HStack {
+            Circle()
+                .fill(.blue)
+                .frame(width: 30, height: 30)
+                .overlay(
+                    Image(systemName: settingsItem.image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(.white)
+                )
+            
+            VStack(alignment: .leading) {
+                Text(settingsItem.title)
+                    .font(.body)
+            }
+        }.applyListItemHeight()
+    }
+}
