@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CategoryDetailsView: View {
-    let category: MainCategory
+    let category: Transaction.MainCategory
     @Environment(TransactionTabView.Router.self) private var router
     @Binding var selectedCategory: Category?
     

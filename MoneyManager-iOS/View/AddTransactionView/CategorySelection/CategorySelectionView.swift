@@ -11,11 +11,13 @@ struct CategorySelectionView: View {
     @State private var searchText: String = ""
     @Binding var selectedCategory: Category?
     
-    var filteredCategories: [MainCategory] {
+    var filteredCategories: [Transaction.MainCategory] {
         if searchText.isEmpty {
-            return allCategories
+            return Transaction.allMainCategories
         } else {
-            return allCategories.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            return Transaction.allMainCategories.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText)
+            }
         }
     }
     

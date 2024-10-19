@@ -48,14 +48,6 @@ class Transaction {
             }
         }
         
-        var iconName: String {
-            switch self {
-            case .expense: return "arrow.up.square.fill"
-            case .income: return "arrow.down.app.fill"
-            case .transfer: return "arrow.left.arrow.right.square"
-            }
-        }
-        
         var color: Color {
             switch self {
             case .expense: return .red
@@ -103,8 +95,12 @@ class Transaction {
 }
 
 extension Transaction {
-    // TODO: When Category model is refactored it should return a type Category so that we can fetch the category image and all details
-    var transactionCategory: String { category }
+    var transactionCategory: Category? {
+        let allCategories: [Category] = MainCategory.allCases + Subcategory.allCases
+        
+        return allCategories
+            .first(where: { $0.name == category })
+    }
     
     var accountName: String {
         account?.accountName ?? "Unknown"
@@ -119,6 +115,11 @@ extension Transaction {
         default:
             return .transfer
         }
+    }
+    
+    static var allMainCategories: [MainCategory] {
+        [.Groceries, .Communication, .Housing, .Life_Entertainment,
+         .Shopping , .Transportation ,.Restaurant]
     }
 }
 
