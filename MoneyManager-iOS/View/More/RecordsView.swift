@@ -10,11 +10,26 @@ import SwiftUI
 
 struct RecordsView: View {
     @Query private var accounts: [Account]
-    // TODO: Add search functionality
+    @State private var searchString: String = ""
     
     var transactions: [Transaction] {
         accounts
             .flatMap(\.transactions)
+            .filter({ transaction in
+                guard !searchString.isEmpty else {
+                    return true
+                }
+                
+                let categoryName = transaction.category
+                let accountName = transaction.accountName
+                let amount = String(transaction.amount)
+                let date = transaction.date.description
+                
+                return categoryName.localizedStandardContains(searchString) ||
+                accountName.localizedStandardContains(searchString) ||
+                amount.localizedStandardContains(searchString) ||
+                date.localizedStandardContains(searchString)
+            })
             .sorted { $0.date > $1.date }
     }
     
@@ -41,6 +56,7 @@ struct RecordsView: View {
                 }
             }
         }
+        .searchable(text: $searchString)
         .navigationTitle("Transactions")
     }
     
@@ -48,7 +64,7 @@ struct RecordsView: View {
         HStack {
             Label {
                 VStack(alignment: .leading) {
-                    Text(transaction.transactionCategory?.name ?? "")
+                    Text(transaction.category)
                         .font(.headline)
                     Text(transaction.accountName)
                         .font(.caption)
