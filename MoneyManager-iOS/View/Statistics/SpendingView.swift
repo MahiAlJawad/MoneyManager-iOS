@@ -13,41 +13,15 @@ struct ExpensesCardView: View {
     @Query private var accounts: [Account]
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Text("Expenses")
-                    .font(.headline)
-                    .padding(.leading)
-                    .padding(.top)
-                Spacer()
-            }
-            
-            // TODO: need to change according to range selection
-            Text("THIS MONTH")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .padding([.top, .leading])
-            
-            // Pie Chart
+        ScrollView {
             pieChartView
-            
-            HStack {
-                Spacer()
-                Button("Show more") {
-                    // Show more action
-                }
-                .foregroundColor(.blue)
-                .padding([.trailing, .bottom])
-            }
+            barChartView
         }
-        .background(Color.white)
-        .cornerRadius(15)
-        .shadow(radius: 5)
-        .padding()
+        .navigationTitle("Expenses")
     }
     
     var pieChartView: some View {
-        Chart(pieChartData) { item in
+        Chart(chartData, id: \.category) { item in
             SectorMark(
                 angle: .value("Count", item.amount),
                 innerRadius: .ratio(0.6),
@@ -57,6 +31,7 @@ struct ExpensesCardView: View {
             .foregroundStyle(by: .value("Category", item.category))
             .opacity(item.category == selectedItem?.category ? 1 : 0.5)
         }
+        .padding()
         .scaledToFit()
         .chartLegend(alignment: .center, spacing: 16)
         .chartAngleSelection(value: $selectedAngle)
@@ -69,6 +44,28 @@ struct ExpensesCardView: View {
                 }
             }
         }
+        .background(Color.white)
+        .cornerRadius(5)
+        .shadow(radius: 5)
+        .padding()
+    }
+    
+    var barChartView: some View {
+        Chart(chartData) { item in
+            BarMark(
+                x: .value("Amount", item.amount),
+                y: .value("Category", item.category + ": " + item.amount.formatted())
+            )
+            .cornerRadius(2)
+            .foregroundStyle(by: .value("Category", item.category))
+        }
+        .chartLegend(.hidden)
+        .chartXAxis(.hidden)
+        .padding()
+        .scaledToFit()
+        .background(Color.white)
+        .cornerRadius(5)
+        .shadow(radius: 5)
         .padding()
     }
     
@@ -79,8 +76,7 @@ struct ExpensesCardView: View {
             
             var amount: Double {
                 guard let selectedItem else { return totalAmount }
-                let value = -selectedItem.amount
-                return value
+                return selectedItem.amount
             }
                 
             Text(amount.formatted() + " Taka")
@@ -104,11 +100,11 @@ private extension ExpensesCardView {
         }
     }
     
-    var pieChartData: [PieChartData] {
+    var chartData: [PieChartData] {
         var bags: [PieChartData] = []
         categoryWiseTransactions.forEach { item in
             let amount = item.value.map(\.amount).reduce(0, +)
-            let newElemnt = PieChartData(id: UUID().uuidString, category: item.key, amount: amount)
+            let newElemnt = PieChartData(id: UUID().uuidString, category: item.key, amount: -amount)
             bags.append(newElemnt)
         }
         return bags.sorted { $0.amount > $1.amount }
@@ -116,8 +112,8 @@ private extension ExpensesCardView {
     
     var categoryRanges: [(category: String, range: Range<Double>)] {
         var total = 0
-        let ranges = pieChartData.map {
-            let newTotal = total - Int($0.amount)
+        let ranges = chartData.map {
+            let newTotal = total + Int($0.amount)
             let result = (category: $0.category,
                           range: Double(total) ..< Double(newTotal))
             total = newTotal
@@ -127,14 +123,13 @@ private extension ExpensesCardView {
     }
     
     var totalAmount: Double {
-        // TODO: need to change `-` sign when this code is used for income segment
-        pieChartData.map(\.amount).reduce(0, -)
+        chartData.map(\.amount).reduce(0, +)
     }
     
     var selectedItem: PieChartData? {
         guard let selectedAngle else { return nil }
-        if let selected = categoryRanges.firstIndex(where: { $0.range.contains(-selectedAngle) }) {
-            return pieChartData[selected]
+        if let selected = categoryRanges.firstIndex(where: { $0.range.contains(selectedAngle) }) {
+            return chartData[selected]
         }
         return nil
     }
