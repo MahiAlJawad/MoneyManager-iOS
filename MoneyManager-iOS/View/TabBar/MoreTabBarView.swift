@@ -27,8 +27,8 @@ struct MoreTabBarView: View {
                     HelpView()
                 case .particularSettingsView(let settings):
                     ParticularSettingsDetails(settings: settings)
-                case .currencyView(let savedCurrencies):
-                    CurrencyView(savedCurrencies: savedCurrencies)
+                case .currencyView:
+                    CurrencyView()
                 }
             }
         }
@@ -45,7 +45,7 @@ extension MoreTabBarView {
             case investmentsView
             case helpView
             case particularSettingsView(settings: Settings)
-            case currencyView(savedCurrencies: Binding<[String]>)
+            case currencyView
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
