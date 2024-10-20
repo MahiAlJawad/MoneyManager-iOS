@@ -1,13 +1,6 @@
-//
-//  Spending.swift
-//  MoneyManager-iOS
-//
-//  Created by Tarikul Islam on 20/10/24.
-//
-
-import SwiftUI
-import SwiftData
 import Charts
+import SwiftData
+import SwiftUI
 
 struct PieChartData: Identifiable {
     var id: String
@@ -16,62 +9,8 @@ struct PieChartData: Identifiable {
 }
 
 struct ExpensesCardView: View {
-    @State private var selectedTab = 0 // 0 for Categories, 1 for Labels
-    
     @State private var selectedAngle: Double?
-    
     @Query private var accounts: [Account]
-    
-    var transactions: [Transaction] {
-        accounts
-            .flatMap(\.transactions)
-            .filter { $0.transactionType == .expense }
-    }
-    
-    var categoryWiseTransactions: [String: [Transaction]] {
-        transactions.reduce(into: [String: [Transaction]]()) { partialResult, transaction in
-            let key = transaction.category
-            if partialResult[key] == nil { partialResult[key] = [] }
-            partialResult[key]?.append(transaction)
-        }
-    }
-    
-    var pieChartData: [PieChartData] {
-        var bags: [PieChartData] = []
-        categoryWiseTransactions.forEach { item in
-            print(item.key)
-            let totalAmount = item.value.map(\.amount).reduce(0, +)
-            let newElemnt = PieChartData(id: UUID().uuidString, category: item.key, amount: totalAmount)
-            bags.append(newElemnt)
-        }
-        return bags.sorted { $0.amount > $1.amount }
-    }
-    
-    private var categoryRanges: [(category: String, range: Range<Double>)] {
-        var total = 0
-        
-        let ret = pieChartData.map {
-            let newTotal = total - Int($0.amount)
-            let result = (category: $0.category,
-                          range: Double(total) ..< Double(newTotal))
-            total = newTotal
-            return result
-        }
-        print(ret)
-        return ret
-    }
-    
-    private var totalPosts: Int {
-        var total = 0
-        _ = pieChartData.map {
-            let newTotal = total - Int($0.amount)
-            total = newTotal
-        }
-        return total
-    }
-    
-    private var data: [Transaction] { transactions }
-
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -83,13 +22,14 @@ struct ExpensesCardView: View {
                 Spacer()
             }
             
+            // TODO: need to change according to range selection
             Text("THIS MONTH")
                 .font(.subheadline)
                 .foregroundColor(.gray)
                 .padding([.top, .leading])
             
             // Pie Chart
-            chartView
+            pieChartView
             
             HStack {
                 Spacer()
@@ -106,18 +46,7 @@ struct ExpensesCardView: View {
         .padding()
     }
     
-    func totalAmount(in key: Transaction) -> Double {
-        var total = 0.0
-        data.forEach { transaction in
-            if transaction.category == key.category {
-                let newTotal = total + Double(transaction.amount)
-                total = newTotal
-            }
-        }
-        return total
-    }
-    
-    var chartView: some View {
+    var pieChartView: some View {
         Chart(pieChartData) { item in
             SectorMark(
                 angle: .value("Count", item.amount),
@@ -146,10 +75,10 @@ struct ExpensesCardView: View {
     private var titleView: some View {
         VStack {
             Text(selectedItem?.category ?? "All")
-                .font(.title)
+                .font(.body)
             
             var amount: Double {
-                guard let selectedItem else { return Double(totalPosts) }
+                guard let selectedItem else { return totalAmount }
                 let value = -selectedItem.amount
                 return value
             }
@@ -157,6 +86,49 @@ struct ExpensesCardView: View {
             Text(amount.formatted() + " Taka")
                 .font(.callout)
         }
+    }
+}
+
+private extension ExpensesCardView {
+    var allExpenseTransactions: [Transaction] {
+        accounts
+            .flatMap(\.transactions)
+            .filter { $0.transactionType == .expense }
+    }
+    
+    var categoryWiseTransactions: [String: [Transaction]] {
+        allExpenseTransactions.reduce(into: [String: [Transaction]]()) { partialResult, transaction in
+            let key = transaction.category
+            if partialResult[key] == nil { partialResult[key] = [] }
+            partialResult[key]?.append(transaction)
+        }
+    }
+    
+    var pieChartData: [PieChartData] {
+        var bags: [PieChartData] = []
+        categoryWiseTransactions.forEach { item in
+            let amount = item.value.map(\.amount).reduce(0, +)
+            let newElemnt = PieChartData(id: UUID().uuidString, category: item.key, amount: amount)
+            bags.append(newElemnt)
+        }
+        return bags.sorted { $0.amount > $1.amount }
+    }
+    
+    var categoryRanges: [(category: String, range: Range<Double>)] {
+        var total = 0
+        let ranges = pieChartData.map {
+            let newTotal = total - Int($0.amount)
+            let result = (category: $0.category,
+                          range: Double(total) ..< Double(newTotal))
+            total = newTotal
+            return result
+        }
+        return ranges
+    }
+    
+    var totalAmount: Double {
+        // TODO: need to change `-` sign when this code is used for income segment
+        pieChartData.map(\.amount).reduce(0, -)
     }
     
     var selectedItem: PieChartData? {
@@ -167,3 +139,4 @@ struct ExpensesCardView: View {
         return nil
     }
 }
+    
