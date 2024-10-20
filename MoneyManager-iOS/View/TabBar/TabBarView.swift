@@ -35,13 +35,11 @@ struct TabBarView: View {
                     }
                     .tag(0)
                 
-                NavigationStack {
-                    StatisticsView()
-                }
-                .tabItem {
-                    Label(Tab.statistics.title, systemImage: Tab.statistics.icon)
-                }
-                .tag(Tab.statistics)
+                StatisticsTabView()
+                    .tabItem {
+                        Label(Tab.statistics.title, systemImage: Tab.statistics.icon)
+                    }
+                    .tag(Tab.statistics)
                 
                 MoreTabBarView()
                     .tabItem {

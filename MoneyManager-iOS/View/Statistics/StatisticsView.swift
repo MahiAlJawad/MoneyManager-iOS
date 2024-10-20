@@ -1,57 +1,55 @@
-//  StatisticsView.swift - MoneyManager-iOS
-//  Copyright © 2024 COMPANYNAME. All rights reserved.
 
-import Charts
 import SwiftUI
-
-// TODO: Might be fetched from Locale
-enum Month: String, CaseIterable {
-    case jan = "January"
-    case feb = "February"
-    case mar = "March"
-    case apr = "April"
-    case may = "May"
-    case jun = "June"
-    case jul = "July"
-    case aug = "August"
-    case sep = "September"
-    case oct = "October"
-    case nov = "November"
-    case dec = "December"
-}
-
-// TODO: Will be changed according to global model
-struct ExpenseData: Identifiable {
-    let id = UUID()
-    let month: Month
-    let expense: Double
-}
+import SwiftData
 
 struct StatisticsView: View {
-    private let expenseData: [ExpenseData]
+    let columns = [
+        GridItem(.flexible(minimum: 100)),
+        GridItem(.flexible(minimum: 100))
+    ]
     
-    init() {
-        // TODO: Demo data
-        expenseData = Month.allCases.reduce(into: [ExpenseData]()) {
-            $0.append(.init(month: $1, expense: Double.random(in: 1...100)))
-        }
-    }
-
     var body: some View {
-        VStack {
-            Chart {
-                ForEach(expenseData) {
-                    BarMark(
-                        x: .value("Month", $0.month.rawValue),
-                        y: .value("Expense", $0.expense)
-                    )
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 20) {
+                ForEach(StatisticsMenuItem.statisticsMenuItem) { item in
+                    switch item.title {
+                    case "Spending":
+                        NavigationLink(value: StatisticsTabView.Router.Destination.spendingView) {
+                            StatisticsCellView(item: item)
+                        }
+                    
+                    default:
+                        NavigationLink(value: MoreTabBarView.Router.Destination.aboutWalletView) {
+                            StatisticsCellView(item: item)
+                        }
+                    }
                 }
+                .padding(.horizontal, 5)
             }
-            Spacer()
+            .padding(.horizontal, 16)
         }
+        .navigationTitle("Statistics")
     }
 }
 
-#Preview {
-    StatisticsView()
+struct StatisticsCellView: View {
+    let item: StatisticsMenuItem
+    
+    var body: some View {
+        VStack {
+            Image(systemName: item.image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .padding(20)
+            
+            Text(item.title)
+                .font(.caption)
+                .padding()
+        }
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(radius: 5)
+        .frame(minWidth: 150, maxHeight: 150, alignment: .center)
+    }
 }
