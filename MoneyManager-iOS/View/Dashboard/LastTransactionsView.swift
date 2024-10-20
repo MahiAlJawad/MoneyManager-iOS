@@ -55,7 +55,7 @@ struct LastTransactionsView: View {
                 Text(transaction.amount, format: .currency(code: "BDT"))
                     .fontWeight(.semibold)
                     .foregroundStyle(transaction.transactionType.color)
-                Text(transaction.date, style: .time)
+                Text(transaction.date, format: .dateTime)
                     .font(.caption)
             }
         }
