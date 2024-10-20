@@ -60,7 +60,7 @@ class Transaction {
     var id: String
     private var type: String
     private(set) var amount: Double
-    private var category: String
+    var category: String
     private(set) var date: Date
     private var paymentMethod: String
     
