@@ -1,5 +1,5 @@
 //
-//  MoreTabBarView.swift
+//  MoreTabView.swift
 //  MoneyManager-iOS
 //
 //  Created by Kazi Tanjim Shakib on 13/10/24.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MoreTabBarView: View {
+struct MoreTabView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
     @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
@@ -52,7 +52,7 @@ struct MoreTabBarView: View {
     }
 }
 
-extension MoreTabBarView {
+extension MoreTabView {
     @Observable
     final class Router {
         public enum Destination: Hashable {

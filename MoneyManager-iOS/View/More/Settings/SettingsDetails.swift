@@ -11,11 +11,11 @@ struct SettingsDetails: View {
     var body: some View {
         List(Settings.allSettingsData) { item in
             if item.title == "Currency" {
-                NavigationLink(value: MoreTabBarView.Router.Destination.currencyView) {
+                NavigationLink(value: MoreTabView.Router.Destination.currencyView) {
                     SettingsDetailsCommon(settingsItem: item)
                 }
             } else {
-                NavigationLink(value: MoreTabBarView.Router.Destination.particularSettingsView(settings: item)) {
+                NavigationLink(value: MoreTabView.Router.Destination.particularSettingsView(settings: item)) {
                     SettingsDetailsCommon(settingsItem: item)
                 }
             }

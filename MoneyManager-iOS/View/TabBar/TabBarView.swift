@@ -15,7 +15,7 @@ struct TabBarView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                Text("Dashbaord")
+                DashboardTabView()
                     .tabItem {
                         Label(Tab.dashboard.title, systemImage: Tab.dashboard.icon)
                     }
@@ -41,7 +41,7 @@ struct TabBarView: View {
                     }
                     .tag(Tab.statistics)
                 
-                MoreTabBarView()
+                MoreTabView()
                     .tabItem {
                         Label(Tab.more.title, systemImage: Tab.more.icon)
                     }
