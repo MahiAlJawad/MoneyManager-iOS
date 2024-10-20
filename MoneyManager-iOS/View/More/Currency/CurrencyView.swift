@@ -9,11 +9,24 @@ import SwiftUI
 
 struct CurrencyView: View {
     @State var isAddCurrencyPresent: Bool = false
+    @Binding var savedCurrencies: [String]
     
+    private func delete(indexSet: IndexSet) {
+        indexSet.forEach { index in
+            savedCurrencies.remove(at: index)
+            UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
+            
+        }
+    }
     var body: some View {
         Form {
             Section {
                 BaseCurrencyView()
+                List {
+                    ForEach(savedCurrencies, id: \.self) { item in
+                        CurrencyCellView(currencyCode: item)
+                    }.onDelete(perform: delete)
+                }
             }
             Section {
                 // TODO: will update it into currency settings section
@@ -29,7 +42,7 @@ struct CurrencyView: View {
         }
         .sheet(isPresented: $isAddCurrencyPresent, content: {
             NavigationView {
-                AddCurrencyView()
+                AddCurrencyView(savedCurrencies: $savedCurrencies)
             }
         })
         .navigationTitle("Currencies")
@@ -47,8 +60,4 @@ struct BaseCurrencyView: View {
                 .font(.system(size: 15))
         }
     }
-}
-
-#Preview {
-    CurrencyView()
 }

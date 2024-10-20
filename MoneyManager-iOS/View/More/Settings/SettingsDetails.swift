@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct SettingsDetails: View {
+    @State private var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
+    
     var body: some View {
         List(Settings.allSettingsData) { item in
             if item.title == "Currency" {
-                NavigationLink(value: MoreTabBarView.Router.Destination.currencyView) {
+                NavigationLink(value: MoreTabBarView.Router.Destination.currencyView(savedCurrencies: $savedCurrencies)) {
                     SettingsDetailsCommon(settingsItem: item)
                 }
             } else {
