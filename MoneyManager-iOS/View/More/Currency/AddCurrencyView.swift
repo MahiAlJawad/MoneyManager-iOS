@@ -58,10 +58,7 @@ struct AddCurrencyView: View {
                 CurrencyCellView(currencyCode: currencyCode)
             }
             .makeFullWidthListItemTappable {
-                router.navigate2(to: .checkView1)
-//                savedCurrencies.append(currencyCode)
-//                UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
-//                dismiss()
+                router.navigate2(to: .currencyConversionView(selectedCurrency: currencyCode))
             }
         }
         

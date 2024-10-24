@@ -36,13 +36,16 @@ struct MoreTabBarView: View {
                                 AddCurrencyView(savedCurrencies: $savedCurrencies)
                                     .navigationDestination(for: Router.Destination2.self) { destination2 in
                                         switch destination2 {
-                                        case .checkView1:
-                                            checkView()
+                                        case .currencyConversionView(let selectedCurrency):
+                                            let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
+                                            
+                                            CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies)
                                         case .checkView2:
                                             Text("qwegghh")
                                         }
                                     }
                             }
+                            .environment(router)
                         }
                 }
             }
@@ -107,7 +110,7 @@ extension MoreTabBarView {
         var path2 = NavigationPath()
         
         public enum Destination2: Hashable {
-            case checkView1
+            case currencyConversionView(selectedCurrency: String)
             case checkView2
         }
         
@@ -139,123 +142,6 @@ extension MoreTabBarView {
 
 
 // TODO: Will create separate files for all these Views
-
-
-struct checkView: View {
-    var colors = ["BDT", "USD"]
-    
-   // let currency: Currency
-    @State private var selectedColor = "USD"
-    @State private var defaultValue: String = "120.3"
-    var body: some View {
-        Spacer()
-        VStack {
-            Picker("picker", selection: $selectedColor) {
-                ForEach(colors, id: \.self) {
-                    Text($0)
-                }
-            }
-            .pickerStyle(.segmented)
-            Text("selected number is \(selectedColor)")
-            CustomKeypad(displayedNumber: $defaultValue)
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("back") {
-                    print("back button tapped")
-                }
-            }
-        }
-    }
-}
-
-struct CustomKeypad: View {
-    @Binding var displayedNumber: String
-    @State private var numericValue: Double? = 0.0
-    
-    let buttons = [
-        ["1","2","3"],
-        ["4","5","6"],
-        ["7","8","9"],
-    ]
-    
-    var body: some View {
-        VStack {
-            Spacer()
-            //Text(numericValue)
-            
-            Text(displayedNumber)
-                .font(.largeTitle)
-                .frame(height: 30)
-            
-            Spacer()
-            
-            Grid {
-                ForEach(0..<buttons.count, id: \.self) { rowIndex in
-                    GridRow {
-                        ForEach(buttons[rowIndex], id: \.self) { number in
-                            Keypadbutton(label: number) {
-                                displayedNumber += number
-                                
-                                print("shakib1 \(Double(displayedNumber))")
-                            }
-                        }
-                    }
-                }
-                
-                GridRow {
-                    Keypadbutton(label: ".") {
-                        displayedNumber += "."
-                    }
-                    Keypadbutton(label: "0") {
-                        displayedNumber += "0"
-                    }
-                    DeleteButton {
-                        if !displayedNumber.isEmpty {
-                            displayedNumber.removeLast()
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct Keypadbutton: View {
-    let label: String
-    let action: () -> Void
-    var body: some View {
-        Button {
-            action()
-        } label: {
-            Text(label)
-                .font(.largeTitle)
-                .frame(width: 80, height: 80)
-                .background(.gray, in: Circle())
-        }
-        
-    }
-}
-
-struct DeleteButton: View {
-    let action: () -> Void
-    var body: some View {
-        Button {
-            action()
-        } label: {
-            Image(systemName: "delete.left.fill")
-                .font(.largeTitle)
-                .frame(width: 80, height: 80)
-                .background(.gray, in: Circle())
-                .tint(.primary)
-        }
-
-        
-    }
-}
-
-
-
 
 struct ParticularSettingsDetails: View {
     let settings: Settings
