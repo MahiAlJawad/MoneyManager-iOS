@@ -10,45 +10,46 @@ import SwiftUI
 struct MoreTabBarView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
-    @State private var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
+    
+    @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     
     var body: some View {
         NavigationStack(path: $router.path) {
             MoreView()
                 .navigationDestination(for: Router.Destination.self) { destination in
-                switch destination {
-                case .settingsView:
-                    SettingsDetails()
-                case .aboutWalletView:
-                    AboutWalletView()
-                case .recordsView:
-                    RecordsView()
-                case .investmentsView:
-                    InvestmentView()
-                case .helpView:
-                    HelpView()
-                case .particularSettingsView(let settings):
-                    ParticularSettingsDetails(settings: settings)
-                case .currencyView:
-                    CurrencyView(isAddCurrencyPresent: $addCurrencyPresent)
-                        .sheet(isPresented: $addCurrencyPresent) {
-                            NavigationStack(path: $router.path2) {
-                                AddCurrencyView(savedCurrencies: $savedCurrencies)
-                                    .navigationDestination(for: Router.Destination2.self) { destination2 in
-                                        switch destination2 {
-                                        case .currencyConversionView(let selectedCurrency):
-                                            let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
-                                            
-                                            CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies)
-                                        case .checkView2:
-                                            Text("qwegghh")
+                    switch destination {
+                    case .settingsView:
+                        SettingsDetails()
+                    case .aboutWalletView:
+                        AboutWalletView()
+                    case .recordsView:
+                        RecordsView()
+                    case .investmentsView:
+                        InvestmentView()
+                    case .helpView:
+                        HelpView()
+                    case .particularSettingsView(let settings):
+                        ParticularSettingsDetails(settings: settings)
+                    case .currencyView:
+                        CurrencyView(isAddCurrencyPresent: $addCurrencyPresent)
+                            .sheet(isPresented: $addCurrencyPresent) {
+                                NavigationStack(path: $router.path2) {
+                                    AddCurrencyView(savedCurrencies: $savedCurrencies)
+                                        .navigationDestination(for: Router.Destination2.self) { destination2 in
+                                            switch destination2 {
+                                            case .currencyConversionView(let selectedCurrency):
+                                                let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
+                                                
+                                                CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies)
+                                            case .checkView2:
+                                                Text("qwegghh")
+                                            }
                                         }
-                                    }
+                                }
+                                .environment(router)
                             }
-                            .environment(router)
-                        }
+                    }
                 }
-            }
         }
         .environment(router)
     }
@@ -145,7 +146,7 @@ extension MoreTabBarView {
 
 struct ParticularSettingsDetails: View {
     let settings: Settings
-
+    
     var body: some View {
         VStack {
             Image(systemName: settings.image)

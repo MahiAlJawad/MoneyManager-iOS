@@ -14,6 +14,7 @@ struct CurrencyDetailsView: View {
     @Binding var savedCurrencies: [String]
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(MoreTabBarView.Router.self) private var router
     
     var body: some View {
         Spacer()
@@ -33,9 +34,7 @@ struct CurrencyDetailsView: View {
                     print("save button tapped")
                     savedCurrencies.append(currentCurrencies[1])
                     UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
-                    dismiss()
-                    dismiss()
-                   // router.navigateToRoot2()
+                    router.navigateToRoot2()
                 }
             }
         }
