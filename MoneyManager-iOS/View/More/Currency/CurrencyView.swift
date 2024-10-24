@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CurrencyView: View {
-    @State var isAddCurrencyPresent: Bool = false
+    @Binding var isAddCurrencyPresent: Bool
   //  @Binding var savedCurrencies: [String]
     @State private var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     
@@ -41,11 +41,11 @@ struct CurrencyView: View {
                 }
             }
         }
-        .sheet(isPresented: $isAddCurrencyPresent, content: {
-            NavigationView {
-                AddCurrencyView(savedCurrencies: $savedCurrencies)
-            }
-        })
+//        .sheet(isPresented: $isAddCurrencyPresent, content: {
+//            NavigationView {
+//                AddCurrencyView(savedCurrencies: $savedCurrencies)
+//            }
+//        })
         .navigationTitle("Currencies")
     }
 }
