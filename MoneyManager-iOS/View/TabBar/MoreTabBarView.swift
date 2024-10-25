@@ -10,11 +10,10 @@ import SwiftUI
 struct MoreTabBarView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
-    
     @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     
     var body: some View {
-        NavigationStack(path: $router.path) {
+        NavigationStack(path: $router.firstNavigationPath) {
             MoreView()
                 .navigationDestination(for: Router.Destination.self) { destination in
                     switch destination {
@@ -31,18 +30,16 @@ struct MoreTabBarView: View {
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
                     case .currencyView:
-                        CurrencyView(isAddCurrencyPresent: $addCurrencyPresent)
+                        CurrencyView(isAddCurrencyPresent: $addCurrencyPresent, savedCurrencies: $savedCurrencies)
                             .sheet(isPresented: $addCurrencyPresent) {
-                                NavigationStack(path: $router.path2) {
-                                    AddCurrencyView(savedCurrencies: $savedCurrencies)
+                                NavigationStack(path: $router.secondNavigationPath) {
+                                    AddCurrencyView(savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
                                         .navigationDestination(for: Router.Destination2.self) { destination2 in
                                             switch destination2 {
                                             case .currencyConversionView(let selectedCurrency):
                                                 let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
                                                 
-                                                CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies)
-                                            case .checkView2:
-                                                Text("qwegghh")
+                                                CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
                                             }
                                         }
                                 }
@@ -107,36 +104,35 @@ extension MoreTabBarView {
             }
         }
         
-        var path = NavigationPath()
-        var path2 = NavigationPath()
+        var firstNavigationPath = NavigationPath()
+        var secondNavigationPath = NavigationPath()
         
         public enum Destination2: Hashable {
             case currencyConversionView(selectedCurrency: String)
-            case checkView2
         }
         
-        func navigate2(to destination: Destination2) {
-            path2.append(destination)
+        func navigateForSecondNavigation(to destination: Destination2) {
+            secondNavigationPath.append(destination)
         }
         
-        func navigateBack2() {
-            path2.removeLast()
+        func navigateBackForSecondNavigation() {
+            secondNavigationPath.removeLast()
         }
         
-        func navigateToRoot2() {
-            path2.removeLast()
+        func navigateToSecondRoot() {
+            secondNavigationPath.removeLast(secondNavigationPath.count)
         }
         
-        func navigate(to destination: Destination) {
-            path.append(destination)
+        func navigateForFirstNavigation(to destination: Destination) {
+            firstNavigationPath.append(destination)
         }
         
-        func navigateBack() {
-            path.removeLast()
+        func navigateBackForFirstNavigation() {
+            firstNavigationPath.removeLast()
         }
         
-        func navigateToRoot() {
-            path.removeLast()
+        func navigateToFirstRoot() {
+            firstNavigationPath.removeLast(firstNavigationPath.count)
         }
     }
 }

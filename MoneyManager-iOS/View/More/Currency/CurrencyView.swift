@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CurrencyView: View {
     @Binding var isAddCurrencyPresent: Bool
-    @State private var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
+    @Binding var savedCurrencies: [String]
     
     private func delete(indexSet: IndexSet) {
         indexSet.forEach { index in

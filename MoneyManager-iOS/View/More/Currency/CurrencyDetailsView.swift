@@ -8,33 +8,38 @@
 import SwiftUI
 
 struct CurrencyDetailsView: View {
-    let currentCurrencies: [String]
-    @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
-    @State private var defaultValue: String = "120.3"
-    @Binding var savedCurrencies: [String]
-    
     @Environment(\.dismiss) private var dismiss
     @Environment(MoreTabBarView.Router.self) private var router
+    
+    let currentCurrencies: [String]
+    
+    @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
+    @State private var defaultValue: String = "130"
+    
+    @Binding var savedCurrencies: [String]
+    @Binding var isSheetPresented: Bool
     
     var body: some View {
         Spacer()
         VStack {
             Picker("picker", selection: $baseCurrency) {
                 ForEach(currentCurrencies, id: \.self) {
-                    Text($0)
+                    Text("1\($0)=")
                 }
             }
             .pickerStyle(.segmented)
-            Text("selected number is \(baseCurrency)")
+            Text("selected currency is \(baseCurrency)")
+            
+            // TODO: Need to take data from API
             CustomKeypad(displayedNumber: $defaultValue)
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
-                    print("save button tapped")
                     savedCurrencies.append(currentCurrencies[1])
                     UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
-                    router.navigateToRoot2()
+                    dismiss()
+                    isSheetPresented = false
                 }
             }
         }
@@ -54,7 +59,6 @@ struct CustomKeypad: View {
     var body: some View {
         VStack {
             Spacer()
-            //Text(numericValue)
             
             Text(displayedNumber)
                 .font(.largeTitle)
@@ -68,8 +72,6 @@ struct CustomKeypad: View {
                         ForEach(buttons[rowIndex], id: \.self) { number in
                             Keypadbutton(label: number) {
                                 displayedNumber += number
-                                
-                                print("shakib1 \(Double(displayedNumber))")
                             }
                         }
                     }
@@ -101,11 +103,12 @@ struct Keypadbutton: View {
             action()
         } label: {
             Text(label)
-                .font(.largeTitle)
-                .frame(width: 80, height: 80)
-                .background(.gray, in: Circle())
+                .font(.title)
+                .frame(width: 120, height: 50)
+                .background(in: Rectangle())
         }
-        
+        .buttonStyle(.plain)
+        .shadow(radius: 1)
     }
 }
 
@@ -116,17 +119,16 @@ struct DeleteButton: View {
             action()
         } label: {
             Image(systemName: "delete.left.fill")
-                .font(.largeTitle)
-                .frame(width: 80, height: 80)
-                .background(.gray, in: Circle())
-                .tint(.primary)
+                .font(.title)
+                .frame(width: 120, height: 50)
+                .background(in: Rectangle())
         }
-        
-        
+        .buttonStyle(.plain)
+        .shadow(radius: 1)
     }
 }
 
 
 #Preview {
-    CurrencyDetailsView(currentCurrencies: ["BDT", "USD"], savedCurrencies: .constant(["BDT"]))
+    CurrencyDetailsView(currentCurrencies: ["BDT", "USD"], savedCurrencies: .constant(["BDT"]), isSheetPresented: .constant(true))
 }

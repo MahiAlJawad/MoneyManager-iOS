@@ -78,6 +78,7 @@ extension TransactionTabView {
         }
         
         func navigateToRoot() {
+            print("path count is \(path.count)")
             path.removeLast(path.count)
         }
     }

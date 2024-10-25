@@ -13,6 +13,7 @@ struct AddCurrencyView: View {
     
     @State var searchText: String = ""
     @Binding var savedCurrencies: [String]
+    @Binding var isSheetPresented: Bool
     
     let localeCurrencies = Locale.commonISOCurrencyCodes
     let usedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
@@ -59,7 +60,7 @@ struct AddCurrencyView: View {
                 CurrencyCellView(currencyCode: currencyCode)
             }
             .makeFullWidthListItemTappable {
-                router.navigate2(to: .currencyConversionView(selectedCurrency: currencyCode))
+                router.navigateForSecondNavigation(to: .currencyConversionView(selectedCurrency: currencyCode))
             }
         }
         
