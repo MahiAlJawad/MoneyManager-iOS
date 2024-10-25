@@ -9,29 +9,46 @@ import SwiftUI
 
 struct MoreTabBarView: View {
     @State var router = Router()
+    @State var addCurrencyPresent: Bool = false
+    @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     
     var body: some View {
-        NavigationStack(path: $router.path) {
+        NavigationStack(path: $router.firstNavigationPath) {
             MoreView()
                 .navigationDestination(for: Router.Destination.self) { destination in
-                switch destination {
-                case .settingsView:
-                    SettingsDetails()
-                case .aboutWalletView:
-                    AboutWalletView()
-                case .recordsView:
-                    RecordsView()
-                case .investmentsView:
-                    InvestmentView()
-                case .helpView:
-                    HelpView()
-                case .particularSettingsView(let settings):
-                    ParticularSettingsDetails(settings: settings)
-                case .currencyView:
-                    CurrencyView()
+                    switch destination {
+                    case .settingsView:
+                        SettingsDetails()
+                    case .aboutWalletView:
+                        AboutWalletView()
+                    case .recordsView:
+                        RecordsView()
+                    case .investmentsView:
+                        InvestmentView()
+                    case .helpView:
+                        HelpView()
+                    case .particularSettingsView(let settings):
+                        ParticularSettingsDetails(settings: settings)
+                    case .currencyView:
+                        CurrencyView(isAddCurrencyPresent: $addCurrencyPresent, savedCurrencies: $savedCurrencies)
+                            .sheet(isPresented: $addCurrencyPresent) {
+                                NavigationStack(path: $router.secondNavigationPath) {
+                                    AddCurrencyView(savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
+                                        .navigationDestination(for: Router.Destination2.self) { destination2 in
+                                            switch destination2 {
+                                            case .currencyConversionView(let selectedCurrency):
+                                                let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
+                                                
+                                                CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
+                                            }
+                                        }
+                                }
+                                .environment(router)
+                            }
+                    }
                 }
-            }
         }
+        .environment(router)
     }
 }
 
@@ -87,18 +104,35 @@ extension MoreTabBarView {
             }
         }
         
-        var path = NavigationPath()
+        var firstNavigationPath = NavigationPath()
+        var secondNavigationPath = NavigationPath()
         
-        func navigate(to destination: Destination) {
-            path.append(destination)
+        public enum Destination2: Hashable {
+            case currencyConversionView(selectedCurrency: String)
         }
         
-        func navigateBack() {
-            path.removeLast()
+        func navigateForSecondNavigation(to destination: Destination2) {
+            secondNavigationPath.append(destination)
         }
         
-        func navigateToRoot() {
-            path.removeLast()
+        func navigateBackForSecondNavigation() {
+            secondNavigationPath.removeLast()
+        }
+        
+        func navigateToSecondRoot() {
+            secondNavigationPath.removeLast(secondNavigationPath.count)
+        }
+        
+        func navigateForFirstNavigation(to destination: Destination) {
+            firstNavigationPath.append(destination)
+        }
+        
+        func navigateBackForFirstNavigation() {
+            firstNavigationPath.removeLast()
+        }
+        
+        func navigateToFirstRoot() {
+            firstNavigationPath.removeLast(firstNavigationPath.count)
         }
     }
 }
@@ -108,7 +142,7 @@ extension MoreTabBarView {
 
 struct ParticularSettingsDetails: View {
     let settings: Settings
-
+    
     var body: some View {
         VStack {
             Image(systemName: settings.image)

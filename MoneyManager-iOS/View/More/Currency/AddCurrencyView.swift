@@ -9,8 +9,11 @@ import SwiftUI
 
 struct AddCurrencyView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(MoreTabBarView.Router.self) private var router
+    
     @State var searchText: String = ""
     @Binding var savedCurrencies: [String]
+    @Binding var isSheetPresented: Bool
     
     let localeCurrencies = Locale.commonISOCurrencyCodes
     let usedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
@@ -57,9 +60,7 @@ struct AddCurrencyView: View {
                 CurrencyCellView(currencyCode: currencyCode)
             }
             .makeFullWidthListItemTappable {
-                savedCurrencies.append(currencyCode)
-                UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
-                dismiss()
+                router.navigateForSecondNavigation(to: .currencyConversionView(selectedCurrency: currencyCode))
             }
         }
         

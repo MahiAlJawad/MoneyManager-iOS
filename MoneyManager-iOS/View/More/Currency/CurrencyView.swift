@@ -8,17 +8,16 @@
 import SwiftUI
 
 struct CurrencyView: View {
-    @State var isAddCurrencyPresent: Bool = false
-  //  @Binding var savedCurrencies: [String]
-    @State private var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
+    @Binding var isAddCurrencyPresent: Bool
+    @Binding var savedCurrencies: [String]
     
     private func delete(indexSet: IndexSet) {
         indexSet.forEach { index in
             savedCurrencies.remove(at: index)
             UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
-            
         }
     }
+    
     var body: some View {
         Form {
             Section {
@@ -41,11 +40,6 @@ struct CurrencyView: View {
                 }
             }
         }
-        .sheet(isPresented: $isAddCurrencyPresent, content: {
-            NavigationView {
-                AddCurrencyView(savedCurrencies: $savedCurrencies)
-            }
-        })
         .navigationTitle("Currencies")
     }
 }
