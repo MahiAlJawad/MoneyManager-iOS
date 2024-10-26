@@ -9,9 +9,10 @@ import SwiftUI
 
 struct CategoryDetailsView: View {
     let category: Transaction.MainCategory
+
     @Environment(TransactionTabView.Router.self) private var router
     @Binding var selectedCategory: Category?
-    
+
     var body: some View {
         Form {
             CategoryCellView(category: category)

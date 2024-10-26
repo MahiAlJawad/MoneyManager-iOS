@@ -11,6 +11,13 @@ struct CategorySelectionView: View {
     @State private var searchText: String = ""
     @Binding var selectedCategory: Category?
     
+    /*
+     This is only iOS 18 issue. Workaround solution is used.
+     https://stackoverflow.com/questions/79012075/issue-with-swiftui-navigationstack-searchable-modifier-and-returning-to-root-v
+     Will update when Apple fix their bug.
+     */
+    @State var showThisView: Bool = true
+    
     var filteredCategories: [Transaction.MainCategory] {
         if searchText.isEmpty {
             return Transaction.allMainCategories
@@ -23,37 +30,48 @@ struct CategorySelectionView: View {
     
     var body: some View {
         VStack {
-            List(filteredCategories) { category in
-                NavigationLink(destination: CategoryDetailsView(category: category, selectedCategory: $selectedCategory)) {
-                    HStack {
-                        Circle()
-                            .fill(category.color)
-                            .frame(width: 30, height: 30)
-                            .overlay(
-                                Image(systemName: category.icon)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 16, height: 16)
-                                    .foregroundColor(.white)
-                            )
-                        
-                        VStack(alignment: .leading) {
-                            Text(category.name)
-                                .font(.body)
+            if showThisView {
+                List(filteredCategories) { category in
+                    NavigationLink(value: TransactionTabView.Router.Destination.categoryDetailsView(
+                        category: category,
+                        selectedCategory: $selectedCategory
+                    )) {
+                        HStack {
+                            Circle()
+                                .fill(category.color)
+                                .frame(width: 30, height: 30)
+                                .overlay(
+                                    Image(systemName: category.icon)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 16, height: 16)
+                                        .foregroundColor(.white)
+                                )
+                            
+                            VStack(alignment: .leading) {
+                                Text(category.name)
+                                    .font(.body)
+                            }
                         }
+                    }.applyListItemHeight()
+                }
+                .listStyle(InsetGroupedListStyle())
+                .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+                .textInputAutocapitalization(.never)
+                .overlay(alignment: .center) {
+                    if !searchText.isEmpty && filteredCategories.isEmpty {
+                        ContentUnavailableView("Search result not found", systemImage: "magnifyingglass.circle.fill")
                     }
-                }.applyListItemHeight()
-            }
-            .listStyle(InsetGroupedListStyle())
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
-            .textInputAutocapitalization(.never)
-            .overlay(alignment: .center) {
-                if !searchText.isEmpty && filteredCategories.isEmpty {
-                    ContentUnavailableView("Search result not found", systemImage: "magnifyingglass.circle.fill")
                 }
             }
         }
         .navigationTitle("Categories")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            showThisView = true
+        }
+        .onDisappear {
+            showThisView = false
+        }
     }
 }

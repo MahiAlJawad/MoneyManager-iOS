@@ -23,6 +23,8 @@ struct TransactionTabView: View {
                         LabelSelectionView()
                     case .selectPaymentMethodView(let paymentMethod):
                         PaymentTypeView(paymentMethod: paymentMethod)
+                    case .categoryDetailsView(let category,let selectedCategory):
+                        CategoryDetailsView(category: category, selectedCategory: selectedCategory)
                     }
                 }
         }
@@ -38,6 +40,7 @@ extension TransactionTabView {
             case categorySelectionView(category: Binding<Category?>)
             case labelSelectionView
             case selectPaymentMethodView(paymentMethod: Binding<Transaction.PaymentMethod>)
+            case categoryDetailsView(category: Transaction.MainCategory, selectedCategory: Binding<Category?>)
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -48,6 +51,8 @@ extension TransactionTabView {
                 case (.labelSelectionView, .labelSelectionView):
                     return true
                 case (.selectPaymentMethodView, .selectPaymentMethodView):
+                    return true
+                case (.categoryDetailsView, .categoryDetailsView):
                     return true
                 default: return false
                 }
@@ -63,6 +68,8 @@ extension TransactionTabView {
                     hasher.combine("label")
                 case .selectPaymentMethodView:
                     hasher.combine("paymentMethod")
+                case .categoryDetailsView:
+                    hasher.combine("categoryDetailsView")
                 }
             }
         }
@@ -78,7 +85,6 @@ extension TransactionTabView {
         }
         
         func navigateToRoot() {
-            print("path count is \(path.count)")
             path.removeLast(path.count)
         }
     }
