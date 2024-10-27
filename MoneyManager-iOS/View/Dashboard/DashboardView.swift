@@ -5,13 +5,13 @@
 //  Created by Mahi Al Jawad on 20/10/24.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct DashboardView: View {
     @Query private var accounts: [Account]
     
-    var showLastTransactionSection: Bool {
+    private var showLastTransactionSection: Bool {
         !accounts.map(\.transactions).isEmpty
     }
     

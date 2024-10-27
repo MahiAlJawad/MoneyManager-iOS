@@ -5,8 +5,8 @@
 //  Created by Mahi Al Jawad on 20/10/24.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct LastTransactionsView: View {
     private typealias Destination = TransactionTabView.Router.Destination
@@ -14,7 +14,7 @@ struct LastTransactionsView: View {
     @Environment(DashboardTabView.Router.self) private var router
     @Query private var accounts: [Account]
     
-    var transactions: [Transaction] {
+    private var transactions: [Transaction] {
         Array(
             accounts
                 .flatMap(\.transactions)
