@@ -17,12 +17,19 @@ struct DataResponse: Codable {
 
 class CurrencyvViewModel: ObservableObject {
     static let instance = CurrencyvViewModel()
-    let exchangeRateAPI = "https://v6.exchangerate-api.com/v6/76dbedf4133b32d24c239d63/pair/BDT/USD"
+
+    let exchangeRateAPI = "https://v6.exchangerate-api.com/v6/76dbedf4133b32d24c239d63/pair/"
+    
     @Published var dataresponse: DataResponse?
     
     @MainActor
-    func fetchedData() async throws -> DataResponse {
-        let url = URL(string: exchangeRateAPI)!
+    func fetchedData(
+        from: String,
+        to: String
+    ) async throws -> DataResponse {
+        let urlString = exchangeRateAPI + from + "/" + to
+        print("check urlString \(urlString)")
+        let url = URL(string: urlString)!
         let (data, response) = try await URLSession.shared.data(from: url)
         print("response is \(response) and data is \(data)")
         let wrapper1 = try JSONDecoder().decode(DataResponse.self, from: data)

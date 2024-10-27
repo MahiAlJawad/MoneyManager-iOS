@@ -11,19 +11,21 @@ struct CurrencyDetailsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(MoreTabView.Router.self) private var router
     
+
     let currentCurrencies: [String]
-    @StateObject private var cvm = CurrencyvViewModel.instance
+    
+    @StateObject private var currencyViewModel = CurrencyvViewModel.instance
     
     @State private var data: DataResponse?
-    @State private var counter: Double = 20.20
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
-    @State private var defaultValue: String = ""
+    @State private var defaultConversionValue: String = ""
     
     @Binding var savedCurrencies: [String]
     @Binding var isSheetPresented: Bool
     
+    
+    
     var body: some View {
-       
         Spacer()
         VStack {
             Picker("picker", selection: $baseCurrency) {
@@ -33,23 +35,21 @@ struct CurrencyDetailsView: View {
             }
             .pickerStyle(.segmented)
             .onChange(of: baseCurrency) {
-                if baseCurrency == "BDT" {
+                if baseCurrency == currentCurrencies[0] {
                     if let data = data {
-                        counter = data.conversion_rate
-                        defaultValue = String(counter)
+                        let conversion_rate = data.conversion_rate
+                        defaultConversionValue = String(conversion_rate)
                     }
                 } else {
                     if let data = data {
-                        counter = 1 / (data.conversion_rate)
-                        defaultValue = String(counter)
+                        let conversion_rate = 1 / (data.conversion_rate)
+                        defaultConversionValue = String(conversion_rate)
                     }
                 }
             }
             
-            if let data = data {
-                Text("selected currency is \(counter)")
-                // TODO: Need to take data from API
-                CustomKeypad(displayedNumber: $defaultValue)
+            if data != nil {
+                CustomKeypad(displayedNumber: $defaultConversionValue)
             } else {
                 ProgressView()
             }
@@ -67,18 +67,22 @@ struct CurrencyDetailsView: View {
         .onAppear {
             Task {
                 do {
-                    let haha = try await cvm.fetchedData()
-                    print("haha data is \(haha)")
-                    data = haha
-                    if baseCurrency == "BDT" {
+                    let conversion_rate = try await currencyViewModel.fetchedData(
+                        from: currentCurrencies[0],
+                        to: currentCurrencies[1]
+                    )
+                    
+                    data = conversion_rate
+                    
+                    if baseCurrency == currentCurrencies[0] {
                         if let data = data {
-                            counter = data.conversion_rate
-                            defaultValue = String(counter)
+                            let rate = data.conversion_rate
+                            defaultConversionValue = String(rate)
                         }
                     } else {
                         if let data = data {
-                            counter = 1 / (data.conversion_rate)
-                            defaultValue = String(counter)
+                            let  rate = 1 / (data.conversion_rate)
+                            defaultConversionValue = String(rate)
                         }
                     }
                 } catch {
@@ -86,17 +90,6 @@ struct CurrencyDetailsView: View {
                 }
             }
         }
-//        Button("check button") {
-//            Task {
-//                do {
-//                    let haha = try await cvm.fetchedData()
-//                    print("haha data is \(haha)")
-//                } catch {
-//                    print(error.localizedDescription)
-//                }
-//            }
-//        }
-        
     }
 }
 
