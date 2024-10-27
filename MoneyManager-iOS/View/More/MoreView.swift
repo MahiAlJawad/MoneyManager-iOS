@@ -48,6 +48,7 @@ struct MoreView: View {
             }
             .padding(.horizontal, 16)
         }
+        .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("More")
     }
 }
@@ -60,16 +61,12 @@ struct MoreCellView: View {
             Image(systemName: item.image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .padding(20)
-            
+                .frame(width: 40, height: 40)
             Text(item.title)
-                .font(.caption)
-                .padding()
+                .foregroundStyle(Color(uiColor: .label))
         }
-        .background(Color.white)
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 150)
+        .background(Color(uiColor: UIColor.secondarySystemGroupedBackground))
         .cornerRadius(10)
-        .shadow(radius: 5)
-        .frame(minWidth: 150, maxHeight: 150, alignment: .center)
     }
 }
