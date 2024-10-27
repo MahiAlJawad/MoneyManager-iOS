@@ -12,14 +12,18 @@ struct CurrencyDetailsView: View {
     @Environment(MoreTabView.Router.self) private var router
     
     let currentCurrencies: [String]
+    @StateObject private var cvm = CurrencyvViewModel.instance
     
+    @State private var data: DataResponse?
+    @State private var counter: Double = 20.20
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
-    @State private var defaultValue: String = "130"
+    @State private var defaultValue: String = ""
     
     @Binding var savedCurrencies: [String]
     @Binding var isSheetPresented: Bool
     
     var body: some View {
+       
         Spacer()
         VStack {
             Picker("picker", selection: $baseCurrency) {
@@ -28,10 +32,27 @@ struct CurrencyDetailsView: View {
                 }
             }
             .pickerStyle(.segmented)
-            Text("selected currency is \(baseCurrency)")
+            .onChange(of: baseCurrency) {
+                if baseCurrency == "BDT" {
+                    if let data = data {
+                        counter = data.conversion_rate
+                        defaultValue = String(counter)
+                    }
+                } else {
+                    if let data = data {
+                        counter = 1 / (data.conversion_rate)
+                        defaultValue = String(counter)
+                    }
+                }
+            }
             
-            // TODO: Need to take data from API
-            CustomKeypad(displayedNumber: $defaultValue)
+            if let data = data {
+                Text("selected currency is \(counter)")
+                // TODO: Need to take data from API
+                CustomKeypad(displayedNumber: $defaultValue)
+            } else {
+                ProgressView()
+            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -43,6 +64,39 @@ struct CurrencyDetailsView: View {
                 }
             }
         }
+        .onAppear {
+            Task {
+                do {
+                    let haha = try await cvm.fetchedData()
+                    print("haha data is \(haha)")
+                    data = haha
+                    if baseCurrency == "BDT" {
+                        if let data = data {
+                            counter = data.conversion_rate
+                            defaultValue = String(counter)
+                        }
+                    } else {
+                        if let data = data {
+                            counter = 1 / (data.conversion_rate)
+                            defaultValue = String(counter)
+                        }
+                    }
+                } catch {
+                    print(error.localizedDescription)
+                }
+            }
+        }
+//        Button("check button") {
+//            Task {
+//                do {
+//                    let haha = try await cvm.fetchedData()
+//                    print("haha data is \(haha)")
+//                } catch {
+//                    print(error.localizedDescription)
+//                }
+//            }
+//        }
+        
     }
 }
 
