@@ -19,27 +19,27 @@ struct MoreView: View {
                 ForEach(MoreMenuItem.moreMenuItems) { item in
                     switch item.title {
                     case "Settings":
-                        NavigationLink(value: MoreTabBarView.Router.Destination.settingsView) {
+                        NavigationLink(value: MoreTabView.Router.Destination.settingsView) {
                             MoreCellView(item: item)
                         }
                         
                     case "Records":
-                        NavigationLink(value: MoreTabBarView.Router.Destination.recordsView) {
+                        NavigationLink(value: MoreTabView.Router.Destination.recordsView) {
                             MoreCellView(item: item)
                         }
                         
                     case "Help":
-                        NavigationLink(value: MoreTabBarView.Router.Destination.helpView) {
+                        NavigationLink(value: MoreTabView.Router.Destination.helpView) {
                             MoreCellView(item: item)
                         }
                         
                     case "Investments":
-                        NavigationLink(value: MoreTabBarView.Router.Destination.investmentsView) {
+                        NavigationLink(value: MoreTabView.Router.Destination.investmentsView) {
                             MoreCellView(item: item)
                         }
                     
                     default:
-                        NavigationLink(value: MoreTabBarView.Router.Destination.aboutWalletView) {
+                        NavigationLink(value: MoreTabView.Router.Destination.aboutWalletView) {
                             MoreCellView(item: item)
                         }
                     }
