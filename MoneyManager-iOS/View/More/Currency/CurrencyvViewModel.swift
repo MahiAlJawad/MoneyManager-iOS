@@ -14,13 +14,13 @@ struct DataResponse: Codable {
     let conversion_rate: Double
 }
 
-
-class CurrencyvViewModel: ObservableObject {
+@Observable
+class CurrencyvViewModel {
     static let instance = CurrencyvViewModel()
-
+    
     let exchangeRateAPI = "https://v6.exchangerate-api.com/v6/76dbedf4133b32d24c239d63/pair/"
     
-    @Published var dataresponse: DataResponse?
+    var dataresponse: DataResponse?
     
     @MainActor
     func fetchedData(
@@ -28,12 +28,12 @@ class CurrencyvViewModel: ObservableObject {
         to: String
     ) async throws -> DataResponse {
         let urlString = exchangeRateAPI + from + "/" + to
-        print("check urlString \(urlString)")
+        
         let url = URL(string: urlString)!
-        let (data, response) = try await URLSession.shared.data(from: url)
-        print("response is \(response) and data is \(data)")
-        let wrapper1 = try JSONDecoder().decode(DataResponse.self, from: data)
-        self.dataresponse = wrapper1
-        return wrapper1
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        let dataResponse = try JSONDecoder().decode(DataResponse.self, from: data)
+        self.dataresponse = dataResponse
+        return dataResponse
     }
 }

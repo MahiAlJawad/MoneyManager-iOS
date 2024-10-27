@@ -11,10 +11,9 @@ struct CurrencyDetailsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(MoreTabView.Router.self) private var router
     
-
     let currentCurrencies: [String]
     
-    @StateObject private var currencyViewModel = CurrencyvViewModel.instance
+    @State private var currencyViewModel = CurrencyvViewModel.instance
     
     @State private var data: DataResponse?
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
@@ -23,7 +22,19 @@ struct CurrencyDetailsView: View {
     @Binding var savedCurrencies: [String]
     @Binding var isSheetPresented: Bool
     
-    
+    private func changeCurrencyConversion() {
+        if baseCurrency == currentCurrencies[0] {
+            if let data = data {
+                let conversion_rate = data.conversion_rate
+                defaultConversionValue = String(conversion_rate)
+            }
+        } else {
+            if let data = data {
+                let conversion_rate = 1 / (data.conversion_rate)
+                defaultConversionValue = String(conversion_rate)
+            }
+        }
+    }
     
     var body: some View {
         Spacer()
@@ -35,17 +46,7 @@ struct CurrencyDetailsView: View {
             }
             .pickerStyle(.segmented)
             .onChange(of: baseCurrency) {
-                if baseCurrency == currentCurrencies[0] {
-                    if let data = data {
-                        let conversion_rate = data.conversion_rate
-                        defaultConversionValue = String(conversion_rate)
-                    }
-                } else {
-                    if let data = data {
-                        let conversion_rate = 1 / (data.conversion_rate)
-                        defaultConversionValue = String(conversion_rate)
-                    }
-                }
+                changeCurrencyConversion()
             }
             
             if data != nil {
@@ -73,18 +74,8 @@ struct CurrencyDetailsView: View {
                     )
                     
                     data = conversion_rate
+                    changeCurrencyConversion()
                     
-                    if baseCurrency == currentCurrencies[0] {
-                        if let data = data {
-                            let rate = data.conversion_rate
-                            defaultConversionValue = String(rate)
-                        }
-                    } else {
-                        if let data = data {
-                            let  rate = 1 / (data.conversion_rate)
-                            defaultConversionValue = String(rate)
-                        }
-                    }
                 } catch {
                     print(error.localizedDescription)
                 }
