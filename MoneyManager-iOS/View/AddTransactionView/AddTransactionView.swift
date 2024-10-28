@@ -126,34 +126,71 @@ struct AddTransactionView: View {
     
     var generalSectionView: some View {
         Section("General") {
-            NavigationLink(value: Destination.accountSelectionView(account: $addTransactionInfo.account)) {
-                HStack {
-                    Label("Account", systemImage: "banknote")
-                    Spacer()
-                    Text(addTransactionInfo.account?.accountName ?? "Required")
-                        .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
-                }
-            }.applyListItemHeight()
+            HStack {
+                Label("Account", systemImage: "banknote")
+                Spacer()
+                Text(addTransactionInfo.account?.name ?? "Required")
+                    .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
+            }
+            .disclosureIndicator()
+            .applyListItemHeight()
+            .onTapGesture {
+                router.navigate(
+                    to: Destination.accountSelectionView(
+                        account: $addTransactionInfo.account,
+                        transferAccount: addTransactionInfo.transferAccount
+                    )
+                )
+            }
             
-            NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
+            if addTransactionInfo.transactionType == .transfer {
                 HStack {
                     Label {
-                        Text("Category")
+                        Text("To account")
                     } icon: {
-                        Image(systemName: "questionmark.circle")
+                        Image(systemName: "questionmark.app")
                             .foregroundStyle(.gray)
                     }
-                    
                     Spacer()
-                    if let category = addTransactionInfo.category {
-                        Text(category.name)
+                    if let transferAccount = addTransactionInfo.transferAccount {
+                        Text(transferAccount.name)
                             .foregroundColor(.gray)
                     } else {
                         Text("Required")
                             .foregroundColor(.red)
                     }
                 }
-            }.applyListItemHeight()
+                .disclosureIndicator()
+                .applyListItemHeight()
+                .onTapGesture {
+                    router.navigate(
+                        to: Destination.transferAccountSelectionView(
+                            account: addTransactionInfo.account,
+                            transferAccount: $addTransactionInfo.transferAccount
+                        )
+                    )
+                }
+            } else {
+                NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
+                    HStack {
+                        Label {
+                            Text("Category")
+                        } icon: {
+                            Image(systemName: "questionmark.circle")
+                                .foregroundStyle(.gray)
+                        }
+                        
+                        Spacer()
+                        if let category = addTransactionInfo.category {
+                            Text(category.name)
+                                .foregroundColor(.gray)
+                        } else {
+                            Text("Required")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }.applyListItemHeight()
+            }
             
             HStack {
                 Label {

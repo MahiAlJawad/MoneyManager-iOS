@@ -86,7 +86,7 @@ struct AccountsView: View {
     private func accountView(for account: Account) -> some View {
         Label {
             VStack(alignment: .leading) {
-                Text(account.accountName)
+                Text(account.name)
                     .font(.headline)
                 Text(account.accountBalance, format: .currency(code: "BDT"))
                 Text(account.accountType.description)

@@ -23,7 +23,7 @@ class Account {
     }
     
     var id: String
-    private var name: String
+    private(set) var name: String
     private var balance: Double
     private var type: String
     
@@ -55,8 +55,6 @@ class Account {
 }
 
 extension Account {
-    var accountName: String { name }
-    
     var accountBalance: Double { balance }
     
     var accountType: AccountType {

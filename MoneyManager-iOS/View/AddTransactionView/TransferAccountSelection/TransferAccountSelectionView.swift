@@ -1,29 +1,28 @@
 //
-//  AccountSelectionView.swift
+//  TransferAccountSelectionView.swift
 //  MoneyManager-iOS
 //
-//  Created by Tarikul Islam on 8/10/24.
+//  Created by Mahi Al Jawad on 27/10/24.
 //
-import SwiftUI
-import SwiftData
 
-struct AccountSelectionView: View {
+import SwiftData
+import SwiftUI
+
+struct TransferAccountSelectionView: View {
     @Environment(TransactionTabView.Router.self) private var router
     
-    private let transferAccount: Account?
-    @Binding private var selectedAccount: Account?
+    private let account: Account?
+    @Binding private var transferAccount: Account?
     
     @Query(sort: [.init(\Account.name)])
     private var accounts: [Account]
     
-    init(from account: Binding<Account?>, transferAccount: Account?) {
-        self.transferAccount = transferAccount
-        _selectedAccount = account
-        
-        guard let transferAccountID = transferAccount?.id else { return }
-        
+    init(from account: Account?, transferAccount: Binding<Account?>) {
+        self.account = account
+        _transferAccount = transferAccount
+        guard let accountID = account?.id else { return }
         _accounts = Query(
-            filter: #Predicate<Account> { $0.id != transferAccountID },
+            filter: #Predicate<Account> { $0.id != accountID },
             sort: [.init(\.name)]
         )
     }
@@ -32,11 +31,11 @@ struct AccountSelectionView: View {
         List(accounts) { account in
             accountView(for: account)
                 .makeFullWidthListItemTappable() {
-                    selectedAccount = account
+                    transferAccount = account
                     router.navigateBack()
                 }
         }
-        .navigationTitle("Select Account")
+        .navigationTitle("Select Transfer Account")
     }
     
     private func accountView(for account: Account) -> some View {

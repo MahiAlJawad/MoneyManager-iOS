@@ -103,7 +103,7 @@ extension Transaction {
     }
     
     var accountName: String {
-        account?.accountName ?? "Unknown"
+        account?.name ?? "Unknown"
     }
     
     var transactionType: TransactionType {
