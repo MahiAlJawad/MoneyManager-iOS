@@ -1,5 +1,5 @@
 //
-//  CurrencyvViewModel.swift
+//  CurrencyModel.swift
 //  MoneyManager-iOS
 //
 //  Created by Kazi Tanjim Shakib on 27/10/24.
@@ -8,32 +8,44 @@
 import Foundation
 
 struct DataResponse: Codable {
-    let time_next_update_utc: String
     let base_code: String
     let target_code: String
     let conversion_rate: Double
 }
 
+// MARK: LoadingState
+enum LoadingState<Data> {
+    case loaded(Data)
+    case loading
+    case failed(ResponseError)
+}
+
+// MARK: Errors
+enum ResponseError: Error {
+    case urlConvertionError
+    case error(String)
+}
+
+
 @Observable
-class CurrencyvViewModel {
-    static let instance = CurrencyvViewModel()
+final class CurrencyModel {
+    private var currenyConversionAPIManager = CurrencyConversionAPIManager.instance
+    private(set) var dataresponse: LoadingState<DataResponse> = .loading
     
-    let exchangeRateAPI = "https://v6.exchangerate-api.com/v6/76dbedf4133b32d24c239d63/pair/"
-    
-    var dataresponse: DataResponse?
+    var fromCurrency: String = ""
+    var toCurrency: String = ""
     
     @MainActor
-    func fetchedData(
-        from: String,
-        to: String
-    ) async throws -> DataResponse {
-        let urlString = exchangeRateAPI + from + "/" + to
+    func loadData() async {
+        let result = await currenyConversionAPIManager.fetchedData(from: fromCurrency, to: toCurrency)
         
-        let url = URL(string: urlString)!
-        let (data, _) = try await URLSession.shared.data(from: url)
+        print("from \(fromCurrency) and to \(toCurrency) and result is \(result)")
+        switch result {
+        case .success(let response):
+            dataresponse = .loaded(response)
+        case .failure(let error):
+            dataresponse = .failed(error)
+        }
         
-        let dataResponse = try JSONDecoder().decode(DataResponse.self, from: data)
-        self.dataresponse = dataResponse
-        return dataResponse
     }
 }

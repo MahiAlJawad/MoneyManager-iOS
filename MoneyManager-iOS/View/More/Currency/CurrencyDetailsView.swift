@@ -13,8 +13,8 @@ struct CurrencyDetailsView: View {
     
     let currentCurrencies: [String]
     
-    @State private var currencyViewModel = CurrencyvViewModel.instance
-    
+    @State private var currencyViewModel = CurrencyModel()
+
     @State private var data: DataResponse?
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
     @State private var defaultConversionValue: String = ""
@@ -23,13 +23,14 @@ struct CurrencyDetailsView: View {
     @Binding var isSheetPresented: Bool
     
     private func changeCurrencyConversion() {
-        if baseCurrency == currentCurrencies[0] {
-            if let data = data {
+        if case .loaded(let data) = currencyViewModel.dataresponse  {
+            if baseCurrency == currentCurrencies[0] {
+                currencyViewModel.fromCurrency = currentCurrencies[0]
+                
                 let conversion_rate = data.conversion_rate
                 defaultConversionValue = String(conversion_rate)
-            }
-        } else {
-            if let data = data {
+            } else {
+                currencyViewModel.toCurrency = currentCurrencies[1]
                 let conversion_rate = 1 / (data.conversion_rate)
                 defaultConversionValue = String(conversion_rate)
             }
@@ -49,10 +50,23 @@ struct CurrencyDetailsView: View {
                 changeCurrencyConversion()
             }
             
-            if data != nil {
+            switch currencyViewModel.dataresponse {
+            case .loaded:
                 CustomKeypad(displayedNumber: $defaultConversionValue)
-            } else {
+            case .loading:
                 ProgressView()
+                    .task {
+                        currencyViewModel.fromCurrency = currentCurrencies[0]
+                        currencyViewModel.toCurrency = currentCurrencies[1]
+                        await currencyViewModel.loadData()
+                        changeCurrencyConversion()
+                    }
+            case .failed:
+                ContentUnavailableView(
+                    "Connection issue",
+                    systemImage: "wifi.slash",
+                    description: Text("Check your internet connection")
+                )
             }
         }
         .toolbar {
@@ -62,22 +76,6 @@ struct CurrencyDetailsView: View {
                     UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
                     dismiss()
                     isSheetPresented = false
-                }
-            }
-        }
-        .onAppear {
-            Task {
-                do {
-                    let conversion_rate = try await currencyViewModel.fetchedData(
-                        from: currentCurrencies[0],
-                        to: currentCurrencies[1]
-                    )
-                    
-                    data = conversion_rate
-                    changeCurrencyConversion()
-                    
-                } catch {
-                    print(error.localizedDescription)
                 }
             }
         }
@@ -164,9 +162,4 @@ struct DeleteButton: View {
         .buttonStyle(.plain)
         .shadow(radius: 1)
     }
-}
-
-
-#Preview {
-    CurrencyDetailsView(currentCurrencies: ["BDT", "USD"], savedCurrencies: .constant(["BDT"]), isSheetPresented: .constant(true))
 }
