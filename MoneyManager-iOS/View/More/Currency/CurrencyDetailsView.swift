@@ -13,11 +13,29 @@ struct CurrencyDetailsView: View {
     
     let currentCurrencies: [String]
     
+    @State private var currencyViewModel = CurrencyModel()
+    
+    @State private var data: DataResponse?
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
-    @State private var defaultValue: String = "130"
+    @State private var defaultConversionValue: String = ""
     
     @Binding var savedCurrencies: [String]
     @Binding var isSheetPresented: Bool
+    
+    private func changeCurrencyConversion() {
+        if case .loaded(let data) = currencyViewModel.dataResponse  {
+            if baseCurrency == currentCurrencies[0] {
+                currencyViewModel.fromCurrency = currentCurrencies[0]
+                
+                let conversion_rate = data.conversion_rate
+                defaultConversionValue = String(conversion_rate)
+            } else {
+                currencyViewModel.toCurrency = currentCurrencies[1]
+                let conversion_rate = 1 / (data.conversion_rate)
+                defaultConversionValue = String(conversion_rate)
+            }
+        }
+    }
     
     var body: some View {
         Spacer()
@@ -28,10 +46,28 @@ struct CurrencyDetailsView: View {
                 }
             }
             .pickerStyle(.segmented)
-            Text("selected currency is \(baseCurrency)")
+            .onChange(of: baseCurrency) {
+                changeCurrencyConversion()
+            }
             
-            // TODO: Need to take data from API
-            CustomKeypad(displayedNumber: $defaultValue)
+            switch currencyViewModel.dataResponse {
+            case .loaded:
+                CustomKeypad(displayedNumber: $defaultConversionValue)
+            case .loading:
+                ProgressView()
+                    .task {
+                        currencyViewModel.fromCurrency = currentCurrencies[0]
+                        currencyViewModel.toCurrency = currentCurrencies[1]
+                        await currencyViewModel.loadData()
+                        changeCurrencyConversion()
+                    }
+            case .failed:
+                ContentUnavailableView(
+                    "Connection issue",
+                    systemImage: "wifi.slash",
+                    description: Text("Check your internet connection")
+                )
+            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -126,9 +162,4 @@ struct DeleteButton: View {
         .buttonStyle(.plain)
         .shadow(radius: 1)
     }
-}
-
-
-#Preview {
-    CurrencyDetailsView(currentCurrencies: ["BDT", "USD"], savedCurrencies: .constant(["BDT"]), isSheetPresented: .constant(true))
 }
