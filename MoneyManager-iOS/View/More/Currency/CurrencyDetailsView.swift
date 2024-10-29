@@ -14,7 +14,7 @@ struct CurrencyDetailsView: View {
     let currentCurrencies: [String]
     
     @State private var currencyViewModel = CurrencyModel()
-
+    
     @State private var data: DataResponse?
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
     @State private var defaultConversionValue: String = ""
@@ -23,7 +23,7 @@ struct CurrencyDetailsView: View {
     @Binding var isSheetPresented: Bool
     
     private func changeCurrencyConversion() {
-        if case .loaded(let data) = currencyViewModel.dataresponse  {
+        if case .loaded(let data) = currencyViewModel.dataResponse  {
             if baseCurrency == currentCurrencies[0] {
                 currencyViewModel.fromCurrency = currentCurrencies[0]
                 
@@ -50,7 +50,7 @@ struct CurrencyDetailsView: View {
                 changeCurrencyConversion()
             }
             
-            switch currencyViewModel.dataresponse {
+            switch currencyViewModel.dataResponse {
             case .loaded:
                 CustomKeypad(displayedNumber: $defaultConversionValue)
             case .loading:

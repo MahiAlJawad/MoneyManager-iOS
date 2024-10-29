@@ -26,11 +26,10 @@ enum ResponseError: Error {
     case error(String)
 }
 
-
 @Observable
 final class CurrencyModel {
     private var currenyConversionAPIManager = CurrencyConversionAPIManager.instance
-    private(set) var dataresponse: LoadingState<DataResponse> = .loading
+    private(set) var dataResponse: LoadingState<DataResponse> = .loading
     
     var fromCurrency: String = ""
     var toCurrency: String = ""
@@ -38,14 +37,12 @@ final class CurrencyModel {
     @MainActor
     func loadData() async {
         let result = await currenyConversionAPIManager.fetchedData(from: fromCurrency, to: toCurrency)
-        
-        print("from \(fromCurrency) and to \(toCurrency) and result is \(result)")
+
         switch result {
         case .success(let response):
-            dataresponse = .loaded(response)
+            dataResponse = .loaded(response)
         case .failure(let error):
-            dataresponse = .failed(error)
+            dataResponse = .failed(error)
         }
-        
     }
 }
