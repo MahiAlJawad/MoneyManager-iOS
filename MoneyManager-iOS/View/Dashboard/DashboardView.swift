@@ -12,7 +12,7 @@ struct DashboardView: View {
     @Query private var accounts: [Account]
     
     private var showLastTransactionSection: Bool {
-        !accounts.map(\.transactions).isEmpty
+        accounts.map(\.transactions).count > 1
     }
     
     var body: some View {

@@ -26,7 +26,7 @@ struct AddTransactionView: View {
     var isSaveButtonEnabled: Bool {
         !addTransactionInfo.amount.isEmpty &&
         addTransactionInfo.account != nil &&
-        addTransactionInfo.category != nil
+        (addTransactionInfo.category != nil || addTransactionInfo.transferAccount != nil)
     }
     
     var body: some View {

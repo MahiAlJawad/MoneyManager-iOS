@@ -75,7 +75,19 @@ extension Account {
     }
     
     func addTransaction(_ transaction: Transaction) {
-        balance += transaction.amount
+        let balanceToAdd: Double = {
+            guard transaction.transactionType == .transfer else {
+                return transaction.amount
+            }
+            
+            if transaction.account == self { // debited
+                return -transaction.amount
+            } else { // credited
+                return transaction.amount
+            }
+        }()
+        
+        balance += balanceToAdd
         transactions.append(transaction)
     }
     
