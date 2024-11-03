@@ -66,26 +66,38 @@ class Transaction {
     
     // TODO: Add labels, notes when their corresponding model is created
     
+    private(set) var account: Account
+    private(set) var transferAccount: Account?
+    
     @Relationship(inverse: \Account.transactions)
-    private var account: Account?
+    private var accounts: [Account]
     
     init(
         type: TransactionType,
         account: Account,
         amount: Double,
         category: Category?,
+        transferAccount: Account?,
         date: Date,
         labels: [String],
         paymentMethod: PaymentMethod
     ) {
         self.id = UUID().uuidString
         self.type = type.description
-        self.account = account
+        self.accounts = [account]
         
-        if type == .income {
-            self.amount = amount
+        self.account = account
+        if let transferAccount {
+            self.accounts = [account, transferAccount]
+            self.transferAccount = transferAccount
         } else {
+            self.accounts = [account]
+        }
+        
+        if type == .expense {
             self.amount = amount * (-1)
+        } else {
+            self.amount = amount
         }
         
         self.category = category?.name ?? ""
@@ -103,7 +115,11 @@ extension Transaction {
     }
     
     var accountName: String {
-        account?.name ?? "Unknown"
+        account.name
+    }
+    
+    var transferAccountName: String {
+        transferAccount?.name ?? "Unknown"
     }
     
     var transactionType: TransactionType {
@@ -144,12 +160,13 @@ extension Transaction {
             account: account,
             amount: amount,
             category: info.category,
+            transferAccount: info.transferAccount,
             date: info.date,
             labels: [], // TODO: UI not ready
             paymentMethod: info.paymentMethod
         )
         
-        // TODO: Handle Transfer type transaction not done yet as UI not ready
         account.addTransaction(transaction)
+        info.transferAccount?.addTransaction(transaction)
     }
 }

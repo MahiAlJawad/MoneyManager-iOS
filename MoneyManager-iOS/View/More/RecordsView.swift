@@ -31,6 +31,7 @@ struct RecordsView: View {
                 date.localizedStandardContains(searchString)
             })
             .sorted { $0.date > $1.date }
+            .removeConsecutiveDuplicates()
     }
     
     var datewiseTransactions: [Date: [Transaction]] {
@@ -62,16 +63,30 @@ struct RecordsView: View {
     
     func transactionView(of transaction: Transaction) -> some View {
         HStack {
-            Label {
-                VStack(alignment: .leading) {
-                    Text(transaction.category)
-                        .font(.headline)
-                    Text(transaction.accountName)
-                        .font(.caption)
+            if transaction.transactionType == .transfer {
+                Label {
+                    VStack(alignment: .leading) {
+                        Text(transaction.transactionType.description)
+                            .font(.headline)
+                        Text("\(transaction.accountName) -> \(transaction.transferAccountName)")
+                            .font(.caption)
+                    }
+                } icon: {
+                    Image(systemName: "arrow.left.arrow.right.circle")
+                        .foregroundStyle(transaction.transactionCategory?.color ?? .secondary)
                 }
-            } icon: {
-                Image(systemName: transaction.transactionCategory?.icon ?? "")
-                    .foregroundStyle(transaction.transactionCategory?.color ?? .secondary)
+            } else {
+                Label {
+                    VStack(alignment: .leading) {
+                        Text(transaction.category)
+                            .font(.headline)
+                        Text(transaction.accountName)
+                            .font(.caption)
+                    }
+                } icon: {
+                    Image(systemName: transaction.transactionCategory?.icon ?? "")
+                        .foregroundStyle(transaction.transactionCategory?.color ?? .secondary)
+                }
             }
             Spacer()
             VStack(alignment: .trailing) {
