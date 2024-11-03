@@ -72,7 +72,6 @@ struct CurrencyDetailsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
-                    
                     savedNewCurrencies.append(.init(currencyCode: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 1.0))
                     let currency = savedNewCurrencies
                     do {
