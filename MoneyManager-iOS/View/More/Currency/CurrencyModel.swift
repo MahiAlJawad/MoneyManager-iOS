@@ -7,6 +7,11 @@
 
 import Foundation
 
+struct Contact: Codable, Hashable {
+    let name: String
+    let conversionRate: Double
+}
+
 struct DataResponse: Codable {
     let base_code: String
     let target_code: String

@@ -11,6 +11,30 @@ struct MoreTabView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
     @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
+    @State var contacts: [Contact] = []
+//    @State var check: [Contact] {
+//        if let savedData = UserDefaults.standard.object(forKey: "contacts") as? Data {
+//            
+//            do {
+//                let savedContacts = try JSONDecoder().decode([Contact].self, from: savedData)
+//                contacts = savedContacts
+//            } catch {
+//                print("Failed to convert Data to Contact \(error.localizedDescription)")
+//            }
+//        }
+//
+//    }
+    private func getData() {
+        if let savedData = UserDefaults.standard.object(forKey: "contacts") as? Data {
+            
+            do {
+                let savedContacts = try JSONDecoder().decode([Contact].self, from: savedData)
+                contacts = savedContacts
+            } catch {
+                print("Failed to convert Data to Contact \(error.localizedDescription)")
+            }
+        }
+    }
     
     var body: some View {
         NavigationStack(path: $router.firstNavigationPath) {
@@ -30,21 +54,44 @@ struct MoreTabView: View {
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
                     case .currencyView:
-                        CurrencyView(isAddCurrencyPresent: $addCurrencyPresent, savedCurrencies: $savedCurrencies)
-                            .sheet(isPresented: $addCurrencyPresent) {
-                                NavigationStack(path: $router.secondNavigationPath) {
-                                    AddCurrencyView(savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
-                                        .navigationDestination(for: Router.Destination2.self) { destination2 in
-                                            switch destination2 {
-                                            case .currencyConversionView(let selectedCurrency):
-                                                let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
-                                                
-                                                CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
-                                            }
-                                        }
-                                }
-                                .environment(router)
+                        CurrencyView(
+                            isAddCurrencyPresent: $addCurrencyPresent,
+                            savedCurrencies: $savedCurrencies,
+                            contacts: $contacts
+                        ).onAppear {
+                            let contact: Contact = .init(name: "BDT", conversionRate: 1.0)
+                            do {
+                                let encodedData = try JSONEncoder().encode(contact)
+                                let userDefaults = UserDefaults.standard
+                                userDefaults.set(encodedData, forKey: "contacts")
+                            } catch {
+                                // Failed to encode Contact to Data
                             }
+                            getData()
+                        }
+                        .sheet(isPresented: $addCurrencyPresent) {
+                            NavigationStack(path: $router.secondNavigationPath) {
+                                AddCurrencyView(
+                                    savedCurrencies: $savedCurrencies,
+                                    isSheetPresented: $addCurrencyPresent,
+                                    newCurrencies: $contacts
+                                )
+                                .navigationDestination(for: Router.Destination2.self) { destination2 in
+                                    switch destination2 {
+                                    case .currencyConversionView(let selectedCurrency):
+                                        let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
+                                        
+                                        CurrencyDetailsView(
+                                            currentCurrencies: [baseCurrencyCode, selectedCurrency],
+                                            savedCurrencies: $savedCurrencies,
+                                            savedNewCurrencies: $contacts,
+                                            isSheetPresented: $addCurrencyPresent
+                                        )
+                                    }
+                                }
+                            }
+                            .environment(router)
+                        }
                     }
                 }
         }

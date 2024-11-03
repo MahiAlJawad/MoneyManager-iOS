@@ -15,6 +15,8 @@ struct AddCurrencyView: View {
     @Binding var savedCurrencies: [String]
     @Binding var isSheetPresented: Bool
     
+    @Binding var newCurrencies: [Contact]
+    
     let localeCurrencies = Locale.commonISOCurrencyCodes
     let usedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     

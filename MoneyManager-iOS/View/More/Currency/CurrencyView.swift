@@ -10,11 +10,26 @@ import SwiftUI
 struct CurrencyView: View {
     @Binding var isAddCurrencyPresent: Bool
     @Binding var savedCurrencies: [String]
+    @Binding var contacts: [Contact]
+    
     
     private func delete(indexSet: IndexSet) {
         indexSet.forEach { index in
             savedCurrencies.remove(at: index)
             UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
+        }
+    }
+    
+    private func deleteNewCurrency(indexSet: IndexSet) {
+        indexSet.forEach { index in
+            contacts.remove(at: index)
+            do {
+                let encodedData = try JSONEncoder().encode(contacts)
+                let userDefaults = UserDefaults.standard
+                userDefaults.set(encodedData, forKey: "contacts")
+            } catch {
+                // Failed to encode Contact to Data
+            }
         }
     }
     
@@ -31,6 +46,12 @@ struct CurrencyView: View {
             Section {
                 // TODO: will update it into currency settings section
                 Text("Currency Settings")
+                List {
+                    ForEach(contacts, id: \.self) { contact in
+                        Text(contact.name)
+                    }.onDelete(perform: deleteNewCurrency)
+                }
+               
             }
         }
         .toolbar {

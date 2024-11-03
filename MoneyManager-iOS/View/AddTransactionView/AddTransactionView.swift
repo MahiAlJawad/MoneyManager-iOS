@@ -21,6 +21,7 @@ struct AddTransactionView: View {
     @State private var addTransactionInfo = AddTransactionInfo()
     @FocusState private var focusedField: FocusedField?
     @State private var bgColor = Color.gray.opacity(0.2)
+    @Binding var selectedCurrency: Contact
     
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
@@ -102,13 +103,17 @@ struct AddTransactionView: View {
     var expenseAmountTextFieldView: some View {
         Section("Amount") {
             HStack {
-                Text("BDT")
-                    .font(.system(size: 15))
-                    .fontWeight(.medium)
-                    .padding()
-                    .frame(height: 30)
-                    .background(addTransactionInfo.transactionType.color)
-                    .cornerRadius(15)
+                HStack {
+                    Text(selectedCurrency.name)
+                        .font(.system(size: 15))
+                        .fontWeight(.medium)
+                        .padding()
+                        .frame(height: 30)
+                        .background(addTransactionInfo.transactionType.color)
+                        .cornerRadius(15)
+                }.onTapGesture {
+                    router.navigate(to: Destination.currencySelectionView)
+                }
                 
                 Spacer()
                 

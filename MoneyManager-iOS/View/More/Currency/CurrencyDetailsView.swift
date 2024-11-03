@@ -20,6 +20,7 @@ struct CurrencyDetailsView: View {
     @State private var defaultConversionValue: String = ""
     
     @Binding var savedCurrencies: [String]
+    @Binding var savedNewCurrencies: [Contact]
     @Binding var isSheetPresented: Bool
     
     private func changeCurrencyConversion() {
@@ -72,6 +73,22 @@ struct CurrencyDetailsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
+                    
+//                    let contacts: [Contact] = [
+//                        Contact(name: "John", conversionRate: 22.2),
+//                        Contact(name: "Alice", conversionRate: 17.0),
+//                        Contact(name: "Bob", conversionRate: 908.2)
+//                    ]
+                    savedNewCurrencies.append(.init(name: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 0.0))
+                    let contacts = savedNewCurrencies
+                    do {
+                        let encodedData = try JSONEncoder().encode(contacts)
+                        let userDefaults = UserDefaults.standard
+                        userDefaults.set(encodedData, forKey: "contacts")
+                    } catch {
+                        // Failed to encode Contact to Data
+                    }
+                    
                     savedCurrencies.append(currentCurrencies[1])
                     UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
                     dismiss()
