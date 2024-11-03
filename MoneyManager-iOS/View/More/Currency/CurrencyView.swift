@@ -12,7 +12,6 @@ struct CurrencyView: View {
     @Binding var savedCurrencies: [String]
     @Binding var contacts: [Contact]
     
-    
     private func delete(indexSet: IndexSet) {
         indexSet.forEach { index in
             savedCurrencies.remove(at: index)

@@ -9,11 +9,11 @@ import SwiftUI
 
 struct TransactionTabView: View {
     @State var router = Router()
-    @State var selectedCurrency: Contact = .init(name: "BDT", conversionRate: 1.0)
+   // @State var selectedCurrency: Contact = .init(name: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            AddTransactionView(selectedCurrency: $selectedCurrency)
+            AddTransactionView()
                 .navigationDestination(for: Router.Destination.self) { destination in
                     switch destination {
                     case .accountSelectionView(let account, let transferAccount):
@@ -28,8 +28,8 @@ struct TransactionTabView: View {
                         PaymentTypeView(paymentMethod: paymentMethod)
                     case .categoryDetailsView(let category,let selectedCategory):
                         CategoryDetailsView(category: category, selectedCategory: selectedCategory)
-                    case .currencySelectionView:
-                        CurrencySelectionView(selectedCurrency: $selectedCurrency)
+                    case .currencySelectionView(let selectedCurrency):
+                        CurrencySelectionView(selectedCurrency: selectedCurrency)
                     }
                 }
         }
@@ -47,7 +47,7 @@ extension TransactionTabView {
             case labelSelectionView
             case selectPaymentMethodView(paymentMethod: Binding<Transaction.PaymentMethod>)
             case categoryDetailsView(category: Transaction.MainCategory, selectedCategory: Binding<Category?>)
-            case currencySelectionView
+            case currencySelectionView(selectedCurrency: Binding<Contact>)
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -123,16 +123,34 @@ struct CurrencySelectionView: View {
         }
     }
     
+    var baseCurrency: Contact = .init(name: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
+    
+    
     var body: some View {
-        List(currencies, id: \.self) { item in
-            HStack {
-                Text(item.name)
-            }.onTapGesture {
-                selectedCurrency = item
-                dismiss()
+        Form {
+            Section {
+                HStack {
+                    Text(baseCurrency.name)
+                    Spacer()
+                    Text("Base Currency")
+                        .font(.system(size: 15))
+                }
+                .makeFullWidthListItemTappable {
+                    selectedCurrency = baseCurrency
+                    dismiss()
+                }
+                
+                List(currencies, id: \.self) { item in
+                    HStack {
+                        Text(item.name)
+                    }
+                    .makeFullWidthListItemTappable {
+                        selectedCurrency = item
+                        dismiss()
+                    }
+                }
             }
         }
-        
         .onAppear {
             loadData()
         }

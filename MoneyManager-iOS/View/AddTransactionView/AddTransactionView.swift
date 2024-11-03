@@ -21,7 +21,6 @@ struct AddTransactionView: View {
     @State private var addTransactionInfo = AddTransactionInfo()
     @FocusState private var focusedField: FocusedField?
     @State private var bgColor = Color.gray.opacity(0.2)
-    @Binding var selectedCurrency: Contact
     
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
@@ -104,7 +103,7 @@ struct AddTransactionView: View {
         Section("Amount") {
             HStack {
                 HStack {
-                    Text(selectedCurrency.name)
+                    Text(addTransactionInfo.currency.name)
                         .font(.system(size: 15))
                         .fontWeight(.medium)
                         .padding()
@@ -112,7 +111,9 @@ struct AddTransactionView: View {
                         .background(addTransactionInfo.transactionType.color)
                         .cornerRadius(15)
                 }.onTapGesture {
-                    router.navigate(to: Destination.currencySelectionView)
+                    router.navigate(
+                        to: Destination.currencySelectionView(selectedCurrency: $addTransactionInfo.currency)
+                    )
                 }
                 
                 Spacer()
@@ -264,6 +265,7 @@ extension AddTransactionView {
     
     struct AddTransactionInfo {
         var transactionType: TransactionType = .expense
+        var currency: Contact = .init(name: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
         var amount: String = ""
         var account: Account?
         var transferAccount: Account?

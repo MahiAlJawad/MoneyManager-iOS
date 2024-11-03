@@ -158,7 +158,7 @@ extension Transaction {
         let transaction = Transaction(
             type: info.transactionType,
             account: account,
-            amount: amount,
+            amount: amount*info.currency.conversionRate,
             category: info.category,
             transferAccount: info.transferAccount,
             date: info.date,

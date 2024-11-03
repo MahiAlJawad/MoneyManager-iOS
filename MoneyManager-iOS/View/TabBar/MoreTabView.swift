@@ -12,21 +12,9 @@ struct MoreTabView: View {
     @State var addCurrencyPresent: Bool = false
     @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     @State var contacts: [Contact] = []
-//    @State var check: [Contact] {
-//        if let savedData = UserDefaults.standard.object(forKey: "contacts") as? Data {
-//            
-//            do {
-//                let savedContacts = try JSONDecoder().decode([Contact].self, from: savedData)
-//                contacts = savedContacts
-//            } catch {
-//                print("Failed to convert Data to Contact \(error.localizedDescription)")
-//            }
-//        }
-//
-//    }
+
     private func getData() {
         if let savedData = UserDefaults.standard.object(forKey: "contacts") as? Data {
-            
             do {
                 let savedContacts = try JSONDecoder().decode([Contact].self, from: savedData)
                 contacts = savedContacts
@@ -59,14 +47,14 @@ struct MoreTabView: View {
                             savedCurrencies: $savedCurrencies,
                             contacts: $contacts
                         ).onAppear {
-                            let contact: Contact = .init(name: "BDT", conversionRate: 1.0)
-                            do {
-                                let encodedData = try JSONEncoder().encode(contact)
-                                let userDefaults = UserDefaults.standard
-                                userDefaults.set(encodedData, forKey: "contacts")
-                            } catch {
-                                // Failed to encode Contact to Data
-                            }
+//                            let contact: [Contact] = [.init(name: "BDT", conversionRate: 1.0)]
+//                            do {
+//                                let encodedData = try JSONEncoder().encode(contact)
+//                                let userDefaults = UserDefaults.standard
+//                                userDefaults.set(encodedData, forKey: "contacts")
+//                            } catch {
+//                                // Failed to encode Contact to Data
+//                            }
                             getData()
                         }
                         .sheet(isPresented: $addCurrencyPresent) {
