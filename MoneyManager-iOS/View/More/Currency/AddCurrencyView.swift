@@ -12,15 +12,16 @@ struct AddCurrencyView: View {
     @Environment(MoreTabView.Router.self) private var router
     
     @State var searchText: String = ""
-    @Binding var savedCurrencies: [String]
     @Binding var isSheetPresented: Bool
-    
-    @Binding var newCurrencies: [Contact]
+    @Binding var newCurrencies: [Currency]
     
     let localeCurrencies = Locale.commonISOCurrencyCodes
-    let usedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
     
     var allCurrencies: [String] {
+        let usedCurrencies = newCurrencies.map { currency in
+            currency.currencyCode ?? ""
+        }
+        
         if searchText.isEmpty {
             var searchedCurrencies: [String] = []
             localeCurrencies.forEach { currencyCode in

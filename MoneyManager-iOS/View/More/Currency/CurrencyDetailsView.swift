@@ -19,8 +19,7 @@ struct CurrencyDetailsView: View {
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
     @State private var defaultConversionValue: String = ""
     
-    @Binding var savedCurrencies: [String]
-    @Binding var savedNewCurrencies: [Contact]
+    @Binding var savedNewCurrencies: [Currency]
     @Binding var isSheetPresented: Bool
     
     private func changeCurrencyConversion() {
@@ -74,23 +73,15 @@ struct CurrencyDetailsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
                     
-//                    let contacts: [Contact] = [
-//                        Contact(name: "John", conversionRate: 22.2),
-//                        Contact(name: "Alice", conversionRate: 17.0),
-//                        Contact(name: "Bob", conversionRate: 908.2)
-//                    ]
-                    savedNewCurrencies.append(.init(name: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 0.0))
-                    let contacts = savedNewCurrencies
+                    savedNewCurrencies.append(.init(currencyCode: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 1.0))
+                    let currency = savedNewCurrencies
                     do {
-                        let encodedData = try JSONEncoder().encode(contacts)
+                        let encodedData = try JSONEncoder().encode(currency)
                         let userDefaults = UserDefaults.standard
-                        userDefaults.set(encodedData, forKey: "contacts")
+                        userDefaults.set(encodedData, forKey: "SavedCurrencies")
                     } catch {
-                        // Failed to encode Contact to Data
+                        print("Failed to save currency data \(error.localizedDescription)")
                     }
-                    
-                    savedCurrencies.append(currentCurrencies[1])
-                    UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
                     dismiss()
                     isSheetPresented = false
                 }

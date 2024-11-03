@@ -10,16 +10,15 @@ import SwiftUI
 struct MoreTabView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
-    @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
-    @State var contacts: [Contact] = []
+    @State var savedCurrencies: [Currency] = []
 
-    private func getData() {
-        if let savedData = UserDefaults.standard.object(forKey: "contacts") as? Data {
+    private func getCurrencyData() {
+        if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
             do {
-                let savedContacts = try JSONDecoder().decode([Contact].self, from: savedData)
-                contacts = savedContacts
+                let addedCurrencies = try JSONDecoder().decode([Currency].self, from: savedData)
+                savedCurrencies = addedCurrencies
             } catch {
-                print("Failed to convert Data to Contact \(error.localizedDescription)")
+                print("Failed to convert Data to Currency \(error.localizedDescription)")
             }
         }
     }
@@ -44,25 +43,15 @@ struct MoreTabView: View {
                     case .currencyView:
                         CurrencyView(
                             isAddCurrencyPresent: $addCurrencyPresent,
-                            savedCurrencies: $savedCurrencies,
-                            contacts: $contacts
+                            savedCurrencies: $savedCurrencies
                         ).onAppear {
-//                            let contact: [Contact] = [.init(name: "BDT", conversionRate: 1.0)]
-//                            do {
-//                                let encodedData = try JSONEncoder().encode(contact)
-//                                let userDefaults = UserDefaults.standard
-//                                userDefaults.set(encodedData, forKey: "contacts")
-//                            } catch {
-//                                // Failed to encode Contact to Data
-//                            }
-                            getData()
+                            getCurrencyData()
                         }
                         .sheet(isPresented: $addCurrencyPresent) {
                             NavigationStack(path: $router.secondNavigationPath) {
                                 AddCurrencyView(
-                                    savedCurrencies: $savedCurrencies,
                                     isSheetPresented: $addCurrencyPresent,
-                                    newCurrencies: $contacts
+                                    newCurrencies: $savedCurrencies
                                 )
                                 .navigationDestination(for: Router.Destination2.self) { destination2 in
                                     switch destination2 {
@@ -71,8 +60,7 @@ struct MoreTabView: View {
                                         
                                         CurrencyDetailsView(
                                             currentCurrencies: [baseCurrencyCode, selectedCurrency],
-                                            savedCurrencies: $savedCurrencies,
-                                            savedNewCurrencies: $contacts,
+                                            savedNewCurrencies: $savedCurrencies,
                                             isSheetPresented: $addCurrencyPresent
                                         )
                                     }

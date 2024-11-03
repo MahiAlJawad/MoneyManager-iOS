@@ -103,7 +103,7 @@ struct AddTransactionView: View {
         Section("Amount") {
             HStack {
                 HStack {
-                    Text(addTransactionInfo.currency.name)
+                    Text(addTransactionInfo.currency.currencyCode ?? "")
                         .font(.system(size: 15))
                         .fontWeight(.medium)
                         .padding()
@@ -265,7 +265,7 @@ extension AddTransactionView {
     
     struct AddTransactionInfo {
         var transactionType: TransactionType = .expense
-        var currency: Contact = .init(name: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
+        var currency: Currency = .init(currencyCode: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
         var amount: String = ""
         var account: Account?
         var transferAccount: Account?

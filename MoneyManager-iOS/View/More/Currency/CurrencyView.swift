@@ -9,25 +9,17 @@ import SwiftUI
 
 struct CurrencyView: View {
     @Binding var isAddCurrencyPresent: Bool
-    @Binding var savedCurrencies: [String]
-    @Binding var contacts: [Contact]
+    @Binding var savedCurrencies: [Currency]
     
-    private func delete(indexSet: IndexSet) {
+    private func deleteCurrency(indexSet: IndexSet) {
         indexSet.forEach { index in
             savedCurrencies.remove(at: index)
-            UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
-        }
-    }
-    
-    private func deleteNewCurrency(indexSet: IndexSet) {
-        indexSet.forEach { index in
-            contacts.remove(at: index)
             do {
-                let encodedData = try JSONEncoder().encode(contacts)
+                let encodedData = try JSONEncoder().encode(savedCurrencies)
                 let userDefaults = UserDefaults.standard
-                userDefaults.set(encodedData, forKey: "contacts")
+                userDefaults.set(encodedData, forKey: "SavedCurrencies")
             } catch {
-                // Failed to encode Contact to Data
+                print("Failed to save currency data \(error.localizedDescription)")
             }
         }
     }
@@ -37,20 +29,14 @@ struct CurrencyView: View {
             Section {
                 BaseCurrencyView()
                 List {
-                    ForEach(savedCurrencies, id: \.self) { item in
-                        CurrencyCellView(currencyCode: item)
-                    }.onDelete(perform: delete)
+                    ForEach(savedCurrencies, id: \.self) { currency in
+                        CurrencyCellView(currencyCode: currency.currencyCode ?? "")
+                    }.onDelete(perform: deleteCurrency)
                 }
             }
             Section {
                 // TODO: will update it into currency settings section
                 Text("Currency Settings")
-                List {
-                    ForEach(contacts, id: \.self) { contact in
-                        Text(contact.name)
-                    }.onDelete(perform: deleteNewCurrency)
-                }
-               
             }
         }
         .toolbar {

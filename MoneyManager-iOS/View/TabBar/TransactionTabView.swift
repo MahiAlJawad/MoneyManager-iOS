@@ -9,8 +9,7 @@ import SwiftUI
 
 struct TransactionTabView: View {
     @State var router = Router()
-   // @State var selectedCurrency: Contact = .init(name: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
-    
+
     var body: some View {
         NavigationStack(path: $router.path) {
             AddTransactionView()
@@ -47,7 +46,7 @@ extension TransactionTabView {
             case labelSelectionView
             case selectPaymentMethodView(paymentMethod: Binding<Transaction.PaymentMethod>)
             case categoryDetailsView(category: Transaction.MainCategory, selectedCategory: Binding<Category?>)
-            case currencySelectionView(selectedCurrency: Binding<Contact>)
+            case currencySelectionView(selectedCurrency: Binding<Currency>)
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -107,30 +106,29 @@ extension TransactionTabView {
 
 
 struct CurrencySelectionView: View {
-    @Binding var selectedCurrency: Contact
-    @State private var currencies: [Contact] = []
+    @Binding var selectedCurrency: Currency
+    @State private var currencies: [Currency] = []
     @Environment(\.dismiss) private var dismiss
     
     private func loadData() {
-        if let savedData = UserDefaults.standard.object(forKey: "contacts") as? Data {
+        if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
             
             do {
-                let savedContacts = try JSONDecoder().decode([Contact].self, from: savedData)
-                currencies = savedContacts
+                let savedCurrencyData = try JSONDecoder().decode([Currency].self, from: savedData)
+                currencies = savedCurrencyData
             } catch {
-                // Failed to convert Data to Contact
+                print("Failed to convert Data to Currency \(error.localizedDescription)")
             }
         }
     }
     
-    var baseCurrency: Contact = .init(name: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
-    
+    var baseCurrency: Currency = .init(currencyCode: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
     
     var body: some View {
         Form {
             Section {
                 HStack {
-                    Text(baseCurrency.name)
+                    Text(baseCurrency.currencyCode ?? "")
                     Spacer()
                     Text("Base Currency")
                         .font(.system(size: 15))
@@ -142,7 +140,7 @@ struct CurrencySelectionView: View {
                 
                 List(currencies, id: \.self) { item in
                     HStack {
-                        Text(item.name)
+                        Text(item.currencyCode ?? "")
                     }
                     .makeFullWidthListItemTappable {
                         selectedCurrency = item

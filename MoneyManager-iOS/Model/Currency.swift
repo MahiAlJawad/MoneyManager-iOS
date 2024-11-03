@@ -14,12 +14,20 @@ struct Currency: Identifiable, Codable, Equatable, Hashable {
     var countryCode: String?
     var currencyCode: String?
     var currencyName: String?
+    var conversionRate: Double?
     
-    init(countryName: String? = nil, countryCode: String? = nil, currencyCode: String? = nil, currencyName: String? = nil) {
+    init(
+        countryName: String? = nil,
+        countryCode: String? = nil,
+        currencyCode: String? = nil,
+        currencyName: String? = nil,
+        conversionRate: Double? = nil
+    ) {
         self.countryName = countryName
         self.countryCode = countryCode
         self.currencyCode = currencyCode
         self.currencyName = currencyName
+        self.conversionRate = conversionRate
     }
 }
 
