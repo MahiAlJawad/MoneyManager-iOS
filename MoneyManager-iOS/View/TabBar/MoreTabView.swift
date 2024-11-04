@@ -10,7 +10,7 @@ import SwiftUI
 struct MoreTabView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
-    @State var savedCurrencies = UserDefaults.standard.object(forKey:"SavedCurrencies") as? [String] ?? [String]()
+    @State var savedCurrencies: [Currency] = []
     
     var body: some View {
         NavigationStack(path: $router.firstNavigationPath) {
@@ -30,21 +30,33 @@ struct MoreTabView: View {
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
                     case .currencyView:
-                        CurrencyView(isAddCurrencyPresent: $addCurrencyPresent, savedCurrencies: $savedCurrencies)
-                            .sheet(isPresented: $addCurrencyPresent) {
-                                NavigationStack(path: $router.secondNavigationPath) {
-                                    AddCurrencyView(savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
-                                        .navigationDestination(for: Router.Destination2.self) { destination2 in
-                                            switch destination2 {
-                                            case .currencyConversionView(let selectedCurrency):
-                                                let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
-                                                
-                                                CurrencyDetailsView(currentCurrencies: [baseCurrencyCode, selectedCurrency], savedCurrencies: $savedCurrencies, isSheetPresented: $addCurrencyPresent)
-                                            }
-                                        }
+                        CurrencyView(
+                            isAddCurrencyPresent: $addCurrencyPresent,
+                            savedCurrencies: $savedCurrencies
+                        ).onAppear {
+                            savedCurrencies = Currency.loadCurrencyData()
+                        }
+                        .sheet(isPresented: $addCurrencyPresent) {
+                            NavigationStack(path: $router.secondNavigationPath) {
+                                AddCurrencyView(
+                                    isSheetPresented: $addCurrencyPresent,
+                                    newCurrencies: $savedCurrencies
+                                )
+                                .navigationDestination(for: Router.Destination2.self) { destination2 in
+                                    switch destination2 {
+                                    case .currencyConversionView(let selectedCurrency):
+                                        let baseCurrencyCode = Currency.baseCurrencyCode
+
+                                        CurrencyDetailsView(
+                                            currentCurrencies: [baseCurrencyCode, selectedCurrency],
+                                            savedNewCurrencies: $savedCurrencies,
+                                            isSheetPresented: $addCurrencyPresent
+                                        )
+                                    }
                                 }
-                                .environment(router)
                             }
+                            .environment(router)
+                        }
                     }
                 }
         }

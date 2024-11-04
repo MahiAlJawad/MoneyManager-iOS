@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TransactionTabView: View {
     @State var router = Router()
-    
+
     var body: some View {
         NavigationStack(path: $router.path) {
             AddTransactionView()
@@ -27,6 +27,8 @@ struct TransactionTabView: View {
                         PaymentTypeView(paymentMethod: paymentMethod)
                     case .categoryDetailsView(let category,let selectedCategory):
                         CategoryDetailsView(category: category, selectedCategory: selectedCategory)
+                    case .currencySelectionView(let selectedCurrency):
+                        CurrencySelectionView(selectedCurrency: selectedCurrency)
                     }
                 }
         }
@@ -44,6 +46,7 @@ extension TransactionTabView {
             case labelSelectionView
             case selectPaymentMethodView(paymentMethod: Binding<Transaction.PaymentMethod>)
             case categoryDetailsView(category: Transaction.MainCategory, selectedCategory: Binding<Category?>)
+            case currencySelectionView(selectedCurrency: Binding<Currency>)
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -58,6 +61,8 @@ extension TransactionTabView {
                 case (.selectPaymentMethodView, .selectPaymentMethodView):
                     return true
                 case (.categoryDetailsView, .categoryDetailsView):
+                    return true
+                case (.currencySelectionView, .currencySelectionView):
                     return true
                 default: return false
                 }
@@ -77,6 +82,8 @@ extension TransactionTabView {
                     hasher.combine("paymentMethod")
                 case .categoryDetailsView:
                     hasher.combine("categoryDetailsView")
+                case .currencySelectionView:
+                    hasher.combine("currencySelectionView")
                 }
             }
         }

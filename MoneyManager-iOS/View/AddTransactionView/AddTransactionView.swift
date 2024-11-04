@@ -102,13 +102,19 @@ struct AddTransactionView: View {
     var expenseAmountTextFieldView: some View {
         Section("Amount") {
             HStack {
-                Text("BDT")
-                    .font(.system(size: 15))
-                    .fontWeight(.medium)
-                    .padding()
-                    .frame(height: 30)
-                    .background(addTransactionInfo.transactionType.color)
-                    .cornerRadius(15)
+                HStack {
+                    Text(addTransactionInfo.currency.currencyCode ?? "")
+                        .font(.system(size: 15))
+                        .fontWeight(.medium)
+                        .padding()
+                        .frame(height: 30)
+                        .background(addTransactionInfo.transactionType.color)
+                        .cornerRadius(15)
+                }.onTapGesture {
+                    router.navigate(
+                        to: Destination.currencySelectionView(selectedCurrency: $addTransactionInfo.currency)
+                    )
+                }
                 
                 Spacer()
                 
@@ -259,6 +265,7 @@ extension AddTransactionView {
     
     struct AddTransactionInfo {
         var transactionType: TransactionType = .expense
+        var currency: Currency = .init(currencyCode: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
         var amount: String = ""
         var account: Account?
         var transferAccount: Account?

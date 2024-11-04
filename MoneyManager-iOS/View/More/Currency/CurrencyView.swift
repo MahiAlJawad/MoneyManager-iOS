@@ -9,12 +9,18 @@ import SwiftUI
 
 struct CurrencyView: View {
     @Binding var isAddCurrencyPresent: Bool
-    @Binding var savedCurrencies: [String]
+    @Binding var savedCurrencies: [Currency]
     
-    private func delete(indexSet: IndexSet) {
+    private func deleteCurrency(indexSet: IndexSet) {
         indexSet.forEach { index in
             savedCurrencies.remove(at: index)
-            UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
+            do {
+                let encodedData = try JSONEncoder().encode(savedCurrencies)
+                let userDefaults = UserDefaults.standard
+                userDefaults.set(encodedData, forKey: "SavedCurrencies")
+            } catch {
+                print("Failed to save currency data \(error.localizedDescription)")
+            }
         }
     }
     
@@ -23,9 +29,9 @@ struct CurrencyView: View {
             Section {
                 BaseCurrencyView()
                 List {
-                    ForEach(savedCurrencies, id: \.self) { item in
-                        CurrencyCellView(currencyCode: item)
-                    }.onDelete(perform: delete)
+                    ForEach(savedCurrencies, id: \.self) { currency in
+                        CurrencyCellView(currencyCode: currency.currencyCode ?? "")
+                    }.onDelete(perform: deleteCurrency)
                 }
             }
             Section {

@@ -19,7 +19,7 @@ struct CurrencyDetailsView: View {
     @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
     @State private var defaultConversionValue: String = ""
     
-    @Binding var savedCurrencies: [String]
+    @Binding var savedNewCurrencies: [Currency]
     @Binding var isSheetPresented: Bool
     
     private func changeCurrencyConversion() {
@@ -72,8 +72,16 @@ struct CurrencyDetailsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
-                    savedCurrencies.append(currentCurrencies[1])
-                    UserDefaults.standard.set(savedCurrencies, forKey: "SavedCurrencies")
+                    savedNewCurrencies.append(.init(currencyCode: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 1.0))
+                    Currency.saveNewCurrency(savedCurrencies: savedNewCurrencies)
+//                    let currency = savedNewCurrencies
+//                    do {
+//                        let encodedData = try JSONEncoder().encode(currency)
+//                        let userDefaults = UserDefaults.standard
+//                        userDefaults.set(encodedData, forKey: "SavedCurrencies")
+//                    } catch {
+//                        print("Failed to save currency data \(error.localizedDescription)")
+//                    }
                     dismiss()
                     isSheetPresented = false
                 }
