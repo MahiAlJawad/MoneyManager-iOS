@@ -117,9 +117,6 @@ struct AddTransactionView: View {
                     .multilineTextAlignment(.trailing)
                     .focused($focusedField, equals: .amount)
                     .keyboardType(.decimalPad)
-                    .onAppear {
-                        UITextField.appearance().clearButtonMode = .never
-                    }
             }
         }
     }
@@ -223,13 +220,11 @@ struct AddTransactionView: View {
         Section("More Details") {
             HStack {
                 Label {
-                    TextField("Add your note", text: $addTransactionInfo.toNote)
+                    TextField("Add your note", text: $addTransactionInfo.note)
+                        .clearButton(on: $addTransactionInfo.note)
                         .textInputAutocapitalization(.never)
                         .textFieldStyle(.roundedBorder)
                         .focused($focusedField, equals: .note)
-                        .onAppear {
-                            UITextField.appearance().clearButtonMode = .whileEditing
-                        }
                 } icon: {
                     Image(systemName: "note.text")
                         .foregroundColor(.blue)
@@ -264,7 +259,7 @@ extension AddTransactionView {
         var transferAccount: Account?
         var category: Category?
         var date: Date = Date()
-        var toNote: String = ""
+        var note: String = ""
         var paymentMethod: PaymentMethod = .cash
     }
 }
