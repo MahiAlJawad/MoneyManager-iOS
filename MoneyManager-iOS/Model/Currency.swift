@@ -32,6 +32,15 @@ struct Currency: Identifiable, Codable, Equatable, Hashable {
 }
 
 extension Currency {
+    static let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
+    
+    static var baseCurrency: Currency {
+        .init(
+            currencyCode: baseCurrencyCode,
+            conversionRate: 1.0
+        )
+    }
+    
     static func savedCurrencyCodes(currencies: [Currency]) -> [String] {
         return currencies.map { $0.currencyCode ?? "" }
     }
@@ -46,7 +55,7 @@ extension Currency {
         }
     }
     
-    static func loadData() -> [Currency] {
+    static func loadCurrencyData() -> [Currency] {
         var currencies: [Currency] = []
         if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
             do {

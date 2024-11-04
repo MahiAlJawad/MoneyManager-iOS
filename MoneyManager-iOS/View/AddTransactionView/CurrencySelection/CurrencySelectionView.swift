@@ -13,19 +13,7 @@ struct CurrencySelectionView: View {
     @Binding var selectedCurrency: Currency
     @State private var currencies: [Currency] = []
     
-//    private func loadData() {
-//        if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
-//            
-//            do {
-//                let savedCurrencyData = try JSONDecoder().decode([Currency].self, from: savedData)
-//                currencies = savedCurrencyData
-//            } catch {
-//                print("Failed to convert Data to Currency \(error.localizedDescription)")
-//            }
-//        }
-//    }
-    
-    var baseCurrency: Currency = .init(currencyCode: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
+    var baseCurrency = Currency.baseCurrency
     
     var body: some View {
         Form {
@@ -53,8 +41,7 @@ struct CurrencySelectionView: View {
             }
         }
         .onAppear {
-            currencies = Currency.loadData()
-            //loadData()
+            currencies = Currency.loadCurrencyData()
         }
     }
 }

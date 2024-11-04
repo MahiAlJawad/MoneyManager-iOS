@@ -11,17 +11,6 @@ struct MoreTabView: View {
     @State var router = Router()
     @State var addCurrencyPresent: Bool = false
     @State var savedCurrencies: [Currency] = []
-
-    private func getCurrencyData() {
-        if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
-            do {
-                let addedCurrencies = try JSONDecoder().decode([Currency].self, from: savedData)
-                savedCurrencies = addedCurrencies
-            } catch {
-                print("Failed to convert Data to Currency \(error.localizedDescription)")
-            }
-        }
-    }
     
     var body: some View {
         NavigationStack(path: $router.firstNavigationPath) {
@@ -45,7 +34,7 @@ struct MoreTabView: View {
                             isAddCurrencyPresent: $addCurrencyPresent,
                             savedCurrencies: $savedCurrencies
                         ).onAppear {
-                            getCurrencyData()
+                            savedCurrencies = Currency.loadCurrencyData()
                         }
                         .sheet(isPresented: $addCurrencyPresent) {
                             NavigationStack(path: $router.secondNavigationPath) {
@@ -56,8 +45,8 @@ struct MoreTabView: View {
                                 .navigationDestination(for: Router.Destination2.self) { destination2 in
                                     switch destination2 {
                                     case .currencyConversionView(let selectedCurrency):
-                                        let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
-                                        
+                                        let baseCurrencyCode = Currency.baseCurrencyCode
+
                                         CurrencyDetailsView(
                                             currentCurrencies: [baseCurrencyCode, selectedCurrency],
                                             savedNewCurrencies: $savedCurrencies,
