@@ -73,14 +73,15 @@ struct CurrencyDetailsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Save") {
                     savedNewCurrencies.append(.init(currencyCode: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 1.0))
-                    let currency = savedNewCurrencies
-                    do {
-                        let encodedData = try JSONEncoder().encode(currency)
-                        let userDefaults = UserDefaults.standard
-                        userDefaults.set(encodedData, forKey: "SavedCurrencies")
-                    } catch {
-                        print("Failed to save currency data \(error.localizedDescription)")
-                    }
+                    Currency.saveNewCurrency(savedCurrencies: savedNewCurrencies)
+//                    let currency = savedNewCurrencies
+//                    do {
+//                        let encodedData = try JSONEncoder().encode(currency)
+//                        let userDefaults = UserDefaults.standard
+//                        userDefaults.set(encodedData, forKey: "SavedCurrencies")
+//                    } catch {
+//                        print("Failed to save currency data \(error.localizedDescription)")
+//                    }
                     dismiss()
                     isSheetPresented = false
                 }

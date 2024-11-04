@@ -32,6 +32,33 @@ struct Currency: Identifiable, Codable, Equatable, Hashable {
 }
 
 extension Currency {
+    static func savedCurrencyCodes(currencies: [Currency]) -> [String] {
+        return currencies.map { $0.currencyCode ?? "" }
+    }
+    
+    static func saveNewCurrency(savedCurrencies: [Currency]) {
+        do {
+            let encodedData = try JSONEncoder().encode(savedCurrencies)
+            let userDefaults = UserDefaults.standard
+            userDefaults.set(encodedData, forKey: "SavedCurrencies")
+        } catch {
+            print("Failed to save currency data \(error.localizedDescription)")
+        }
+    }
+    
+    static func loadData() -> [Currency] {
+        var currencies: [Currency] = []
+        if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
+            do {
+                let savedCurrencyData = try JSONDecoder().decode([Currency].self, from: savedData)
+                currencies = savedCurrencyData
+            } catch {
+                print("Failed to convert Data to Currency \(error.localizedDescription)")
+            }
+        }
+        return currencies
+    }
+    
     static func countryFlag(countryCode: String) -> String {
         return String(String.UnicodeScalarView(
             countryCode.unicodeScalars.compactMap( { UnicodeScalar(127397 + $0.value) } ))

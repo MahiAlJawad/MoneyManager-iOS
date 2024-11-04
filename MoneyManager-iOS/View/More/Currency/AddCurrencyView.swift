@@ -18,9 +18,7 @@ struct AddCurrencyView: View {
     let localeCurrencies = Locale.commonISOCurrencyCodes
     
     var allCurrencies: [String] {
-        let usedCurrencies = newCurrencies.map { currency in
-            currency.currencyCode ?? ""
-        }
+        let usedCurrencies = Currency.savedCurrencyCodes(currencies: newCurrencies)
         
         if searchText.isEmpty {
             var searchedCurrencies: [String] = []
