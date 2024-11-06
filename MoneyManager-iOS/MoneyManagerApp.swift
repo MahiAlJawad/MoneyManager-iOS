@@ -13,6 +13,6 @@ struct MoneyManager_iOSApp: App {
     var body: some Scene {
         WindowGroup {
             TabBarView()
-        }.modelContainer(for: Account.self)
+        }.modelContainer(for: [Account.self, TransactionLabel.self])
     }
 }

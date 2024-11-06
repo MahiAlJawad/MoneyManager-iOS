@@ -29,6 +29,8 @@ struct MoreTabView: View {
                         HelpView()
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
+                    case .labelsView:
+                        LabelsView()
                     case .currencyView:
                         CurrencyView(
                             isAddCurrencyPresent: $addCurrencyPresent,
@@ -75,6 +77,7 @@ extension MoreTabView {
             case helpView
             case particularSettingsView(settings: Settings)
             case currencyView
+            case labelsView
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -91,6 +94,8 @@ extension MoreTabView {
                 case (.particularSettingsView, .particularSettingsView):
                     return true
                 case (.currencyView, .currencyView):
+                    return true
+                case (.labelsView, .labelsView):
                     return true
                 default: return false
                 }
@@ -112,6 +117,8 @@ extension MoreTabView {
                     hasher.combine("individualSettingsView")
                 case .currencyView:
                     hasher.combine("currenceyView")
+                case .labelsView:
+                    hasher.combine("labelsView")
                 }
             }
         }
