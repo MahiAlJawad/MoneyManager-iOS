@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: Make enums instead of this @Shakib
 struct Settings: Identifiable {
     var id = UUID()
     var image: String

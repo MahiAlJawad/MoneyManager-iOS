@@ -10,11 +10,16 @@ import SwiftUI
 struct SettingsDetails: View {
     var body: some View {
         List(Settings.allSettingsData) { item in
-            if item.title == "Currency" {
+            switch item.title {
+            case "Currency":
                 NavigationLink(value: MoreTabView.Router.Destination.currencyView) {
                     SettingsDetailsCommon(settingsItem: item)
                 }
-            } else {
+            case "Labels":
+                NavigationLink(value: MoreTabView.Router.Destination.labelsView) {
+                    SettingsDetailsCommon(settingsItem: item)
+                }
+            default:
                 NavigationLink(value: MoreTabView.Router.Destination.particularSettingsView(settings: item)) {
                     SettingsDetailsCommon(settingsItem: item)
                 }
