@@ -8,8 +8,14 @@
 import SwiftUI
 
 struct MoreTabView: View {
+    @Observable
+    class SheetPresentation {
+        var presentAddCurrency: Bool = false
+        var presentLabelsView: Bool = false
+    }
+    
     @State var router = Router()
-    @State var addCurrencyPresent: Bool = false
+    @State var sheetPresenter = SheetPresentation()
     @State var savedCurrencies: [Currency] = []
     
     var body: some View {
@@ -30,18 +36,18 @@ struct MoreTabView: View {
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
                     case .labelsView:
-                        LabelsView()
+                        labelsView
                     case .currencyView:
                         CurrencyView(
-                            isAddCurrencyPresent: $addCurrencyPresent,
+                            isAddCurrencyPresent: $sheetPresenter.presentAddCurrency,
                             savedCurrencies: $savedCurrencies
                         ).onAppear {
                             savedCurrencies = Currency.loadCurrencyData()
                         }
-                        .sheet(isPresented: $addCurrencyPresent) {
+                        .sheet(isPresented: $sheetPresenter.presentAddCurrency) {
                             NavigationStack(path: $router.secondNavigationPath) {
                                 AddCurrencyView(
-                                    isSheetPresented: $addCurrencyPresent,
+                                    isSheetPresented: $sheetPresenter.presentAddCurrency,
                                     newCurrencies: $savedCurrencies
                                 )
                                 .navigationDestination(for: Router.Destination2.self) { destination2 in
@@ -52,7 +58,7 @@ struct MoreTabView: View {
                                         CurrencyDetailsView(
                                             currentCurrencies: [baseCurrencyCode, selectedCurrency],
                                             savedNewCurrencies: $savedCurrencies,
-                                            isSheetPresented: $addCurrencyPresent
+                                            isSheetPresented: $sheetPresenter.presentAddCurrency
                                         )
                                     }
                                 }
@@ -63,6 +69,19 @@ struct MoreTabView: View {
                 }
         }
         .environment(router)
+        .environment(sheetPresenter)
+    }
+}
+
+// Presents Label View
+extension MoreTabView {
+    var labelsView: some View {
+        LabelsView()
+            .sheet(isPresented: $sheetPresenter.presentLabelsView) {
+                NavigationStack {
+                    AddLabelView()
+                }
+            }
     }
 }
 
