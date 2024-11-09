@@ -5,8 +5,8 @@
 //  Created by Mahi Al Jawad on 6/11/24.
 //
 
-import Foundation
 import SwiftData
+import SwiftUI
 
 @Model
 class TransactionLabel {
@@ -21,8 +21,16 @@ class TransactionLabel {
     }
 }
 
+// MARK: struct to hold AddLabelView UI Model
 extension TransactionLabel {
-    static func addLabel(in modelContext: ModelContext, with labelInfo: AddLabelView.LabelInfo) {
+    struct LabelInfo {
+        var name: String = ""
+        var color: Color = .teal
+    }
+}
+
+extension TransactionLabel {
+    static func addLabel(in modelContext: ModelContext, with labelInfo: LabelInfo) {
         let label = TransactionLabel(name: labelInfo.name, color: labelInfo.color.hexString)
         modelContext.insert(label)
     }

@@ -8,15 +8,10 @@
 import SwiftUI
 
 struct AddLabelView: View {
-    struct LabelInfo {
-        var name: String = ""
-        var color: Color = .teal
-    }
-    
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
-    @State var labelInfo = LabelInfo()
-    @FocusState var isNameFocused: Bool?
+    @State var labelInfo = TransactionLabel.LabelInfo()
+    @FocusState var isNameFocused: Bool
     
     var isSaveButtonEnabled: Bool {
         !labelInfo.name.isEmpty
@@ -42,7 +37,7 @@ struct AddLabelView: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button("Done") {
-                    isNameFocused = nil
+                    isNameFocused = false
                 }
             }
         }
@@ -58,6 +53,7 @@ struct AddLabelView: View {
                     Image(systemName: "pencil.and.scribble")
                         .padding(.horizontal)
                     TextField("Label name", text: $labelInfo.name)
+                        .focused($isNameFocused)
                 }
                 .applyListItemHeight()
                 HStack {
