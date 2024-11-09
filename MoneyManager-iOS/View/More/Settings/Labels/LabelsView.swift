@@ -10,7 +10,9 @@ import SwiftUI
 
 struct LabelsView: View {
     @Environment(\.modelContext) var modelContext
-    @Query private var labels: [TransactionLabel]
+    @Environment(MoreTabView.SheetPresentation.self) var sheetPresenter
+    
+    @Query(sort: [.init(\TransactionLabel.name)]) private var labels: [TransactionLabel]
     
     @State private var searchText: String = ""
     
@@ -23,15 +25,27 @@ struct LabelsView: View {
     
     var labelsList: some View {
         List {
-            ForEach(filteredLabels) { label in
-                HStack {
-                    Color(hex: label.color)
-                        .frame(width: 30, height: 30)
-                        .clipShape(RoundedRectangle(cornerRadius: 5))
-                        .padding(.horizontal)
-                    Text(label.name)
+            if labels.isEmpty {
+                VStack {
+                    Spacer()
+                    Text("No labels available yet. Please add some labels.")
+                        .font(.title3)
+                    Spacer()
                 }
-                .applyListItemHeight()
+                .frame(minHeight: 650)
+                .listRowBackground(Color.clear)
+            } else {
+                ForEach(filteredLabels) { label in
+                    HStack {
+                        Color(hex: label.color)
+                            .frame(width: 30, height: 30)
+                            .clipShape(RoundedRectangle(cornerRadius: 5))
+                            .padding(.horizontal)
+                        Text(label.name)
+                    }
+                    .applyListItemHeight()
+                }
+                .onDelete(perform: deleteLabel)
             }
         }
     }
@@ -44,15 +58,18 @@ struct LabelsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // TODO: Dummy code to test label addition
-                        let label = TransactionLabel(name: "Dummy label \(Int.random(in: 1...100))", color: "#cb534f")
-                        modelContext.insert(label)
+                        sheetPresenter.presentLabelsView = true
                     } label: {
                         Image(systemName: "plus.circle.fill")
                     }
-                    
                 }
             }
+    }
+    
+    private func deleteLabel(with indexSet: IndexSet) {
+        for index in indexSet {
+            filteredLabels[index].deleteLabel(from: modelContext)
+        }
     }
 }
 
