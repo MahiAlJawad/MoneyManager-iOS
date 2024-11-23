@@ -79,7 +79,7 @@ extension MoreTabView {
         LabelsView()
             .sheet(isPresented: $sheetPresenter.presentLabelsView) {
                 NavigationStack {
-                    AddLabelView()
+                    AddLabelView(isModallyPresented: true)
                 }
             }
     }

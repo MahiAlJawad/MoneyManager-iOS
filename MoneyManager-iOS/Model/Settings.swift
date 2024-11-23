@@ -20,7 +20,7 @@ extension Settings {
         Settings(image: "chart.line.text.clipboard.fill", title: "Dashboard"),
         Settings(image: "dollarsign.bank.building.fill", title: "Accounts"),
         Settings(image: "dollarsign.square.fill", title: "Currency"),
-        Settings(image: "pencil.and.ellipsis.rectangle", title: "Labels"),
+        Settings(image: "tag", title: "Labels"),
         Settings(image: "filemenu.and.cursorarrow", title: "Categories"),
         Settings(image: "person.badge.key.fill", title: "Personal data & Privacy"),
         Settings(image: "lock.square", title: "Security")

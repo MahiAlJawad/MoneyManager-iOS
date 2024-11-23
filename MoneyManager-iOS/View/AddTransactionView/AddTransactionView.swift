@@ -5,6 +5,7 @@
 //  Created by Mahi Al Jawad on 6/10/24.
 //
 
+import Flow
 import SwiftData
 import SwiftUI
 
@@ -43,7 +44,6 @@ struct AddTransactionView: View {
         .onLoad {
             focusedField = .amount
         }
-        .listStyle(InsetGroupedListStyle())
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") {
@@ -127,6 +127,31 @@ struct AddTransactionView: View {
         }
     }
     
+    private func labelView(with label: TransactionLabel) -> some View {
+        HStack {
+            Text(label.name)
+                .foregroundStyle(Color(hex: label.color).getContrastColor)
+                .font(.footnote)
+                .padding(.init(top: 10, leading: 10, bottom: 10, trailing: 10))
+            
+            Button {
+                guard let indexToDelete = addTransactionInfo.labels.firstIndex(of: label) else {
+                    return
+                }
+                addTransactionInfo.labels.remove(at: indexToDelete)
+            } label: {
+                Image(systemName: "multiply.circle.fill")
+            }
+            .buttonStyle(.plain)
+            .font(.footnote)
+            .foregroundColor(Color(hex: label.color).getContrastColor)
+            .padding(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+        }
+        .background(Color(hex: label.color))
+        .frame(height: 20)
+        .clipShape(RoundedRectangle(cornerRadius: 5.0))
+    }
+    
     var generalSectionView: some View {
         Section("General") {
             HStack {
@@ -207,16 +232,27 @@ struct AddTransactionView: View {
             }
             .applyListItemHeight()
             
-            HStack {
-                Label("Labels", systemImage: "tag")
-                Spacer()
-                Image(systemName: "plus.circle.fill")
-                    .resizable()
-                    .frame(width: 25, height: 25)
-                    .foregroundStyle(.blue)
-                    .onTapGesture {
-                        router.navigate(to: .labelSelectionView)
+            VStack(alignment: .leading) {
+                HStack {
+                    Label("Labels", systemImage: "tag")
+                    Spacer()
+                    Image(systemName: "plus.circle.fill")
+                        .resizable()
+                        .frame(width: 25, height: 25)
+                        .foregroundStyle(.blue)
+                        .onTapGesture {
+                            router.navigate(to: .labelSelectionView(selectedLabels: $addTransactionInfo.labels))
+                        }
+                }
+                
+                if !addTransactionInfo.labels.isEmpty {
+                    HFlow(alignment: .top) {
+                        ForEach(addTransactionInfo.labels) { label in
+                            labelView(with: label)
+                        }
                     }
+                    .padding(.init(top: 5, leading: 40, bottom: 0, trailing: 10))
+                }
             }
             .applyListItemHeight()
         }
@@ -224,17 +260,13 @@ struct AddTransactionView: View {
     
     var moreDetailsSectionView: some View {
         Section("More Details") {
-            HStack {
-                Label {
-                    TextField("Add your note", text: $addTransactionInfo.note)
-                        .clearButton(on: $addTransactionInfo.note)
-                        .textInputAutocapitalization(.never)
-                        .textFieldStyle(.roundedBorder)
-                        .focused($focusedField, equals: .note)
-                } icon: {
-                    Image(systemName: "note.text")
-                        .foregroundColor(.blue)
-                }
+            Label {
+                TextField("Add your note", text: $addTransactionInfo.note)
+                    .clearButton(on: $addTransactionInfo.note)
+                    .focused($focusedField, equals: .note)
+            } icon: {
+                Image(systemName: "note.text")
+                    .foregroundColor(.blue)
             }.applyListItemHeight()
 
             NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
@@ -266,13 +298,8 @@ extension AddTransactionView {
         var transferAccount: Account?
         var category: Category?
         var date: Date = Date()
+        var labels: [TransactionLabel] = []
         var note: String = ""
         var paymentMethod: PaymentMethod = .cash
-    }
-}
-
-struct LabelSelectionView: View {
-    var body: some View {
-        Text("Select Labels")
     }
 }
