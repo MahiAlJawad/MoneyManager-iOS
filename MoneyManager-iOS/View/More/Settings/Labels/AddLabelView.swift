@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AddLabelView: View {
+    var isModallyPresented: Bool = false
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     @State var labelInfo = TransactionLabel.LabelInfo()
@@ -26,11 +27,13 @@ struct AddLabelView: View {
         .navigationTitle("Add Label")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Text("Cancel")
+            if isModallyPresented {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Cancel")
+                    }
                 }
             }
             
