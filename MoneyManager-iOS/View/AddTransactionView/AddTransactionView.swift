@@ -152,6 +152,14 @@ struct AddTransactionView: View {
         .clipShape(RoundedRectangle(cornerRadius: 5.0))
     }
     
+    var labelsView: some View {
+        HFlow(alignment: .top) {
+            ForEach(addTransactionInfo.labels) { label in
+                labelView(with: label)
+            }
+        }
+    }
+    
     var generalSectionView: some View {
         Section("General") {
             HStack {
@@ -246,12 +254,8 @@ struct AddTransactionView: View {
                 }
                 
                 if !addTransactionInfo.labels.isEmpty {
-                    HFlow(alignment: .top) {
-                        ForEach(addTransactionInfo.labels) { label in
-                            labelView(with: label)
-                        }
-                    }
-                    .padding(.init(top: 5, leading: 40, bottom: 0, trailing: 10))
+                    labelsView
+                        .padding(.init(top: 5, leading: 40, bottom: 0, trailing: 10))
                 }
             }
             .applyListItemHeight()

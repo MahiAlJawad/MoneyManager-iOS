@@ -60,12 +60,11 @@ class Transaction {
     var id: String
     private var type: String
     private(set) var amount: Double
-    var category: String
+    private(set) var category: String
     private(set) var date: Date
     private var paymentMethod: String
-    
-    // TODO: Add labels, notes when their corresponding model is created
-    
+    private(set) var note: String
+    private(set) var labels: [TransactionLabel]
     private(set) var account: Account
     private(set) var transferAccount: Account?
     
@@ -79,7 +78,8 @@ class Transaction {
         category: Category?,
         transferAccount: Account?,
         date: Date,
-        labels: [String],
+        labels: [TransactionLabel],
+        note: String,
         paymentMethod: PaymentMethod
     ) {
         self.id = UUID().uuidString
@@ -103,6 +103,8 @@ class Transaction {
         self.category = category?.name ?? ""
         self.date = date
         self.paymentMethod = paymentMethod.description
+        self.labels = labels
+        self.note = note
     }
 }
 
@@ -162,7 +164,8 @@ extension Transaction {
             category: info.category,
             transferAccount: info.transferAccount,
             date: info.date,
-            labels: [], // TODO: UI not ready
+            labels: info.labels,
+            note: info.note,
             paymentMethod: info.paymentMethod
         )
         
