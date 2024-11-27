@@ -5,6 +5,7 @@
 //  Created by Mahi Al Jawad on 15/10/24.
 //
 
+import Flow
 import SwiftData
 import SwiftUI
 
@@ -61,6 +62,22 @@ struct RecordsView: View {
         .navigationTitle("Transactions")
     }
     
+    private func labelsView(with labels: [TransactionLabel]) -> some View {
+        HFlow(alignment: .top) {
+            ForEach(labels) { label in
+                HStack {
+                    Text(label.name)
+                        .foregroundStyle(Color(hex: label.color).getContrastColor)
+                        .font(.footnote)
+                        .padding(.init(top: 10, leading: 10, bottom: 10, trailing: 10))
+                }
+                .background(Color(hex: label.color))
+                .frame(height: 20)
+                .clipShape(RoundedRectangle(cornerRadius: 5.0))
+            }
+        }
+    }
+    
     func transactionView(of transaction: Transaction) -> some View {
         HStack {
             if transaction.transactionType == .transfer {
@@ -70,6 +87,14 @@ struct RecordsView: View {
                             .font(.headline)
                         Text("\(transaction.accountName) -> \(transaction.transferAccountName)")
                             .font(.caption)
+                        if !transaction.note.isEmpty {
+                            Text(transaction.note)
+                                .font(.caption)
+                        }
+                        
+                        if !transaction.labels.isEmpty {
+                            labelsView(with: transaction.labels)
+                        }
                     }
                 } icon: {
                     Image(systemName: "arrow.left.arrow.right.circle")
@@ -82,6 +107,15 @@ struct RecordsView: View {
                             .font(.headline)
                         Text(transaction.accountName)
                             .font(.caption)
+                        
+                        if !transaction.note.isEmpty {
+                            Text(transaction.note)
+                                .font(.caption)
+                        }
+                        
+                        if !transaction.labels.isEmpty {
+                            labelsView(with: transaction.labels)
+                        }
                     }
                 } icon: {
                     Image(systemName: transaction.transactionCategory?.icon ?? "")
