@@ -5,7 +5,6 @@
 //  Created by Mahi Al Jawad on 6/10/24.
 //
 
-import Flow
 import SwiftData
 import SwiftUI
 
@@ -153,11 +152,7 @@ struct AddTransactionView: View {
     }
     
     var labelsView: some View {
-        HFlow(alignment: .top) {
-            ForEach(addTransactionInfo.labels) { label in
-                labelView(with: label)
-            }
-        }
+        Text("TBD")
     }
     
     var generalSectionView: some View {
