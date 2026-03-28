@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5ABEA6A92CECE74D00BBD081 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = 5ABEA6A82CECE74D00BBD081 /* Flow */; };
 		5AEC28122CD535DF000F3359 /* .pre-commit-config.yaml in Resources */ = {isa = PBXBuildFile; fileRef = 5AEC28112CD535BD000F3359 /* .pre-commit-config.yaml */; };
 /* End PBXBuildFile section */
 
@@ -29,7 +28,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5ABEA6A92CECE74D00BBD081 /* Flow in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +71,6 @@
 			);
 			name = "MoneyManager-iOS";
 			packageProductDependencies = (
-				5ABEA6A82CECE74D00BBD081 /* Flow */,
 			);
 			productName = "MoneyManager-iOS";
 			productReference = 5AD24D312CAC465A00775335 /* MoneyManager-iOS.app */;
@@ -104,7 +101,6 @@
 			mainGroup = 5AD24D282CAC465A00775335;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				5ABEA6A72CECE74D00BBD081 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5AD24D322CAC465A00775335 /* Products */;
@@ -339,25 +335,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		5ABEA6A72CECE74D00BBD081 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tevelee/SwiftUI-Flow";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.5.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		5ABEA6A82CECE74D00BBD081 /* Flow */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5ABEA6A72CECE74D00BBD081 /* XCRemoteSwiftPackageReference "SwiftUI-Flow" */;
-			productName = Flow;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5AD24D292CAC465A00775335 /* Project object */;
 }

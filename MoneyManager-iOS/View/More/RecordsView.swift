@@ -5,7 +5,6 @@
 //  Created by Mahi Al Jawad on 15/10/24.
 //
 
-import Flow
 import SwiftData
 import SwiftUI
 
@@ -63,19 +62,7 @@ struct RecordsView: View {
     }
     
     private func labelsView(with labels: [TransactionLabel]) -> some View {
-        HFlow(alignment: .top) {
-            ForEach(labels) { label in
-                HStack {
-                    Text(label.name)
-                        .foregroundStyle(Color(hex: label.color).getContrastColor)
-                        .font(.footnote)
-                        .padding(.init(top: 10, leading: 10, bottom: 10, trailing: 10))
-                }
-                .background(Color(hex: label.color))
-                .frame(height: 20)
-                .clipShape(RoundedRectangle(cornerRadius: 5.0))
-            }
-        }
+        Text("TBD")
     }
     
     func transactionView(of transaction: Transaction) -> some View {
