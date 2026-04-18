@@ -19,8 +19,8 @@ struct AddTransactionView: View {
     
     @Environment(\.dismiss) private var dismiss
     @State private var addTransactionInfo = AddTransactionInfo()
+    @State private var displayedAmount = "-0"
     @FocusState private var focusedField: FocusedField?
-    @State private var bgColor = Color.gray.opacity(0.2)
     
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
@@ -29,20 +29,48 @@ struct AddTransactionView: View {
         (addTransactionInfo.category != nil || addTransactionInfo.transferAccount != nil)
     }
     
-    var body: some View {
-        VStack {
-            expenseTypePickerView
-            List {
-                expenseAmountTextFieldView
-                generalSectionView
-                moreDetailsSectionView
-            }
-            .listStyle(.grouped)
-            saveButton
+    var amountPrefix: String {
+        switch addTransactionInfo.transactionType {
+        case .expense:
+            "-"
+        case .income:
+            "+"
+        case .transfer:
+            ""
         }
+    }
+    
+    var body: some View {
+        List {
+            expenseTypePickerView
+            expenseAmountTextFieldView
+            generalSectionView
+            moreDetailsSectionView
+        }
+        .listStyle(.insetGrouped)
+        .listSectionSpacing(.compact)
+        .scrollDismissesKeyboard(.interactively)
         .onLoad {
+            refreshDisplayedAmount()
             focusedField = .amount
         }
+        .onChange(of: addTransactionInfo.transactionType) { _, newType in
+            if newType == .transfer {
+                addTransactionInfo.category = nil
+            } else {
+                addTransactionInfo.transferAccount = nil
+            }
+            
+            refreshDisplayedAmount()
+        }
+        .onChange(of: displayedAmount) { _, newValue in
+            updateAmount(from: newValue)
+        }
+        .background(
+            KeyboardDismissTapView {
+                focusedField = nil
+            }
+        )
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") {
@@ -52,120 +80,82 @@ struct AddTransactionView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Templates") {
-                    // TODO: Handle templates action
-                }
-            }
-            
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") {
-                    focusedField = nil
-                }
+                Button("Add", action: saveTransaction)
+                    .fontWeight(.semibold)
+                    .buttonStyle(.borderedProminent)
+                    .tint(addTransactionInfo.transactionType.color)
+                    .disabled(!isSaveButtonEnabled)
+                    .id(addTransactionInfo.transactionType)
             }
         }
         .navigationTitle("Add Transaction")
         .navigationBarTitleDisplayMode(.inline)
     }
     
-    var saveButton: some View {
-        Button {
-            do {
-                try Transaction.addTransaction(from: addTransactionInfo)
-            } catch {
-                // TODO: show error alert once the UI is ready
-                print("Error: \(error)")
-            }
-            
-            dismiss()
-        } label: {
-            Text("Save")
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 35)
-        }
-        .buttonStyle(.borderedProminent)
-        .padding(.horizontal)
-        .disabled(!isSaveButtonEnabled)
-    }
-    
     var expenseTypePickerView: some View {
-        Picker(selection: $addTransactionInfo.transactionType, label: Text("")) {
+        Picker(selection: $addTransactionInfo.transactionType, label: Text("Transaction Type")) {
             Text("Expense").tag(TransactionType.expense)
             Text("Income").tag(TransactionType.income)
             Text("Transfer").tag(TransactionType.transfer)
         }
         .pickerStyle(.segmented)
-        .padding()
+        .background(SegmentedPickerTintUpdater(tintColor: addTransactionInfo.transactionType.color))
+        .listRowInsets(.init(top: 10, leading: 16, bottom: 10, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
     }
     
     var expenseAmountTextFieldView: some View {
-        Section("Amount") {
-            HStack {
-                HStack {
-                    Text(addTransactionInfo.currency.currencyCode ?? "")
-                        .font(.system(size: 15))
-                        .fontWeight(.medium)
-                        .padding()
-                        .frame(height: 30)
-                        .background(addTransactionInfo.transactionType.color)
-                        .cornerRadius(15)
-                }.onTapGesture {
+        Section {
+            HStack(spacing: 12) {
+                Button {
                     router.navigate(
                         to: Destination.currencySelectionView(selectedCurrency: $addTransactionInfo.currency)
                     )
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(addTransactionInfo.currency.currencyCode ?? "")
+                        Image(systemName: "chevron.down")
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .buttonStyle(.plain)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color(uiColor: .tertiarySystemFill))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 
-                Spacer()
+                Spacer(minLength: 12)
                 
-                TextField("0", text: $addTransactionInfo.amount)
-                    .font(.system(size: 50))
+                TextField("", text: $displayedAmount)
                     .multilineTextAlignment(.trailing)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
                     .focused($focusedField, equals: .amount)
                     .keyboardType(.decimalPad)
+                    .tint(addTransactionInfo.transactionType.color)
+                    .font(.system(size: 52, weight: .regular))
+                    .foregroundStyle(addTransactionInfo.transactionType.color)
+                    .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64, alignment: .trailing)
             }
+            .frame(maxWidth: .infinity, minHeight: 88, maxHeight: 88, alignment: .leading)
+            .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
         }
     }
     
-    private func labelView(with label: TransactionLabel) -> some View {
-        HStack {
-            Text(label.name)
-                .foregroundStyle(Color(hex: label.color).getContrastColor)
-                .font(.footnote)
-                .padding(.init(top: 10, leading: 10, bottom: 10, trailing: 10))
-            
-            Button {
-                guard let indexToDelete = addTransactionInfo.labels.firstIndex(of: label) else {
-                    return
-                }
-                addTransactionInfo.labels.remove(at: indexToDelete)
-            } label: {
-                Image(systemName: "multiply.circle.fill")
-            }
-            .buttonStyle(.plain)
-            .font(.footnote)
-            .foregroundColor(Color(hex: label.color).getContrastColor)
-            .padding(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
-        }
-        .background(Color(hex: label.color))
-        .frame(height: 20)
-        .clipShape(RoundedRectangle(cornerRadius: 5.0))
-    }
-    
-    var labelsView: some View {
-        Text("TBD")
-    }
-    
+    @ViewBuilder
     var generalSectionView: some View {
-        Section("General") {
-            HStack {
-                Label("Account", systemImage: "banknote")
-                Spacer()
-                Text(addTransactionInfo.account?.name ?? "Required")
-                    .foregroundColor(addTransactionInfo.account == nil ? .red : .gray)
-            }
-            .disclosureIndicator()
-            .applyListItemHeight()
-            .onTapGesture {
+        Section {
+            selectableRow(
+                title: addTransactionInfo.transactionType == .transfer ? "From Account" : "Account",
+                value: addTransactionInfo.account?.name ?? "Required",
+                valueStyle: addTransactionInfo.account == nil ? .required : .secondary,
+                icon: "person.circle.fill",
+                iconColor: .blue
+            ) {
                 router.navigate(
                     to: Destination.accountSelectionView(
                         account: $addTransactionInfo.account,
@@ -173,27 +163,19 @@ struct AddTransactionView: View {
                     )
                 )
             }
-            
-            if addTransactionInfo.transactionType == .transfer {
-                HStack {
-                    Label {
-                        Text("To account")
-                    } icon: {
-                        Image(systemName: "questionmark.app")
-                            .foregroundStyle(.gray)
-                    }
-                    Spacer()
-                    if let transferAccount = addTransactionInfo.transferAccount {
-                        Text(transferAccount.name)
-                            .foregroundColor(.gray)
-                    } else {
-                        Text("Required")
-                            .foregroundColor(.red)
-                    }
-                }
-                .disclosureIndicator()
-                .applyListItemHeight()
-                .onTapGesture {
+        } header: {
+            sectionSpacerHeader
+        }
+        
+        if addTransactionInfo.transactionType == .transfer {
+            Section {
+                selectableRow(
+                    title: "To Account",
+                    value: addTransactionInfo.transferAccount?.name ?? "Required",
+                    valueStyle: addTransactionInfo.transferAccount == nil ? .required : .secondary,
+                    icon: "person.circle.fill",
+                    iconColor: .cyan
+                ) {
                     router.navigate(
                         to: Destination.transferAccountSelectionView(
                             account: addTransactionInfo.account,
@@ -201,92 +183,185 @@ struct AddTransactionView: View {
                         )
                     )
                 }
-            } else {
+            }
+        } else {
+            Section {
                 NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
-                    HStack {
-                        Label {
-                            Text("Category")
-                        } icon: {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundStyle(.gray)
-                        }
-                        
-                        Spacer()
-                        if let category = addTransactionInfo.category {
-                            Text(category.name)
-                                .foregroundColor(.gray)
-                        } else {
-                            Text("Required")
-                                .foregroundColor(.red)
-                        }
-                    }
-                }.applyListItemHeight()
-            }
-            
-            HStack {
-                Label {
-                    Text("Date")
-                } icon: {
-                    Image(systemName: "calendar")
+                    rowContent(
+                        title: "Category",
+                        value: addTransactionInfo.category?.name ?? "Required",
+                        valueStyle: addTransactionInfo.category == nil ? .required : .secondary,
+                        icon: "star.fill",
+                        iconColor: .orange
+                    )
                 }
-                Spacer()
-                DatePicker("",selection: $addTransactionInfo.date, displayedComponents: .date)
-                    .labelsHidden()
+                .applyListItemHeight()
             }
-            .applyListItemHeight()
-            
-            VStack(alignment: .leading) {
-                HStack {
-                    Label("Labels", systemImage: "tag")
-                    Spacer()
-                    Image(systemName: "plus.circle.fill")
-                        .resizable()
-                        .frame(width: 25, height: 25)
-                        .foregroundStyle(.blue)
-                        .onTapGesture {
-                            router.navigate(to: .labelSelectionView(selectedLabels: $addTransactionInfo.labels))
-                        }
-                }
+        }
+        
+        Section {
+            HStack(spacing: 12) {
+                rowIcon(systemName: "calendar", color: .pink)
                 
-                if !addTransactionInfo.labels.isEmpty {
-                    labelsView
-                        .padding(.init(top: 5, leading: 40, bottom: 0, trailing: 10))
-                }
+                Text("Date")
+                    .foregroundStyle(.primary)
+                
+                Spacer()
+                
+                DatePicker("", selection: $addTransactionInfo.date, displayedComponents: .date)
+                    .labelsHidden()
             }
             .applyListItemHeight()
         }
     }
     
     var moreDetailsSectionView: some View {
-        Section("More Details") {
-            Label {
-                TextField("Add your note", text: $addTransactionInfo.note)
-                    .clearButton(on: $addTransactionInfo.note)
+        Section {
+            HStack(alignment: .center, spacing: 12) {
+                rowIcon(systemName: "note.text", color: .green)
+                
+                TextField("Add note", text: $addTransactionInfo.note, axis: .vertical)
+                    .lineLimit(1...5)
                     .focused($focusedField, equals: .note)
-            } icon: {
-                Image(systemName: "note.text")
-                    .foregroundColor(.blue)
-            }.applyListItemHeight()
+            }
+            .applyListItemHeight()
+        } header: {
+            sectionSpacerHeader
+        }
+    }
+    
+    private var sectionSpacerHeader: some View {
+        Color.clear
+            .frame(height: 8)
+            .accessibilityHidden(true)
+    }
+    
+    private func saveTransaction() {
+        do {
+            var transactionInfo = addTransactionInfo
+            transactionInfo.amount = normalizedAmountValue(from: displayedAmount)
+            
+            try Transaction.addTransaction(from: transactionInfo)
+        } catch {
+            // TODO: show error alert once the UI is ready
+            print("Error: \(error)")
+            return
+        }
+        
+        dismiss()
+    }
+    
+    private func selectableRow(
+        title: String,
+        value: String,
+        valueStyle: RowValueStyle,
+        icon: String,
+        iconColor: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            rowContent(title: title, value: value, valueStyle: valueStyle, icon: icon, iconColor: iconColor)
+        }
+        .buttonStyle(.plain)
+        .disclosureIndicator()
+        .applyListItemHeight()
+    }
+    
+    private func rowContent(
+        title: String,
+        value: String,
+        valueStyle: RowValueStyle,
+        icon: String,
+        iconColor: Color
+    ) -> some View {
+        HStack(spacing: 12) {
+            rowIcon(systemName: icon, color: iconColor)
+            
+            Text(title)
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            Text(value)
+                .foregroundStyle(valueStyle.color)
+                .lineLimit(1)
+        }
+    }
+    
+    private func rowIcon(systemName: String, color: Color) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(color)
+            
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+        }
+        .frame(width: 30, height: 30)
+    }
+    
+    private func updateAmount(from text: String) {
+        let amountValue = normalizedAmountValue(from: text)
+        addTransactionInfo.amount = amountValue
+        
+        let formattedAmount = formattedDisplayedAmount(for: amountValue)
+        if displayedAmount != formattedAmount {
+            displayedAmount = formattedAmount
+        }
+    }
+    
+    private func refreshDisplayedAmount() {
+        displayedAmount = formattedDisplayedAmount(for: addTransactionInfo.amount)
+    }
+    
+    private func formattedDisplayedAmount(for amount: String) -> String {
+        "\(amountPrefix)\(amount.isEmpty ? "0" : amount)"
+    }
+    
+    private func normalizedAmountValue(from text: String) -> String {
+        var amount = ""
+        var hasDecimalPoint = false
+        
+        for character in text {
+            if character.isNumber {
+                amount.append(character)
+            } else if character == ".", !hasDecimalPoint {
+                amount.append(character)
+                hasDecimalPoint = true
+            }
+        }
+        
+        while amount.count > 1,
+              amount.first == "0",
+              amount[amount.index(after: amount.startIndex)] != "." {
+            amount.removeFirst()
+        }
+        
+        if amount == "." {
+            amount = "0."
+        }
+        
+        return amount == "0" ? "" : amount
+    }
+}
 
-            NavigationLink(value: Destination.selectPaymentMethodView(paymentMethod: $addTransactionInfo.paymentMethod)) {
-                HStack {
-                    Label {
-                        Text("Payment Type")
-                    } icon: {
-                        Image(systemName: "questionmark.circle")
-                            .foregroundColor(.gray)
-                    }
-                    Spacer()
-                    Text(addTransactionInfo.paymentMethod.description)
-                        .foregroundStyle(.gray)
-                }
-            }.applyListItemHeight()
+extension AddTransactionView {
+    fileprivate enum RowValueStyle {
+        case required
+        case secondary
+        
+        var color: Color {
+            switch self {
+            case .required:
+                .red
+            case .secondary:
+                .secondary
+            }
         }
     }
 }
 
 extension AddTransactionView {
-    typealias PaymentMethod = Transaction.PaymentMethod
     typealias TransactionType = Transaction.TransactionType
     
     struct AddTransactionInfo {
@@ -297,8 +372,6 @@ extension AddTransactionView {
         var transferAccount: Account?
         var category: Category?
         var date: Date = Date()
-        var labels: [TransactionLabel] = []
         var note: String = ""
-        var paymentMethod: PaymentMethod = .cash
     }
 }

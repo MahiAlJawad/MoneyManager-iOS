@@ -21,12 +21,6 @@ struct TransactionTabView: View {
                         CategorySelectionView(selectedCategory: category)
                     case let .transferAccountSelectionView(account, transferAccount):
                         TransferAccountSelectionView(from: account, transferAccount: transferAccount)
-                    case .labelSelectionView(let selectedLabels):
-                        LabelSelectionView(selectedLabels: selectedLabels)
-                    case .addLabelView:
-                        AddLabelView()
-                    case .selectPaymentMethodView(let paymentMethod):
-                        PaymentTypeView(paymentMethod: paymentMethod)
                     case .categoryDetailsView(let category,let selectedCategory):
                         CategoryDetailsView(category: category, selectedCategory: selectedCategory)
                     case .currencySelectionView(let selectedCurrency):
@@ -45,9 +39,6 @@ extension TransactionTabView {
             case accountSelectionView(account: Binding<Account?>, transferAccount: Account?)
             case categorySelectionView(category: Binding<Category?>)
             case transferAccountSelectionView(account: Account?, transferAccount: Binding<Account?>)
-            case labelSelectionView(selectedLabels: Binding<[TransactionLabel]>)
-            case addLabelView
-            case selectPaymentMethodView(paymentMethod: Binding<Transaction.PaymentMethod>)
             case categoryDetailsView(category: Transaction.MainCategory, selectedCategory: Binding<Category?>)
             case currencySelectionView(selectedCurrency: Binding<Currency>)
             
@@ -58,12 +49,6 @@ extension TransactionTabView {
                 case (.categorySelectionView, .categorySelectionView):
                     return true
                 case (.transferAccountSelectionView, .transferAccountSelectionView):
-                    return true
-                case (.labelSelectionView, .labelSelectionView):
-                    return true
-                case (.addLabelView, .addLabelView):
-                    return true
-                case (.selectPaymentMethodView, .selectPaymentMethodView):
                     return true
                 case (.categoryDetailsView, .categoryDetailsView):
                     return true
@@ -81,12 +66,6 @@ extension TransactionTabView {
                     hasher.combine("transferAccount")
                 case .categorySelectionView:
                     hasher.combine("category")
-                case .labelSelectionView:
-                    hasher.combine("label")
-                case .addLabelView:
-                    hasher.combine("addLabel")
-                case .selectPaymentMethodView:
-                    hasher.combine("paymentMethod")
                 case .categoryDetailsView:
                     hasher.combine("categoryDetailsView")
                 case .currencySelectionView:
