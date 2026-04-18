@@ -52,7 +52,7 @@ class Transaction {
             switch self {
             case .expense: return .red
             case .income:  return .green
-            default:       return .gray
+            case .transfer: return .blue
             }
         }
     }
@@ -164,7 +164,7 @@ extension Transaction {
             category: info.category,
             transferAccount: info.transferAccount,
             date: info.date,
-            labels: info.labels,
+            labels: [],
             note: info.note,
             paymentMethod: info.paymentMethod
         )
