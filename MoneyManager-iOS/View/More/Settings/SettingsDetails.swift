@@ -15,10 +15,6 @@ struct SettingsDetails: View {
                 NavigationLink(value: MoreTabView.Router.Destination.currencyView) {
                     SettingsDetailsCommon(settingsItem: item)
                 }
-            case "Labels":
-                NavigationLink(value: MoreTabView.Router.Destination.labelsView) {
-                    SettingsDetailsCommon(settingsItem: item)
-                }
             default:
                 NavigationLink(value: MoreTabView.Router.Destination.particularSettingsView(settings: item)) {
                     SettingsDetailsCommon(settingsItem: item)

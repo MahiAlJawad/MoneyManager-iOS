@@ -7,7 +7,6 @@
 
 import SwiftData
 import SwiftUI
-import UIKit
 
 struct AddTransactionView: View {
     private typealias Destination = TransactionTabView.Router.Destination
@@ -49,6 +48,7 @@ struct AddTransactionView: View {
             moreDetailsSectionView
         }
         .listStyle(.insetGrouped)
+        .listSectionSpacing(.compact)
         .scrollDismissesKeyboard(.interactively)
         .onLoad {
             refreshDisplayedAmount()
@@ -99,7 +99,7 @@ struct AddTransactionView: View {
             Text("Transfer").tag(TransactionType.transfer)
         }
         .pickerStyle(.segmented)
-        .background(SegmentedPickerTintUpdater(tintColor: UIColor(addTransactionInfo.transactionType.color)))
+        .background(SegmentedPickerTintUpdater(tintColor: addTransactionInfo.transactionType.color))
         .listRowInsets(.init(top: 10, leading: 16, bottom: 10, trailing: 16))
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
@@ -146,6 +146,7 @@ struct AddTransactionView: View {
         }
     }
     
+    @ViewBuilder
     var generalSectionView: some View {
         Section {
             selectableRow(
@@ -162,8 +163,12 @@ struct AddTransactionView: View {
                     )
                 )
             }
-            
-            if addTransactionInfo.transactionType == .transfer {
+        } header: {
+            sectionSpacerHeader
+        }
+        
+        if addTransactionInfo.transactionType == .transfer {
+            Section {
                 selectableRow(
                     title: "To Account",
                     value: addTransactionInfo.transferAccount?.name ?? "Required",
@@ -178,7 +183,9 @@ struct AddTransactionView: View {
                         )
                     )
                 }
-            } else {
+            }
+        } else {
+            Section {
                 NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
                     rowContent(
                         title: "Category",
@@ -190,7 +197,9 @@ struct AddTransactionView: View {
                 }
                 .applyListItemHeight()
             }
-            
+        }
+        
+        Section {
             HStack(spacing: 12) {
                 rowIcon(systemName: "calendar", color: .pink)
                 
@@ -216,7 +225,15 @@ struct AddTransactionView: View {
                     .focused($focusedField, equals: .note)
             }
             .applyListItemHeight()
+        } header: {
+            sectionSpacerHeader
         }
+    }
+    
+    private var sectionSpacerHeader: some View {
+        Color.clear
+            .frame(height: 8)
+            .accessibilityHidden(true)
     }
     
     private func saveTransaction() {
@@ -328,133 +345,6 @@ struct AddTransactionView: View {
     }
 }
 
-private struct KeyboardDismissTapView: UIViewRepresentable {
-    let onTap: () -> Void
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onTap: onTap)
-    }
-    
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
-        view.backgroundColor = .clear
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        context.coordinator.onTap = onTap
-        
-        DispatchQueue.main.async {
-            context.coordinator.attachRecognizer(to: uiView.window)
-        }
-    }
-    
-    static func dismantleUIView(_ uiView: UIView, coordinator: Coordinator) {
-        coordinator.detachRecognizer()
-    }
-    
-    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
-        var onTap: () -> Void
-        private weak var attachedView: UIView?
-        private lazy var recognizer: UITapGestureRecognizer = {
-            let recognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-            recognizer.cancelsTouchesInView = false
-            recognizer.delegate = self
-            return recognizer
-        }()
-        
-        init(onTap: @escaping () -> Void) {
-            self.onTap = onTap
-        }
-        
-        func attachRecognizer(to view: UIView?) {
-            guard let view, attachedView !== view else {
-                return
-            }
-            
-            detachRecognizer()
-            view.addGestureRecognizer(recognizer)
-            attachedView = view
-        }
-        
-        func detachRecognizer() {
-            attachedView?.removeGestureRecognizer(recognizer)
-            attachedView = nil
-        }
-        
-        @objc func handleTap() {
-            onTap()
-        }
-        
-        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-            var view = touch.view
-            
-            while let currentView = view {
-                if currentView is UIControl || currentView is UITextView {
-                    return false
-                }
-                
-                view = currentView.superview
-            }
-            
-            return true
-        }
-    }
-}
-
-private struct SegmentedPickerTintUpdater: UIViewRepresentable {
-    let tintColor: UIColor
-    
-    func makeUIView(context: Context) -> UIView {
-        UIView(frame: .zero)
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        DispatchQueue.main.async {
-            guard let segmentedControl = uiView.enclosingSubview(of: UISegmentedControl.self) else {
-                return
-            }
-            
-            segmentedControl.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
-            segmentedControl.setTitleTextAttributes([.foregroundColor: UIColor.label], for: .normal)
-            
-            UIView.animate(withDuration: 0.2) {
-                segmentedControl.selectedSegmentTintColor = tintColor
-            }
-        }
-    }
-}
-
-private extension UIView {
-    func enclosingSubview<T: UIView>(of type: T.Type) -> T? {
-        var container: UIView? = self
-        
-        while let view = container {
-            if let match = view.firstSubview(of: type) {
-                return match
-            }
-            
-            container = view.superview
-        }
-        
-        return nil
-    }
-    
-    func firstSubview<T: UIView>(of type: T.Type) -> T? {
-        if let match = self as? T {
-            return match
-        }
-        
-        for subview in subviews {
-            if let match = subview.firstSubview(of: type) {
-                return match
-            }
-        }
-        
-        return nil
-    }
-}
-
 extension AddTransactionView {
     fileprivate enum RowValueStyle {
         case required
@@ -472,7 +362,6 @@ extension AddTransactionView {
 }
 
 extension AddTransactionView {
-    typealias PaymentMethod = Transaction.PaymentMethod
     typealias TransactionType = Transaction.TransactionType
     
     struct AddTransactionInfo {
@@ -484,6 +373,5 @@ extension AddTransactionView {
         var category: Category?
         var date: Date = Date()
         var note: String = ""
-        var paymentMethod: PaymentMethod = .cash
     }
 }

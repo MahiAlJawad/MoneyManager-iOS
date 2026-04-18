@@ -21,8 +21,6 @@ struct TransactionTabView: View {
                         CategorySelectionView(selectedCategory: category)
                     case let .transferAccountSelectionView(account, transferAccount):
                         TransferAccountSelectionView(from: account, transferAccount: transferAccount)
-                    case .addLabelView:
-                        AddLabelView()
                     case .categoryDetailsView(let category,let selectedCategory):
                         CategoryDetailsView(category: category, selectedCategory: selectedCategory)
                     case .currencySelectionView(let selectedCurrency):
@@ -41,7 +39,6 @@ extension TransactionTabView {
             case accountSelectionView(account: Binding<Account?>, transferAccount: Account?)
             case categorySelectionView(category: Binding<Category?>)
             case transferAccountSelectionView(account: Account?, transferAccount: Binding<Account?>)
-            case addLabelView
             case categoryDetailsView(category: Transaction.MainCategory, selectedCategory: Binding<Category?>)
             case currencySelectionView(selectedCurrency: Binding<Currency>)
             
@@ -52,8 +49,6 @@ extension TransactionTabView {
                 case (.categorySelectionView, .categorySelectionView):
                     return true
                 case (.transferAccountSelectionView, .transferAccountSelectionView):
-                    return true
-                case (.addLabelView, .addLabelView):
                     return true
                 case (.categoryDetailsView, .categoryDetailsView):
                     return true
@@ -71,8 +66,6 @@ extension TransactionTabView {
                     hasher.combine("transferAccount")
                 case .categorySelectionView:
                     hasher.combine("category")
-                case .addLabelView:
-                    hasher.combine("addLabel")
                 case .categoryDetailsView:
                     hasher.combine("categoryDetailsView")
                 case .currencySelectionView:

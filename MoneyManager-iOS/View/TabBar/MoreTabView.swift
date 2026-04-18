@@ -11,7 +11,6 @@ struct MoreTabView: View {
     @Observable
     class SheetPresentation {
         var presentAddCurrency: Bool = false
-        var presentLabelsView: Bool = false
     }
     
     @State var router = Router()
@@ -35,8 +34,6 @@ struct MoreTabView: View {
                         HelpView()
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
-                    case .labelsView:
-                        labelsView
                     case .currencyView:
                         CurrencyView(
                             isAddCurrencyPresent: $sheetPresenter.presentAddCurrency,
@@ -73,18 +70,6 @@ struct MoreTabView: View {
     }
 }
 
-// Presents Label View
-extension MoreTabView {
-    var labelsView: some View {
-        LabelsView()
-            .sheet(isPresented: $sheetPresenter.presentLabelsView) {
-                NavigationStack {
-                    AddLabelView(isModallyPresented: true)
-                }
-            }
-    }
-}
-
 extension MoreTabView {
     @Observable
     final class Router {
@@ -96,7 +81,6 @@ extension MoreTabView {
             case helpView
             case particularSettingsView(settings: Settings)
             case currencyView
-            case labelsView
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -113,8 +97,6 @@ extension MoreTabView {
                 case (.particularSettingsView, .particularSettingsView):
                     return true
                 case (.currencyView, .currencyView):
-                    return true
-                case (.labelsView, .labelsView):
                     return true
                 default: return false
                 }
@@ -136,8 +118,6 @@ extension MoreTabView {
                     hasher.combine("individualSettingsView")
                 case .currencyView:
                     hasher.combine("currenceyView")
-                case .labelsView:
-                    hasher.combine("labelsView")
                 }
             }
         }

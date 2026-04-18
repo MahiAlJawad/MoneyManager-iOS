@@ -61,10 +61,6 @@ struct RecordsView: View {
         .navigationTitle("Transactions")
     }
     
-    private func labelsView(with labels: [TransactionLabel]) -> some View {
-        Text("TBD")
-    }
-    
     func transactionView(of transaction: Transaction) -> some View {
         HStack {
             if transaction.transactionType == .transfer {
@@ -77,10 +73,6 @@ struct RecordsView: View {
                         if !transaction.note.isEmpty {
                             Text(transaction.note)
                                 .font(.caption)
-                        }
-                        
-                        if !transaction.labels.isEmpty {
-                            labelsView(with: transaction.labels)
                         }
                     }
                 } icon: {
@@ -98,10 +90,6 @@ struct RecordsView: View {
                         if !transaction.note.isEmpty {
                             Text(transaction.note)
                                 .font(.caption)
-                        }
-                        
-                        if !transaction.labels.isEmpty {
-                            labelsView(with: transaction.labels)
                         }
                     }
                 } icon: {

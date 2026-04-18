@@ -11,30 +11,6 @@ import SwiftUI
 
 @Model
 class Transaction {
-    enum PaymentMethod: CaseIterable {
-        case cash
-        case creditCard
-        case debitCard
-        case banktransfer
-        case voucher
-        case mobilePayment
-        case webPayment
-        case other
-        
-        var description: String {
-            switch self {
-            case .cash:             return "Cash"
-            case .creditCard:       return "Credit Card"
-            case .debitCard:        return "Debit Card"
-            case .banktransfer:     return "Bank Transfer"
-            case .voucher:          return "Voucher"
-            case .mobilePayment:    return "Mobile Payment"
-            case .webPayment:       return "Web Payment"
-            case .other:            return "Other"
-            }
-        }
-    }
-    
     enum TransactionType {
         case expense
         case income
@@ -62,9 +38,7 @@ class Transaction {
     private(set) var amount: Double
     private(set) var category: String
     private(set) var date: Date
-    private var paymentMethod: String
     private(set) var note: String
-    private(set) var labels: [TransactionLabel]
     private(set) var account: Account
     private(set) var transferAccount: Account?
     
@@ -78,9 +52,7 @@ class Transaction {
         category: Category?,
         transferAccount: Account?,
         date: Date,
-        labels: [TransactionLabel],
-        note: String,
-        paymentMethod: PaymentMethod
+        note: String
     ) {
         self.id = UUID().uuidString
         self.type = type.description
@@ -102,8 +74,6 @@ class Transaction {
         
         self.category = category?.name ?? ""
         self.date = date
-        self.paymentMethod = paymentMethod.description
-        self.labels = labels
         self.note = note
     }
 }
@@ -164,9 +134,7 @@ extension Transaction {
             category: info.category,
             transferAccount: info.transferAccount,
             date: info.date,
-            labels: [],
-            note: info.note,
-            paymentMethod: info.paymentMethod
+            note: info.note
         )
         
         account.addTransaction(transaction)
