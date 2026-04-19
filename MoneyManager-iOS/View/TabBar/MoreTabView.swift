@@ -62,6 +62,12 @@ struct MoreTabView: View {
                             }
                             .environment(router)
                         }
+                    case .exportDataView:
+                        ExportDataView()
+                    case .sendFeedbackView:
+                        SendFeedbackView()
+                    case .signOutView:
+                        SignOutView()
                     }
                 }
         }
@@ -81,6 +87,9 @@ extension MoreTabView {
             case helpView
             case particularSettingsView(settings: Settings)
             case currencyView
+            case exportDataView
+            case sendFeedbackView
+            case signOutView
             
             static func ==(lhs: Destination, rhs: Destination) -> Bool {
                 switch (lhs, rhs) {
@@ -97,6 +106,12 @@ extension MoreTabView {
                 case (.particularSettingsView, .particularSettingsView):
                     return true
                 case (.currencyView, .currencyView):
+                    return true
+                case (.exportDataView, .exportDataView):
+                    return true
+                case (.sendFeedbackView, .sendFeedbackView):
+                    return true
+                case (.signOutView, .signOutView):
                     return true
                 default: return false
                 }
@@ -118,6 +133,12 @@ extension MoreTabView {
                     hasher.combine("individualSettingsView")
                 case .currencyView:
                     hasher.combine("currenceyView")
+                case .exportDataView:
+                    hasher.combine("exportDataView")
+                case .sendFeedbackView:
+                    hasher.combine("sendFeedbackView")
+                case .signOutView:
+                    hasher.combine("signOutView")
                 }
             }
         }
