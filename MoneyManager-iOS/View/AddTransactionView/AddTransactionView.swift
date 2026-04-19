@@ -20,7 +20,19 @@ struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var addTransactionInfo = AddTransactionInfo()
     @State private var displayedAmount = "-0"
+    @State private var presentAddAccountView = false
+    @State private var presentAddCurrencyView = false
+    @State private var currencyRouter = MoreTabView.Router()
+    @State private var savedCurrencies: [Currency] = []
     @FocusState private var focusedField: FocusedField?
+    
+    @Query(sort: [.init(\Account.name)])
+    private var accounts: [Account]
+    
+    @Query(sort: [.init(\Transaction.date, order: .reverse)])
+    private var transactions: [Transaction]
+    
+    private let quickCategoryLimit = 5
     
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
@@ -71,6 +83,30 @@ struct AddTransactionView: View {
                 focusedField = nil
             }
         )
+        .sheet(isPresented: $presentAddAccountView) {
+            NavigationView {
+                AddAccountView()
+            }
+        }
+        .sheet(isPresented: $presentAddCurrencyView) {
+            NavigationStack(path: $currencyRouter.secondNavigationPath) {
+                AddCurrencyView(
+                    isSheetPresented: $presentAddCurrencyView,
+                    newCurrencies: $savedCurrencies
+                )
+                .navigationDestination(for: MoreTabView.Router.Destination2.self) { destination in
+                    switch destination {
+                    case .currencyConversionView(let selectedCurrency):
+                        CurrencyDetailsView(
+                            currentCurrencies: [Currency.baseCurrencyCode, selectedCurrency],
+                            savedNewCurrencies: $savedCurrencies,
+                            isSheetPresented: $presentAddCurrencyView
+                        )
+                    }
+                }
+            }
+            .environment(currencyRouter)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") {
@@ -108,25 +144,7 @@ struct AddTransactionView: View {
     var expenseAmountTextFieldView: some View {
         Section {
             HStack(spacing: 12) {
-                Button {
-                    router.navigate(
-                        to: Destination.currencySelectionView(selectedCurrency: $addTransactionInfo.currency)
-                    )
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(addTransactionInfo.currency.currencyCode ?? "")
-                        Image(systemName: "chevron.down")
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .buttonStyle(.plain)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color(uiColor: .tertiarySystemFill))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                currencyMenuButton
                 
                 Spacer(minLength: 12)
                 
@@ -149,53 +167,30 @@ struct AddTransactionView: View {
     @ViewBuilder
     var generalSectionView: some View {
         Section {
-            selectableRow(
+            accountDropdownRow(
                 title: addTransactionInfo.transactionType == .transfer ? "From Account" : "Account",
-                value: addTransactionInfo.account?.name ?? "Required",
-                valueStyle: addTransactionInfo.account == nil ? .required : .secondary,
                 icon: "person.circle.fill",
-                iconColor: .blue
-            ) {
-                router.navigate(
-                    to: Destination.accountSelectionView(
-                        account: $addTransactionInfo.account,
-                        transferAccount: addTransactionInfo.transferAccount
-                    )
-                )
-            }
+                iconColor: .blue,
+                selectedAccount: $addTransactionInfo.account,
+                excluding: addTransactionInfo.transferAccount
+            )
         } header: {
             sectionSpacerHeader
         }
         
         if addTransactionInfo.transactionType == .transfer {
             Section {
-                selectableRow(
+                accountDropdownRow(
                     title: "To Account",
-                    value: addTransactionInfo.transferAccount?.name ?? "Required",
-                    valueStyle: addTransactionInfo.transferAccount == nil ? .required : .secondary,
                     icon: "person.circle.fill",
-                    iconColor: .cyan
-                ) {
-                    router.navigate(
-                        to: Destination.transferAccountSelectionView(
-                            account: addTransactionInfo.account,
-                            transferAccount: $addTransactionInfo.transferAccount
-                        )
-                    )
-                }
+                    iconColor: .cyan,
+                    selectedAccount: $addTransactionInfo.transferAccount,
+                    excluding: addTransactionInfo.account
+                )
             }
         } else {
             Section {
-                NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
-                    rowContent(
-                        title: "Category",
-                        value: addTransactionInfo.category?.name ?? "Required",
-                        valueStyle: addTransactionInfo.category == nil ? .required : .secondary,
-                        icon: "star.fill",
-                        iconColor: .orange
-                    )
-                }
-                .applyListItemHeight()
+                categoryDropdownButton
             }
         }
         
@@ -234,6 +229,244 @@ struct AddTransactionView: View {
         Color.clear
             .frame(height: 8)
             .accessibilityHidden(true)
+    }
+    
+    private var quickCategories: [CategoryMenuItem] {
+        var categoryItems: [CategoryMenuItem] = []
+        var addedCategoryNames = Set<String>()
+        
+        for transaction in transactions {
+            guard let category = transaction.transactionCategory,
+                  addedCategoryNames.insert(category.name).inserted else {
+                continue
+            }
+            
+            categoryItems.append(CategoryMenuItem(category: category))
+            
+            if categoryItems.count == quickCategoryLimit {
+                return categoryItems
+            }
+        }
+        
+        for category in Transaction.allMainCategories {
+            guard addedCategoryNames.insert(category.name).inserted else {
+                continue
+            }
+            
+            categoryItems.append(CategoryMenuItem(category: category))
+            
+            if categoryItems.count == quickCategoryLimit {
+                break
+            }
+        }
+        
+        return categoryItems
+    }
+    
+    private var availableCurrencies: [Currency] {
+        var currencies = [Currency.baseCurrency]
+        let savedCurrencies = Currency.loadCurrencyData()
+        let savedCurrencyCodes = Set(currencies.compactMap(\.currencyCode))
+        
+        currencies.append(
+            contentsOf: savedCurrencies.filter { currency in
+                guard let currencyCode = currency.currencyCode else {
+                    return false
+                }
+                
+                return !savedCurrencyCodes.contains(currencyCode)
+            }
+        )
+        
+        return currencies
+    }
+    
+    private var currencyMenuButton: some View {
+        HStack(spacing: 2) {
+            Text(addTransactionInfo.currency.currencyCode ?? "")
+                .lineLimit(1)
+                .frame(width: 42, height: 36)
+            
+            currencyMenuTrigger
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(.primary)
+        .frame(width: 76, height: 36)
+        .background(Color(uiColor: .tertiarySystemFill))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+    
+    private var currencyMenuTrigger: some View {
+        Menu {
+            ForEach(availableCurrencies, id: \.currencyCode) { currency in
+                Button {
+                    addTransactionInfo.currency = currency
+                } label: {
+                    Label(currencyMenuTitle(for: currency), systemImage: "coloncurrencysign.circle")
+                }
+            }
+            
+            Divider()
+            
+            Button {
+                savedCurrencies = Currency.loadCurrencyData()
+                currencyRouter.navigateToSecondRoot()
+                presentAddCurrencyView = true
+            } label: {
+                Label("Add Currency", systemImage: "plus.circle")
+            }
+        } label: {
+            dropdownButtonIcon(backgroundColor: Color(uiColor: .systemBackground).opacity(0.7))
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func availableAccounts(excluding excludedAccount: Account?) -> [Account] {
+        guard let excludedAccountID = excludedAccount?.id else {
+            return accounts
+        }
+        
+        return accounts.filter { $0.id != excludedAccountID }
+    }
+    
+    private func accountDropdownRow(
+        title: String,
+        icon: String,
+        iconColor: Color,
+        selectedAccount: Binding<Account?>,
+        excluding excludedAccount: Account?
+    ) -> some View {
+        HStack(spacing: 12) {
+            rowIcon(systemName: icon, color: iconColor)
+            
+            Text(title)
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            accountSummaryView(for: selectedAccount.wrappedValue)
+            
+            accountMenuButton(selectedAccount: selectedAccount, excluding: excludedAccount)
+        }
+        .applyListItemHeight()
+    }
+    
+    @ViewBuilder
+    private func accountSummaryView(for account: Account?) -> some View {
+        if let account {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(account.name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                
+                Text("Balance \(balanceStatusText(for: account.accountBalance))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        } else {
+            Text("Select")
+                .foregroundStyle(RowValueStyle.required.color)
+                .lineLimit(1)
+        }
+    }
+    
+    private func accountMenuButton(
+        selectedAccount: Binding<Account?>,
+        excluding excludedAccount: Account?
+    ) -> some View {
+        Menu {
+            ForEach(availableAccounts(excluding: excludedAccount)) { account in
+                Button {
+                    selectedAccount.wrappedValue = account
+                } label: {
+                    Label(account.name, systemImage: account.iconName)
+                }
+            }
+            
+            Divider()
+            
+            Button {
+                presentAddAccountView = true
+            } label: {
+                Label("Add Account", systemImage: "plus.circle")
+            }
+        } label: {
+            dropdownButtonIcon()
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var categoryDropdownButton: some View {
+        HStack(spacing: 12) {
+            rowIcon(systemName: "star.fill", color: .orange)
+            
+            Text("Category")
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            Text(addTransactionInfo.category?.name ?? "Select")
+                .foregroundStyle(addTransactionInfo.category == nil ? RowValueStyle.required.color : RowValueStyle.secondary.color)
+                .lineLimit(1)
+            
+            categoryMenuButton
+        }
+        .applyListItemHeight()
+    }
+    
+    private var categoryMenuButton: some View {
+        Menu {
+            ForEach(quickCategories) { item in
+                Button {
+                    addTransactionInfo.category = item.category
+                } label: {
+                    Label(item.category.name, systemImage: item.category.icon)
+                }
+            }
+            
+            Divider()
+            
+            Button {
+                router.navigate(to: Destination.categorySelectionView(category: $addTransactionInfo.category))
+            } label: {
+                Label("More", systemImage: "ellipsis.circle")
+            }
+        } label: {
+            dropdownButtonIcon()
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func dropdownButtonIcon(backgroundColor: Color = Color(uiColor: .tertiarySystemFill)) -> some View {
+        Image(systemName: "chevron.down")
+            .font(.caption.weight(.bold))
+            .foregroundStyle(.primary)
+            .frame(width: 30, height: 30)
+            .background(backgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 0.5)
+            )
+            .contentShape(Rectangle())
+    }
+    
+    private func balanceStatusText(for balance: Double) -> String {
+        let balanceText = abs(balance).formatted(.number.precision(.fractionLength(0...2)))
+        return balance < 0 ? "\(balanceText) DR." : "\(balanceText) CR"
+    }
+    
+    private func currencyMenuTitle(for currency: Currency) -> String {
+        guard let currencyCode = currency.currencyCode else {
+            return ""
+        }
+
+        let currencyLocale = Locale(identifier: currencyCode)
+        return currency.currencyName ??
+        (currencyLocale as NSLocale).displayName(forKey: .currencyCode, value: currencyCode) ??
+        currencyCode
     }
     
     private func saveTransaction() {
@@ -346,6 +579,14 @@ struct AddTransactionView: View {
 }
 
 extension AddTransactionView {
+    fileprivate struct CategoryMenuItem: Identifiable {
+        let category: Category
+        
+        var id: String {
+            category.name
+        }
+    }
+    
     fileprivate enum RowValueStyle {
         case required
         case secondary
