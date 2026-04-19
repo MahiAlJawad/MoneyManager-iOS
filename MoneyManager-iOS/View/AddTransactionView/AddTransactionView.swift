@@ -22,6 +22,14 @@ struct AddTransactionView: View {
     @State private var displayedAmount = "-0"
     @FocusState private var focusedField: FocusedField?
     
+    @Query(sort: [.init(\Account.name)])
+    private var accounts: [Account]
+    
+    @Query(sort: [.init(\Transaction.date, order: .reverse)])
+    private var transactions: [Transaction]
+    
+    private let quickCategoryLimit = 5
+    
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
         !addTransactionInfo.amount.isEmpty &&
@@ -149,53 +157,30 @@ struct AddTransactionView: View {
     @ViewBuilder
     var generalSectionView: some View {
         Section {
-            selectableRow(
+            accountDropdownRow(
                 title: addTransactionInfo.transactionType == .transfer ? "From Account" : "Account",
-                value: addTransactionInfo.account?.name ?? "Required",
-                valueStyle: addTransactionInfo.account == nil ? .required : .secondary,
                 icon: "person.circle.fill",
-                iconColor: .blue
-            ) {
-                router.navigate(
-                    to: Destination.accountSelectionView(
-                        account: $addTransactionInfo.account,
-                        transferAccount: addTransactionInfo.transferAccount
-                    )
-                )
-            }
+                iconColor: .blue,
+                selectedAccount: $addTransactionInfo.account,
+                excluding: addTransactionInfo.transferAccount
+            )
         } header: {
             sectionSpacerHeader
         }
         
         if addTransactionInfo.transactionType == .transfer {
             Section {
-                selectableRow(
+                accountDropdownRow(
                     title: "To Account",
-                    value: addTransactionInfo.transferAccount?.name ?? "Required",
-                    valueStyle: addTransactionInfo.transferAccount == nil ? .required : .secondary,
                     icon: "person.circle.fill",
-                    iconColor: .cyan
-                ) {
-                    router.navigate(
-                        to: Destination.transferAccountSelectionView(
-                            account: addTransactionInfo.account,
-                            transferAccount: $addTransactionInfo.transferAccount
-                        )
-                    )
-                }
+                    iconColor: .cyan,
+                    selectedAccount: $addTransactionInfo.transferAccount,
+                    excluding: addTransactionInfo.account
+                )
             }
         } else {
             Section {
-                NavigationLink(value: Destination.categorySelectionView(category: $addTransactionInfo.category)) {
-                    rowContent(
-                        title: "Category",
-                        value: addTransactionInfo.category?.name ?? "Required",
-                        valueStyle: addTransactionInfo.category == nil ? .required : .secondary,
-                        icon: "star.fill",
-                        iconColor: .orange
-                    )
-                }
-                .applyListItemHeight()
+                categoryDropdownButton
             }
         }
         
@@ -234,6 +219,161 @@ struct AddTransactionView: View {
         Color.clear
             .frame(height: 8)
             .accessibilityHidden(true)
+    }
+    
+    private var quickCategories: [CategoryMenuItem] {
+        var categoryItems: [CategoryMenuItem] = []
+        var addedCategoryNames = Set<String>()
+        
+        for transaction in transactions {
+            guard let category = transaction.transactionCategory,
+                  addedCategoryNames.insert(category.name).inserted else {
+                continue
+            }
+            
+            categoryItems.append(CategoryMenuItem(category: category))
+            
+            if categoryItems.count == quickCategoryLimit {
+                return categoryItems
+            }
+        }
+        
+        for category in Transaction.allMainCategories {
+            guard addedCategoryNames.insert(category.name).inserted else {
+                continue
+            }
+            
+            categoryItems.append(CategoryMenuItem(category: category))
+            
+            if categoryItems.count == quickCategoryLimit {
+                break
+            }
+        }
+        
+        return categoryItems
+    }
+    
+    private func availableAccounts(excluding excludedAccount: Account?) -> [Account] {
+        guard let excludedAccountID = excludedAccount?.id else {
+            return accounts
+        }
+        
+        return accounts.filter { $0.id != excludedAccountID }
+    }
+    
+    private func accountDropdownRow(
+        title: String,
+        icon: String,
+        iconColor: Color,
+        selectedAccount: Binding<Account?>,
+        excluding excludedAccount: Account?
+    ) -> some View {
+        HStack(spacing: 12) {
+            rowIcon(systemName: icon, color: iconColor)
+            
+            Text(title)
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            accountSummaryView(for: selectedAccount.wrappedValue)
+            
+            accountMenuButton(selectedAccount: selectedAccount, excluding: excludedAccount)
+        }
+        .applyListItemHeight()
+    }
+    
+    @ViewBuilder
+    private func accountSummaryView(for account: Account?) -> some View {
+        if let account {
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(account.name)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                
+                Text("Balance \(balanceStatusText(for: account.accountBalance))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+        } else {
+            Text("Select")
+                .foregroundStyle(RowValueStyle.required.color)
+                .lineLimit(1)
+        }
+    }
+    
+    private func accountMenuButton(
+        selectedAccount: Binding<Account?>,
+        excluding excludedAccount: Account?
+    ) -> some View {
+        Menu {
+            ForEach(availableAccounts(excluding: excludedAccount)) { account in
+                Button {
+                    selectedAccount.wrappedValue = account
+                } label: {
+                    Label(account.name, systemImage: account.iconName)
+                }
+            }
+        } label: {
+            Image(systemName: "chevron.down")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var categoryDropdownButton: some View {
+        HStack(spacing: 12) {
+            rowIcon(systemName: "star.fill", color: .orange)
+            
+            Text("Category")
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            Text(addTransactionInfo.category?.name ?? "Select")
+                .foregroundStyle(addTransactionInfo.category == nil ? RowValueStyle.required.color : RowValueStyle.secondary.color)
+                .lineLimit(1)
+            
+            categoryMenuButton
+        }
+        .applyListItemHeight()
+    }
+    
+    private var categoryMenuButton: some View {
+        Menu {
+            ForEach(quickCategories) { item in
+                Button {
+                    addTransactionInfo.category = item.category
+                } label: {
+                    Label(item.category.name, systemImage: item.category.icon)
+                }
+            }
+            
+            Divider()
+            
+            Button {
+                router.navigate(to: Destination.categorySelectionView(category: $addTransactionInfo.category))
+            } label: {
+                Label("More", systemImage: "ellipsis.circle")
+            }
+        } label: {
+            Image(systemName: "chevron.down")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func balanceStatusText(for balance: Double) -> String {
+        let balanceText = abs(balance).formatted(.number.precision(.fractionLength(0...2)))
+        return balance < 0 ? "\(balanceText) DR." : "\(balanceText) CR"
     }
     
     private func saveTransaction() {
@@ -346,6 +486,14 @@ struct AddTransactionView: View {
 }
 
 extension AddTransactionView {
+    fileprivate struct CategoryMenuItem: Identifiable {
+        let category: Category
+        
+        var id: String {
+            category.name
+        }
+    }
+    
     fileprivate enum RowValueStyle {
         case required
         case secondary
