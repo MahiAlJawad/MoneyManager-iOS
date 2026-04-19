@@ -20,6 +20,8 @@ struct AddTransactionView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var addTransactionInfo = AddTransactionInfo()
     @State private var displayedAmount = "-0"
+    @State private var amountExpression = ""
+    @State private var isAmountKeyboardPresented = false
     @State private var presentAddAccountView = false
     @State private var presentAddCurrencyView = false
     @State private var currencyRouter = MoreTabView.Router()
@@ -41,17 +43,6 @@ struct AddTransactionView: View {
         (addTransactionInfo.category != nil || addTransactionInfo.transferAccount != nil)
     }
     
-    var amountPrefix: String {
-        switch addTransactionInfo.transactionType {
-        case .expense:
-            "-"
-        case .income:
-            "+"
-        case .transfer:
-            ""
-        }
-    }
-    
     var body: some View {
         List {
             expenseTypePickerView
@@ -62,9 +53,15 @@ struct AddTransactionView: View {
         .listStyle(.insetGrouped)
         .listSectionSpacing(.compact)
         .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom) {
+            if isAmountKeyboardPresented {
+                amountKeyboardView
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
         .onLoad {
             refreshDisplayedAmount()
-            focusedField = .amount
+            presentAmountKeyboard()
         }
         .onChange(of: addTransactionInfo.transactionType) { _, newType in
             if newType == .transfer {
@@ -75,12 +72,16 @@ struct AddTransactionView: View {
             
             refreshDisplayedAmount()
         }
-        .onChange(of: displayedAmount) { _, newValue in
-            updateAmount(from: newValue)
+        .onChange(of: focusedField) { _, newValue in
+            if newValue == .note {
+                isAmountKeyboardPresented = false
+            }
         }
+        .animation(.snappy(duration: 0.24), value: isAmountKeyboardPresented)
         .background(
             KeyboardDismissTapView {
                 focusedField = nil
+                isAmountKeyboardPresented = false
             }
         )
         .sheet(isPresented: $presentAddAccountView) {
@@ -148,20 +149,67 @@ struct AddTransactionView: View {
                 
                 Spacer(minLength: 12)
                 
-                TextField("", text: $displayedAmount)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.55)
-                    .focused($focusedField, equals: .amount)
-                    .keyboardType(.decimalPad)
-                    .tint(addTransactionInfo.transactionType.color)
-                    .font(.system(size: 52, weight: .regular))
-                    .foregroundStyle(addTransactionInfo.transactionType.color)
-                    .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64, alignment: .trailing)
+                Button {
+                    presentAmountKeyboard()
+                } label: {
+                    Text(displayedAmount)
+                        .multilineTextAlignment(.trailing)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.55)
+                        .font(.system(size: 52, weight: .regular))
+                        .foregroundStyle(addTransactionInfo.transactionType.color)
+                        .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64, alignment: .trailing)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .frame(maxWidth: .infinity, minHeight: 88, maxHeight: 88, alignment: .leading)
             .listRowBackground(Color(uiColor: .secondarySystemGroupedBackground))
         }
+    }
+    
+    private var amountKeyboardView: some View {
+        VStack(spacing: 10) {
+            ForEach(amountKeyboardRows, id: \.self) { row in
+                HStack(spacing: 10) {
+                    ForEach(row) { key in
+                        amountKeyboardButton(for: key)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 10)
+        .background(.regularMaterial)
+    }
+    
+    private var amountKeyboardRows: [[AmountKeyboardKey]] {
+        [
+            [.clear, .backspace, .divide, .multiply],
+            [.digit("7"), .digit("8"), .digit("9"), .subtract],
+            [.digit("4"), .digit("5"), .digit("6"), .add],
+            [.digit("1"), .digit("2"), .digit("3"), .equals],
+            [.decimal, .digit("0"), .percent, .done]
+        ]
+    }
+    
+    private func amountKeyboardButton(for key: AmountKeyboardKey) -> some View {
+        Button {
+            handleAmountKeyboardKey(key)
+        } label: {
+            Text(key.title)
+                .font(.title3.weight(key.isPrimaryAction ? .semibold : .medium))
+                .foregroundStyle(key.foregroundColor(transactionTint: addTransactionInfo.transactionType.color))
+                .frame(maxWidth: .infinity, minHeight: 48)
+                .background(key.backgroundColor(transactionTint: addTransactionInfo.transactionType.color))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color(uiColor: .separator).opacity(0.25), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
     }
     
     @ViewBuilder
@@ -472,7 +520,7 @@ struct AddTransactionView: View {
     private func saveTransaction() {
         do {
             var transactionInfo = addTransactionInfo
-            transactionInfo.amount = normalizedAmountValue(from: displayedAmount)
+            transactionInfo.amount = evaluatedAmountValue()
             
             try Transaction.addTransaction(from: transactionInfo)
         } catch {
@@ -533,48 +581,148 @@ struct AddTransactionView: View {
         .frame(width: 30, height: 30)
     }
     
-    private func updateAmount(from text: String) {
-        let amountValue = normalizedAmountValue(from: text)
-        addTransactionInfo.amount = amountValue
-        
-        let formattedAmount = formattedDisplayedAmount(for: amountValue)
-        if displayedAmount != formattedAmount {
-            displayedAmount = formattedAmount
+    private func handleAmountKeyboardKey(_ key: AmountKeyboardKey) {
+        switch key {
+        case .digit(let digit):
+            appendDigit(digit)
+        case .decimal:
+            appendDecimalPoint()
+        case .add, .subtract, .multiply, .divide:
+            appendOperator(key.title)
+        case .percent:
+            applyPercentToCurrentNumber()
+        case .clear:
+            amountExpression = ""
+        case .backspace:
+            if !amountExpression.isEmpty {
+                amountExpression.removeLast()
+            }
+        case .equals:
+            commitAmountExpression()
+        case .done:
+            commitAmountExpression()
+            focusedField = nil
+            isAmountKeyboardPresented = false
+            return
         }
+        
+        updateAmountFromExpression()
+        keepAmountKeyboardPresented()
+    }
+    
+    private func presentAmountKeyboard() {
+        focusedField = nil
+        keepAmountKeyboardPresented()
+    }
+    
+    private func keepAmountKeyboardPresented() {
+        DispatchQueue.main.async {
+            isAmountKeyboardPresented = true
+        }
+    }
+    
+    private func appendDigit(_ digit: String) {
+        guard digit.count == 1 else { return }
+        
+        let range = currentNumberTokenRange()
+        let currentToken = String(amountExpression[range])
+        
+        if currentToken == "0" {
+            if digit == "0" {
+                return
+            }
+            
+            amountExpression.replaceSubrange(range, with: digit)
+        } else {
+            amountExpression.append(digit)
+        }
+    }
+    
+    private func appendDecimalPoint() {
+        let range = currentNumberTokenRange()
+        let currentToken = String(amountExpression[range])
+        
+        guard !currentToken.contains(".") else { return }
+        
+        if currentToken.isEmpty {
+            amountExpression.append("0.")
+        } else {
+            amountExpression.append(".")
+        }
+    }
+    
+    private func appendOperator(_ operation: String) {
+        guard !amountExpression.isEmpty else { return }
+        
+        if amountExpression.last?.isAmountOperator == true {
+            amountExpression.removeLast()
+        }
+        
+        if amountExpression.last != "." {
+            amountExpression.append(operation)
+        }
+    }
+    
+    private func applyPercentToCurrentNumber() {
+        let range = currentNumberTokenRange()
+        let currentToken = String(amountExpression[range])
+        
+        guard let value = Double(currentToken) else { return }
+        
+        amountExpression.replaceSubrange(range, with: formattedNumber(value / 100))
+    }
+    
+    private func commitAmountExpression() {
+        amountExpression = evaluatedAmountValue()
+        updateAmountFromExpression()
+    }
+    
+    private func updateAmountFromExpression() {
+        addTransactionInfo.amount = evaluatedAmountValue()
+        displayedAmount = formattedDisplayedAmount(for: amountExpression)
     }
     
     private func refreshDisplayedAmount() {
-        displayedAmount = formattedDisplayedAmount(for: addTransactionInfo.amount)
+        amountExpression = addTransactionInfo.amount
+        updateAmountFromExpression()
     }
     
     private func formattedDisplayedAmount(for amount: String) -> String {
-        "\(amountPrefix)\(amount.isEmpty ? "0" : amount)"
+        amount.isEmpty ? "0" : amount
     }
     
-    private func normalizedAmountValue(from text: String) -> String {
-        var amount = ""
-        var hasDecimalPoint = false
+    private func evaluatedAmountValue() -> String {
+        let trimmedExpression = amountExpression.trimmingTrailingOperatorsAndDecimal()
         
-        for character in text {
-            if character.isNumber {
-                amount.append(character)
-            } else if character == ".", !hasDecimalPoint {
-                amount.append(character)
-                hasDecimalPoint = true
-            }
+        guard let value = AmountExpressionEvaluator(expression: trimmedExpression).evaluate(),
+              value.isFinite,
+              value > 0 else {
+            return ""
         }
         
-        while amount.count > 1,
-              amount.first == "0",
-              amount[amount.index(after: amount.startIndex)] != "." {
-            amount.removeFirst()
+        return formattedNumber(value)
+    }
+    
+    private func formattedNumber(_ value: Double) -> String {
+        let roundedValue = (value * 100_000_000).rounded() / 100_000_000
+        var text = String(format: "%.8f", roundedValue)
+        
+        while text.last == "0" {
+            text.removeLast()
         }
         
-        if amount == "." {
-            amount = "0."
+        if text.last == "." {
+            text.removeLast()
         }
         
-        return amount == "0" ? "" : amount
+        return text
+    }
+    
+    private func currentNumberTokenRange() -> Range<String.Index> {
+        let startIndex = amountExpression.lastIndex(where: \.isAmountOperator)
+            .map { amountExpression.index(after: $0) } ?? amountExpression.startIndex
+        
+        return startIndex..<amountExpression.endIndex
     }
 }
 
@@ -614,5 +762,167 @@ extension AddTransactionView {
         var category: Category?
         var date: Date = Date()
         var note: String = ""
+    }
+}
+
+extension AddTransactionView {
+    fileprivate enum AmountKeyboardKey: Identifiable, Hashable {
+        case digit(String)
+        case decimal
+        case add
+        case subtract
+        case multiply
+        case divide
+        case clear
+        case backspace
+        case percent
+        case equals
+        case done
+        
+        var id: String {
+            title
+        }
+        
+        var title: String {
+            switch self {
+            case .digit(let digit): return digit
+            case .decimal:          return "."
+            case .add:              return "+"
+            case .subtract:         return "-"
+            case .multiply:         return "*"
+            case .divide:           return "/"
+            case .clear:            return "C"
+            case .backspace:        return "⌫"
+            case .percent:          return "%"
+            case .equals:           return "="
+            case .done:             return "Done"
+            }
+        }
+        
+        var isPrimaryAction: Bool {
+            self == .done
+        }
+        
+        func backgroundColor(transactionTint: Color) -> Color {
+            switch self {
+            case .done:
+                Color.red
+            case .clear, .backspace:
+                Color(uiColor: .secondarySystemFill)
+            case .add, .subtract, .multiply, .divide:
+                Color(uiColor: .tertiarySystemFill)
+            case .digit, .decimal, .percent, .equals:
+                Color(uiColor: .secondarySystemGroupedBackground)
+            }
+        }
+        
+        func foregroundColor(transactionTint: Color) -> Color {
+            switch self {
+            case .done:
+                .white
+            case .add, .subtract, .multiply, .divide:
+                transactionTint
+            default:
+                .primary
+            }
+        }
+    }
+    
+    fileprivate struct AmountExpressionEvaluator {
+        private let characters: [Character]
+        private var index = 0
+        
+        init(expression: String) {
+            characters = Array(expression)
+        }
+        
+        func evaluate() -> Double? {
+            var evaluator = self
+            guard let value = evaluator.parseExpression(),
+                  evaluator.index == evaluator.characters.count else {
+                return nil
+            }
+            
+            return value
+        }
+        
+        private mutating func parseExpression() -> Double? {
+            guard var value = parseTerm() else { return nil }
+            
+            while let operation = currentCharacter, operation == "+" || operation == "-" {
+                advance()
+                
+                guard let nextValue = parseTerm() else { return nil }
+                
+                if operation == "+" {
+                    value += nextValue
+                } else {
+                    value -= nextValue
+                }
+            }
+            
+            return value
+        }
+        
+        private mutating func parseTerm() -> Double? {
+            guard var value = parseNumber() else { return nil }
+            
+            while let operation = currentCharacter, operation == "*" || operation == "/" {
+                advance()
+                
+                guard let nextValue = parseNumber() else { return nil }
+                
+                if operation == "*" {
+                    value *= nextValue
+                } else {
+                    guard nextValue != 0 else { return nil }
+                    value /= nextValue
+                }
+            }
+            
+            return value
+        }
+        
+        private mutating func parseNumber() -> Double? {
+            let startIndex = index
+            
+            while let character = currentCharacter,
+                  character.isNumber || character == "." {
+                advance()
+            }
+            
+            guard startIndex != index else { return nil }
+            
+            return Double(String(characters[startIndex..<index]))
+        }
+        
+        private var currentCharacter: Character? {
+            guard index < characters.count else { return nil }
+            
+            return characters[index]
+        }
+        
+        private mutating func advance() {
+            index += 1
+        }
+    }
+}
+
+private extension Character {
+    var isAmountOperator: Bool {
+        self == "+" || self == "-" || self == "*" || self == "/"
+    }
+}
+
+private extension String {
+    func trimmingTrailingOperatorsAndDecimal() -> String {
+        var text = self
+        
+        while let last = text.last,
+              last.isAmountOperator || last == "." {
+            text.removeLast()
+        }
+        
+        return text
     }
 }
