@@ -9,165 +9,478 @@ import SwiftUI
 
 struct CurrencyDetailsView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(MoreTabView.Router.self) private var router
     
     let currentCurrencies: [String]
     
     @State private var currencyViewModel = CurrencyModel()
-    
-    @State private var data: DataResponse?
-    @State private var baseCurrency = Locale.current.currency?.identifier ?? ""
-    @State private var defaultConversionValue: String = ""
+    @State private var selectedDirection: ConversionDirection = .baseToTarget
+    @State private var editedRateText = ""
+    @State private var draftBaseRate: Double?
+    @State private var seededInitialRate = false
     
     @Binding var savedNewCurrencies: [Currency]
     @Binding var isSheetPresented: Bool
     
-    private func changeCurrencyConversion() {
-        if case .loaded(let data) = currencyViewModel.dataResponse  {
-            if baseCurrency == currentCurrencies[0] {
-                currencyViewModel.fromCurrency = currentCurrencies[0]
-                
-                let conversion_rate = data.conversion_rate
-                defaultConversionValue = String(conversion_rate)
-            } else {
-                currencyViewModel.toCurrency = currentCurrencies[1]
-                let conversion_rate = 1 / (data.conversion_rate)
-                defaultConversionValue = String(conversion_rate)
-            }
+    private var baseCurrency: String { currentCurrencies[0] }
+    private var targetCurrency: String { currentCurrencies[1] }
+    
+    private var selectedSourceCurrency: String {
+        selectedDirection == .baseToTarget ? baseCurrency : targetCurrency
+    }
+    
+    private var selectedDestinationCurrency: String {
+        selectedDirection == .baseToTarget ? targetCurrency : baseCurrency
+    }
+    
+    private var currentSavedBaseRate: Double? {
+        savedNewCurrencies.first(where: { $0.currencyCode == targetCurrency })?.conversionRate
+    }
+    
+    private var savedRateCardTitle: String {
+        currentSavedBaseRate == nil ? "CURRENT RATE" : "CURRENTLY SAVED RATE"
+    }
+    
+    private var fetchedBaseRate: Double? {
+        guard case .loaded(let data) = currencyViewModel.dataResponse else {
+            return nil
+        }
+        return data.conversion_rate
+    }
+    
+    private var initialBaseRate: Double {
+        currentSavedBaseRate ?? fetchedBaseRate ?? 1
+    }
+    
+    private var displayedSavedRate: Double {
+        rateForSelectedDirection(fromBaseRate: initialBaseRate)
+    }
+    
+    private var editedRateValue: Double? {
+        Double(editedRateText)
+    }
+    
+    private var currentDraftBaseRate: Double {
+        draftBaseRate ?? initialBaseRate
+    }
+    
+    private var displayedDraftRate: Double {
+        rateForSelectedDirection(fromBaseRate: currentDraftBaseRate)
+    }
+    
+    private var effectiveEditedRate: Double {
+        editedRateValue ?? displayedDraftRate
+    }
+    
+    private var baseRateToSave: Double {
+        switch selectedDirection {
+        case .baseToTarget:
+            return max(effectiveEditedRate, 0)
+        case .targetToBase:
+            guard effectiveEditedRate > 0 else { return initialBaseRate }
+            return 1 / effectiveEditedRate
         }
     }
     
+    private var isSaveEnabled: Bool {
+        guard let editedRateValue else { return false }
+        return editedRateValue > 0
+    }
+    
+    private func rateForSelectedDirection(fromBaseRate baseRate: Double) -> Double {
+        switch selectedDirection {
+        case .baseToTarget:
+            return baseRate
+        case .targetToBase:
+            guard baseRate != 0 else { return 0 }
+            return 1 / baseRate
+        }
+    }
+    
+    private func seedEditedRateIfNeeded() {
+        guard !seededInitialRate else { return }
+        draftBaseRate = initialBaseRate
+        editedRateText = formattedNumber(displayedDraftRate, minFraction: 0, maxFraction: 5)
+        seededInitialRate = true
+    }
+    
+    private func syncEditedRateForDirection() {
+        editedRateText = formattedNumber(displayedDraftRate, minFraction: 0, maxFraction: 5)
+    }
+    
+    private func updateDraftRate() {
+        guard let editedRateValue, editedRateValue > 0 else { return }
+        
+        switch selectedDirection {
+        case .baseToTarget:
+            draftBaseRate = editedRateValue
+        case .targetToBase:
+            draftBaseRate = 1 / editedRateValue
+        }
+    }
+    
+    private func saveRate() {
+        let savedCurrency = Currency(
+            currencyCode: targetCurrency,
+            conversionRate: baseRateToSave
+        )
+        
+        if let existingIndex = savedNewCurrencies.firstIndex(where: { $0.currencyCode == targetCurrency }) {
+            savedNewCurrencies[existingIndex] = savedCurrency
+        } else {
+            savedNewCurrencies.append(savedCurrency)
+        }
+        
+        Currency.saveNewCurrency(savedCurrencies: savedNewCurrencies)
+        dismiss()
+        isSheetPresented = false
+    }
+    
     var body: some View {
-        Spacer()
-        VStack {
-            Picker("picker", selection: $baseCurrency) {
-                ForEach(currentCurrencies, id: \.self) {
-                    Text("1\($0)=")
-                }
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: baseCurrency) {
-                changeCurrencyConversion()
-            }
-            
+        VStack(spacing: 16) {
             switch currencyViewModel.dataResponse {
             case .loaded:
-                CustomKeypad(displayedNumber: $defaultConversionValue)
-            case .loading:
-                ProgressView()
-                    .task {
-                        currencyViewModel.fromCurrency = currentCurrencies[0]
-                        currencyViewModel.toCurrency = currentCurrencies[1]
-                        await currencyViewModel.loadData()
-                        changeCurrencyConversion()
-                    }
-            case .failed:
-                ContentUnavailableView(
-                    "Connection issue",
-                    systemImage: "wifi.slash",
-                    description: Text("Check your internet connection")
+                rateEditorContent
+                ManualRateKeypad(
+                    displayedNumber: $editedRateText,
+                    saveAction: saveRate,
+                    isSaveEnabled: isSaveEnabled
                 )
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Save") {
-                    savedNewCurrencies.append(.init(currencyCode: currentCurrencies[1], conversionRate: Double(defaultConversionValue) ?? 1.0))
-                    Currency.saveNewCurrency(savedCurrencies: savedNewCurrencies)
-//                    let currency = savedNewCurrencies
-//                    do {
-//                        let encodedData = try JSONEncoder().encode(currency)
-//                        let userDefaults = UserDefaults.standard
-//                        userDefaults.set(encodedData, forKey: "SavedCurrencies")
-//                    } catch {
-//                        print("Failed to save currency data \(error.localizedDescription)")
-//                    }
-                    dismiss()
-                    isSheetPresented = false
+                .onAppear {
+                    seedEditedRateIfNeeded()
+                }
+            case .loading:
+                Spacer()
+                ProgressView()
+                Spacer()
+            case .failed:
+                rateEditorContent
+                ManualRateKeypad(
+                    displayedNumber: $editedRateText,
+                    saveAction: saveRate,
+                    isSaveEnabled: isSaveEnabled
+                )
+                .onAppear {
+                    seedEditedRateIfNeeded()
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 16)
+        .navigationTitle("Set exchange rate")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
+        .background(Color(hex: "F7F6FB").ignoresSafeArea())
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.black)
+                        .frame(width: 40, height: 40)
+                        .background(Color(hex: "F2F2F7"), in: Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color(hex: "E1E1E8"), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .task {
+            currencyViewModel.fromCurrency = baseCurrency
+            currencyViewModel.toCurrency = targetCurrency
+            await currencyViewModel.loadData()
+            seedEditedRateIfNeeded()
+        }
+        .onChange(of: editedRateText) {
+            updateDraftRate()
+        }
+    }
+    
+    private var rateEditorContent: some View {
+        VStack(spacing: 14) {
+            directionPicker
+                .padding(.top, 20)
+            
+            VStack(spacing: 12) {
+                savedRateCard
+                editableRateCard
+                activeRateFooter
+            }
+            .padding(16)
+            .background(Color(hex: "EFEFF3"))
+        }
+    }
+    
+    private var directionPicker: some View {
+        HStack(spacing: 0) {
+            directionTab(
+                title: "1 \(baseCurrency) =",
+                isSelected: selectedDirection == .baseToTarget
+            ) {
+                selectedDirection = .baseToTarget
+                syncEditedRateForDirection()
+            }
+            
+            directionTab(
+                title: "1 \(targetCurrency) =",
+                isSelected: selectedDirection == .targetToBase
+            ) {
+                selectedDirection = .targetToBase
+                syncEditedRateForDirection()
+            }
+        }
+        .padding(4)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color(hex: "DEDEE8"), lineWidth: 1)
+        )
+    }
+    
+    private var savedRateCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(savedRateCardTitle)
+                .font(.system(size: 13, weight: .semibold))
+                .tracking(1.2)
+                .foregroundStyle(Color(hex: "8A8A96"))
+            
+            HStack(alignment: .center, spacing: 12) {
+                Text("1 \(selectedSourceCurrency) = \(formattedNumber(displayedSavedRate, minFraction: 0, maxFraction: 5)) \(selectedDestinationCurrency)")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(.black)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                
+                Spacer()
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color(hex: "DEDEE8"), lineWidth: 1)
+        )
+    }
+    
+    private var editableRateCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("1 \(selectedSourceCurrency) EQUALS")
+                .font(.system(size: 14, weight: .bold))
+                .tracking(1.4)
+                .foregroundStyle(Color(hex: "4D47D9"))
+            
+            HStack(alignment: .lastTextBaseline, spacing: 10) {
+                Text(selectedDestinationCurrency)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(Color(hex: "7A7A88"))
+                
+                Text(editedRateText.isEmpty ? "0" : editedRateText)
+                    .font(.system(size: 52, weight: .regular))
+                    .foregroundStyle(Color(hex: "B9BBC5"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.55)
+                
+                Rectangle()
+                    .fill(Color(hex: "7A6DFF"))
+                    .frame(width: 2, height: 50)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 20)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 22))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22)
+                .stroke(Color(hex: "5B4BC4"), lineWidth: 2)
+        )
+    }
+    
+    private var activeRateFooter: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(Color(hex: "49B08A"))
+                .frame(width: 8, height: 8)
+            
+            Text("1 \(selectedSourceCurrency) = \(formattedNumber(effectiveEditedRate, minFraction: 0, maxFraction: 5)) \(selectedDestinationCurrency)")
+                .font(.system(size: 16))
+                .foregroundStyle(Color(hex: "6D6D78"))
+            
+            Spacer()
+        }
+        .padding(.horizontal, 2)
+    }
+    
+    private func directionTab(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(isSelected ? .white : Color(hex: "8A8A96"))
+                .frame(maxWidth: .infinity, minHeight: 38)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(isSelected ? Color(hex: "5B4BC4") : .clear)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func formattedNumber(_ value: Double, minFraction: Int, maxFraction: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = minFraction
+        formatter.maximumFractionDigits = maxFraction
+        return formatter.string(from: NSNumber(value: value)) ?? "0"
     }
 }
 
-struct CustomKeypad: View {
+private enum ConversionDirection {
+    case baseToTarget
+    case targetToBase
+}
+
+struct ManualRateKeypad: View {
     @Binding var displayedNumber: String
-    @State private var numericValue: Double? = 0.0
+    let saveAction: () -> Void
+    let isSaveEnabled: Bool
     
     let buttons = [
-        ["1","2","3"],
-        ["4","5","6"],
-        ["7","8","9"],
+        ["1", "2", "3"],
+        ["4", "5", "6"],
+        ["7", "8", "9"]
     ]
     
     var body: some View {
-        VStack {
-            Spacer()
-            
-            Text(displayedNumber)
-                .font(.largeTitle)
-                .frame(height: 30)
-            
-            Spacer()
-            
-            Grid {
+        VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 ForEach(0..<buttons.count, id: \.self) { rowIndex in
-                    GridRow {
+                    HStack(spacing: 0) {
                         ForEach(buttons[rowIndex], id: \.self) { number in
-                            Keypadbutton(label: number) {
-                                displayedNumber += number
+                            KeypadButton(label: number) {
+                                appendCharacter(number)
                             }
                         }
                     }
                 }
                 
-                GridRow {
-                    Keypadbutton(label: ".") {
-                        displayedNumber += "."
+                HStack(spacing: 0) {
+                    KeypadButton(label: ".") {
+                        appendDecimalPoint()
                     }
-                    Keypadbutton(label: "0") {
-                        displayedNumber += "0"
+                    KeypadButton(label: "0") {
+                        appendCharacter("0")
                     }
-                    DeleteButton {
-                        if !displayedNumber.isEmpty {
-                            displayedNumber.removeLast()
-                        }
+                    DeleteKeypadButton {
+                        deleteLastCharacter()
                     }
                 }
             }
+            .frame(maxWidth: .infinity)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(Color(hex: "D9D9E2"))
+                    .frame(height: 0.5)
+            }
+            
+            Button(action: saveAction) {
+                Text("Save rate")
+                    .font(.system(size: 20, weight: .semibold))
+                    .frame(maxWidth: .infinity, minHeight: 58)
+                    .foregroundStyle(.white)
+                    .background(
+                        (isSaveEnabled ? Color(hex: "5B4BC4") : Color(hex: "C5C5CD")),
+                        in: RoundedRectangle(cornerRadius: 16)
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(!isSaveEnabled)
+            .padding(.top, 8)
         }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private func appendCharacter(_ character: String) {
+        if displayedNumber == "0" {
+            displayedNumber = character
+        } else {
+            displayedNumber += character
+        }
+    }
+    
+    private func appendDecimalPoint() {
+        if displayedNumber.isEmpty {
+            displayedNumber = "0."
+            return
+        }
+        
+        if !displayedNumber.contains(".") {
+            displayedNumber += "."
+        }
+    }
+    
+    private func deleteLastCharacter() {
+        guard !displayedNumber.isEmpty else { return }
+        displayedNumber.removeLast()
     }
 }
 
-struct Keypadbutton: View {
+struct KeypadButton: View {
     let label: String
     let action: () -> Void
+    
     var body: some View {
         Button {
             action()
         } label: {
             Text(label)
-                .font(.title)
-                .frame(width: 120, height: 50)
-                .background(in: Rectangle())
+                .font(.system(size: 26, weight: .regular))
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity, minHeight: 62)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .shadow(radius: 1)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color(hex: "D9D9E2"))
+                .frame(height: 0.5)
+        }
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Color(hex: "D9D9E2"))
+                .frame(width: 0.5)
+        }
     }
 }
 
-struct DeleteButton: View {
+struct DeleteKeypadButton: View {
     let action: () -> Void
+    
     var body: some View {
         Button {
             action()
         } label: {
-            Image(systemName: "delete.left.fill")
-                .font(.title)
-                .frame(width: 120, height: 50)
-                .background(in: Rectangle())
+            Image(systemName: "delete.left")
+                .font(.system(size: 24, weight: .regular))
+                .foregroundStyle(.black)
+                .frame(maxWidth: .infinity, minHeight: 62)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .shadow(radius: 1)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color(hex: "D9D9E2"))
+                .frame(height: 0.5)
+        }
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(Color(hex: "D9D9E2"))
+                .frame(width: 0.5)
+        }
     }
 }
