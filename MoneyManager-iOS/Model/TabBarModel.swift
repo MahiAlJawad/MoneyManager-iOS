@@ -8,27 +8,35 @@
 import Foundation
 
 struct TabBarModel {
-    enum Item: CaseIterable {
-        case dashboard
-        case accounts
-        case statistics
-        case more
+    enum Item {
+        case home
+        case transactions
+        case insights
+        case settings
         
         var title: String {
             switch self {
-            case .dashboard:    return "Dashboard"
-            case .accounts:     return "Accounts"
-            case .statistics:   return "Statistics"
-            case .more:         return "More"
+            case .home:
+                return "Home"
+            case .transactions:
+                return "Transactions"
+            case .insights:
+                return "Insights"
+            case .settings:
+                return "Settings"
             }
         }
         
         var icon: String {
             switch self {
-            case .dashboard:  return "dollarsign.bank.building.fill"
-            case .accounts:   return "note.text"
-            case .statistics: return "chart.bar.xaxis"
-            case .more:       return "ellipsis.circle.fill"
+            case .home:
+                return "house.fill"
+            case .transactions:
+                return "list.bullet.rectangle.fill"
+            case .insights:
+                return "chart.line.uptrend.xyaxis"
+            case .settings:
+                return "gearshape.fill"
             }
         }
     }

@@ -24,7 +24,7 @@ struct AddTransactionView: View {
     @State private var isAmountKeyboardPresented = false
     @State private var presentAddAccountView = false
     @State private var presentAddCurrencyView = false
-    @State private var currencyRouter = MoreTabView.Router()
+    @State private var currencyRouter = SettingsTabView.Router()
     @State private var savedCurrencies: [Currency] = []
     @FocusState private var focusedField: FocusedField?
     
@@ -95,7 +95,7 @@ struct AddTransactionView: View {
                     isSheetPresented: $presentAddCurrencyView,
                     newCurrencies: $savedCurrencies
                 )
-                .navigationDestination(for: MoreTabView.Router.Destination2.self) { destination in
+                .navigationDestination(for: SettingsTabView.Router.Destination2.self) { destination in
                     switch destination {
                     case .currencyConversionView(let selectedCurrency):
                         CurrencyDetailsView(
@@ -439,7 +439,7 @@ struct AddTransactionView: View {
             Button {
                 router.navigate(to: Destination.categorySelectionView(category: $addTransactionInfo.category))
             } label: {
-                Label("More", systemImage: "ellipsis.circle")
+                Label("All categories", systemImage: "ellipsis.circle")
             }
         } label: {
             dropdownButtonIcon()

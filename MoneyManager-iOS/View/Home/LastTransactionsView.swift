@@ -11,7 +11,7 @@ import SwiftUI
 struct LastTransactionsView: View {
     private typealias Destination = TransactionTabView.Router.Destination
     
-    @Environment(DashboardTabView.Router.self) private var router
+    @Environment(HomeTabView.Router.self) private var router
     @Query private var accounts: [Account]
     
     private var transactions: [Transaction] {
@@ -31,7 +31,7 @@ struct LastTransactionsView: View {
         HStack {
             Spacer()
             Button {
-                router.navigate(to: .recordsView)
+                router.navigate(to: .allTransactionsView)
             } label: {
                 Text("Show more")
             }

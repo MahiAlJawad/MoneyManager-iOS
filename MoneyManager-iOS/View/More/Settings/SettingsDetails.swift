@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsDetails: View {
-    @Environment(MoreTabView.Router.self) private var router
+    @Environment(SettingsTabView.Router.self) private var router
     @State private var notificationsEnabled: Bool = true
     @State private var budgetAlertsEnabled: Bool = false
     
@@ -28,7 +28,7 @@ struct SettingsDetails: View {
 
                 settingsToggle(
                     icon: "bell.fill",
-                    iconColor: Color.purple,
+                    iconColor: Color(hex: "#1F8F63"),
                     title: "Notifications",
                     isOn: $notificationsEnabled
                 )
@@ -214,6 +214,7 @@ struct SettingsDetails: View {
 
             Toggle("", isOn: isOn)
                 .labelsHidden()
+                .tint(Color(hex: "#1F8F63"))
         }
         .padding()
         .background(Color(uiColor: .secondarySystemGroupedBackground))

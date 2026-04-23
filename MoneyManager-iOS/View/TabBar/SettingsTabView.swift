@@ -1,5 +1,5 @@
 //
-//  MoreTabView.swift
+//  SettingsTabView.swift
 //  MoneyManager-iOS
 //
 //  Created by Kazi Tanjim Shakib on 13/10/24.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MoreTabView: View {
+struct SettingsTabView: View {
     @Observable
     class SheetPresentation {
         var presentAddCurrency: Bool = false
@@ -19,7 +19,7 @@ struct MoreTabView: View {
     
     var body: some View {
         NavigationStack(path: $router.firstNavigationPath) {
-            MoreView()
+            SettingsView()
                 .navigationDestination(for: Router.Destination.self) { destination in
                     switch destination {
                     case .settingsView:
@@ -27,7 +27,7 @@ struct MoreTabView: View {
                     case .aboutWalletView:
                         AboutWalletView()
                     case .recordsView:
-                        RecordsView()
+                        AllTransactionView()
                     case .investmentsView:
                         InvestmentView()
                     case .helpView:
@@ -38,7 +38,8 @@ struct MoreTabView: View {
                         CurrencyView(
                             isAddCurrencyPresent: $sheetPresenter.presentAddCurrency,
                             savedCurrencies: $savedCurrencies
-                        ).onAppear {
+                        )
+                        .onAppear {
                             savedCurrencies = Currency.loadCurrencyData()
                         }
                         .sheet(isPresented: $sheetPresenter.presentAddCurrency) {
@@ -51,7 +52,7 @@ struct MoreTabView: View {
                                     switch destination2 {
                                     case .currencyConversionView(let selectedCurrency):
                                         let baseCurrencyCode = Currency.baseCurrencyCode
-
+                                        
                                         CurrencyDetailsView(
                                             currentCurrencies: [baseCurrencyCode, selectedCurrency],
                                             savedNewCurrencies: $savedCurrencies,
@@ -76,10 +77,10 @@ struct MoreTabView: View {
     }
 }
 
-extension MoreTabView {
+extension SettingsTabView {
     @Observable
     final class Router {
-        public enum Destination: Hashable {
+        enum Destination: Hashable {
             case settingsView
             case aboutWalletView
             case recordsView
@@ -90,63 +91,12 @@ extension MoreTabView {
             case exportDataView
             case sendFeedbackView
             case signOutView
-            
-            static func ==(lhs: Destination, rhs: Destination) -> Bool {
-                switch (lhs, rhs) {
-                case (.settingsView, .settingsView):
-                    return true
-                case (.aboutWalletView, .aboutWalletView):
-                    return true
-                case (.recordsView, .recordsView):
-                    return true
-                case (.investmentsView, .investmentsView):
-                    return true
-                case (.helpView, .helpView):
-                    return true
-                case (.particularSettingsView, .particularSettingsView):
-                    return true
-                case (.currencyView, .currencyView):
-                    return true
-                case (.exportDataView, .exportDataView):
-                    return true
-                case (.sendFeedbackView, .sendFeedbackView):
-                    return true
-                case (.signOutView, .signOutView):
-                    return true
-                default: return false
-                }
-            }
-            
-            func hash(into hasher: inout Hasher) {
-                switch self {
-                case .settingsView:
-                    hasher.combine("settingsView")
-                case .aboutWalletView:
-                    hasher.combine("aboutWalletView")
-                case .recordsView:
-                    hasher.combine("recordsView")
-                case .investmentsView:
-                    hasher.combine("investmentsView")
-                case .helpView:
-                    hasher.combine("helpView")
-                case .particularSettingsView:
-                    hasher.combine("individualSettingsView")
-                case .currencyView:
-                    hasher.combine("currenceyView")
-                case .exportDataView:
-                    hasher.combine("exportDataView")
-                case .sendFeedbackView:
-                    hasher.combine("sendFeedbackView")
-                case .signOutView:
-                    hasher.combine("signOutView")
-                }
-            }
         }
         
         var firstNavigationPath = NavigationPath()
         var secondNavigationPath = NavigationPath()
         
-        public enum Destination2: Hashable {
+        enum Destination2: Hashable {
             case currencyConversionView(selectedCurrency: String)
         }
         
@@ -175,9 +125,6 @@ extension MoreTabView {
         }
     }
 }
-
-
-// TODO: Will create separate files for all these Views
 
 struct ParticularSettingsDetails: View {
     let settings: Settings
@@ -224,6 +171,7 @@ struct InvestmentView: View {
                 .foregroundStyle(.cyan)
             Text("Investment  View")
                 .textScale(.secondary)
-        }.padding()
+        }
+        .padding()
     }
 }

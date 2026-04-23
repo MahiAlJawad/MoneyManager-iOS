@@ -1,5 +1,5 @@
 //
-//  RecordsView.swift
+//  AllTransactionView.swift
 //  MoneyManager-iOS
 //
 //  Created by Mahi Al Jawad on 15/10/24.
@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-struct RecordsView: View {
+struct AllTransactionView: View {
     @Query private var accounts: [Account]
     @State private var searchString: String = ""
     
@@ -26,9 +26,9 @@ struct RecordsView: View {
                 let date = transaction.date.description
                 
                 return categoryName.localizedStandardContains(searchString) ||
-                accountName.localizedStandardContains(searchString) ||
-                amount.localizedStandardContains(searchString) ||
-                date.localizedStandardContains(searchString)
+                    accountName.localizedStandardContains(searchString) ||
+                    amount.localizedStandardContains(searchString) ||
+                    date.localizedStandardContains(searchString)
             })
             .sorted { $0.date > $1.date }
             .removeConsecutiveDuplicates()

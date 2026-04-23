@@ -19,7 +19,7 @@ struct StatisticsView: View {
                         }
                     
                     default:
-                        NavigationLink(value: MoreTabView.Router.Destination.aboutWalletView) {
+                        NavigationLink(value: SettingsTabView.Router.Destination.aboutWalletView) {
                             StatisticsCellView(item: item)
                         }
                     }
