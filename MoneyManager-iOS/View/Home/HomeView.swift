@@ -1,5 +1,5 @@
 //
-//  DashboardView.swift
+//  HomeView.swift
 //  MoneyManager-iOS
 //
 //  Created by Mahi Al Jawad on 20/10/24.
@@ -8,7 +8,7 @@
 import SwiftData
 import SwiftUI
 
-struct DashboardView: View {
+struct HomeView: View {
     @Query private var accounts: [Account]
     
     private var showLastTransactionSection: Bool {
@@ -19,10 +19,11 @@ struct DashboardView: View {
         if !showLastTransactionSection {
             VStack {
                 Spacer()
-                Text("Make some transactions first to see dashboard items.")
+                Text("Make some transactions first to see your home summary.")
                 Spacer()
             }
         }
+        
         List {
             if showLastTransactionSection {
                 Section("Last Transactions") {
@@ -30,6 +31,6 @@ struct DashboardView: View {
                 }
             }
         }
-        .navigationTitle("Dashboard")
+        .navigationTitle("Home")
     }
 }

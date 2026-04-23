@@ -9,59 +9,40 @@ import SwiftUI
 
 struct TabBarView: View {
     private typealias Tab = TabBarModel.Item
-    @State private var selectedTab: Tab = .dashboard
-    @State private var presentAddTransactionSheet: Bool = false
+    
+    @State private var selectedTab: Tab = .home
+    private let tabBarTint = Color(hex: "#1F8F63")
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            TabView(selection: $selectedTab) {
-                DashboardTabView()
-                    .tabItem {
-                        Label(Tab.dashboard.title, systemImage: Tab.dashboard.icon)
-                    }
-                    .tag(Tab.dashboard)
-                
-                NavigationStack {
-                    AccountsView()
-                }
+        TabView(selection: $selectedTab) {
+            HomeTabView()
                 .tabItem {
-                    Label(Tab.accounts.title, systemImage: Tab.accounts.icon)
+                    Label(Tab.home.title, systemImage: Tab.home.icon)
                 }
-                .tag(Tab.accounts)
-                
-                Spacer()
-                    .tabItem {
-                        EmptyView()
-                    }
-                    .tag(0)
-                
-                StatisticsTabView()
-                    .tabItem {
-                        Label(Tab.statistics.title, systemImage: Tab.statistics.icon)
-                    }
-                    .tag(Tab.statistics)
-                
-                MoreTabView()
-                    .tabItem {
-                        Label(Tab.more.title, systemImage: Tab.more.icon)
-                    }
-                    .tag(Tab.more)
-            }
+                .tag(Tab.home)
             
-            // MARK: Add Transaction button
-            Button {
-                presentAddTransactionSheet.toggle()
-            } label: {
-                Image(systemName: "plus")
-                    .tint(Color.white)
-                    .padding()
+            NavigationStack {
+                AllTransactionView()
             }
-            .background(Color.blue)
-            .clipShape(Circle())
+            .tabItem {
+                Label(Tab.transactions.title, systemImage: Tab.transactions.icon)
+            }
+            .tag(Tab.transactions)
+            
+            NavigationStack {
+                InsightsComingSoonView()
+            }
+            .tabItem {
+                Label(Tab.insights.title, systemImage: Tab.insights.icon)
+            }
+            .tag(Tab.insights)
+            
+            SettingsTabView()
+                .tabItem {
+                    Label(Tab.settings.title, systemImage: Tab.settings.icon)
+                }
+                .tag(Tab.settings)
         }
-        .sheet(isPresented: $presentAddTransactionSheet) {
-            TransactionTabView()
-                .presentationDetents([.large])
-        }
+        .tint(tabBarTint)
     }
 }

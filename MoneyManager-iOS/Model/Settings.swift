@@ -8,7 +8,7 @@
 import Foundation
 
 // TODO: Make enums instead of this @Shakib
-struct Settings: Identifiable {
+struct Settings: Identifiable, Hashable {
     var id = UUID()
     var image: String
     var title: String
@@ -17,7 +17,7 @@ struct Settings: Identifiable {
 extension Settings {
     static var allSettingsData: [Settings] = [
         Settings(image: "book.and.wrench", title: "General"),
-        Settings(image: "chart.line.text.clipboard.fill", title: "Dashboard"),
+        Settings(image: "chart.line.text.clipboard.fill", title: "Home"),
         Settings(image: "dollarsign.bank.building.fill", title: "Accounts"),
         Settings(image: "dollarsign.square.fill", title: "Currency"),
         Settings(image: "filemenu.and.cursorarrow", title: "Categories"),

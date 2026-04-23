@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AddCurrencyView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(MoreTabView.Router.self) private var router
+    @Environment(SettingsTabView.Router.self) private var router
     
     @State var searchText: String = ""
     @Binding var isSheetPresented: Bool
