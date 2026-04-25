@@ -36,6 +36,10 @@ struct AddTransactionView: View {
     
     private let quickCategoryLimit = 5
     
+    init(initialTransactionType: TransactionType = .expense) {
+        _addTransactionInfo = State(initialValue: AddTransactionInfo(transactionType: initialTransactionType))
+    }
+    
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
         !addTransactionInfo.amount.isEmpty &&
@@ -635,5 +639,9 @@ extension AddTransactionView {
         var category: Category?
         var date: Date = Date()
         var note: String = ""
+        
+        init(transactionType: TransactionType = .expense) {
+            self.transactionType = transactionType
+        }
     }
 }
