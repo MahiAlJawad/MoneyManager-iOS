@@ -111,6 +111,12 @@ extension Transaction {
     }
 }
 
+extension Transaction: Identifiable, Equatable {
+    static func == (lhs: Transaction, rhs: Transaction) -> Bool {
+        lhs.id == rhs.id
+    }
+}
+
 // MARK: Handles Add Transaction
 extension Transaction {
     enum AddTransactionError: Error {

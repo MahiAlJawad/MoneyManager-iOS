@@ -9,10 +9,15 @@ import SwiftUI
 
 struct TransactionTabView: View {
     @State var router = Router()
+    private let initialTransactionType: Transaction.TransactionType
+    
+    init(initialTransactionType: Transaction.TransactionType = .expense) {
+        self.initialTransactionType = initialTransactionType
+    }
 
     var body: some View {
         NavigationStack(path: $router.path) {
-            AddTransactionView()
+            AddTransactionView(initialTransactionType: initialTransactionType)
                 .navigationDestination(for: Router.Destination.self) { destination in
                     switch destination {
                     case .accountSelectionView(let account, let transferAccount):

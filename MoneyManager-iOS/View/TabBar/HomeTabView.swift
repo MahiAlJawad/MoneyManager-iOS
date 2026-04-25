@@ -10,14 +10,20 @@ import SwiftUI
 struct HomeTabView: View {
     @State var router = Router()
     @State private var presentAddTransactionSheet = false
+    @State private var addTransactionType: Transaction.TransactionType = .expense
     
     var body: some View {
         NavigationStack(path: $router.path) {
-            HomeView()
+            HomeView { transactionType in
+                addTransactionType = transactionType
+                presentAddTransactionSheet = true
+            }
                 .navigationDestination(for: Router.Destination.self) { destination in
                     switch destination {
                     case .allTransactionsView:
                         AllTransactionView()
+                    case .accountsView:
+                        AccountsView()
                     }
                 }
                 .toolbar {
@@ -28,13 +34,14 @@ struct HomeTabView: View {
         }
         .environment(router)
         .sheet(isPresented: $presentAddTransactionSheet) {
-            TransactionTabView()
+            TransactionTabView(initialTransactionType: addTransactionType)
                 .presentationDetents([.large])
         }
     }
     
     private var addTransactionButton: some View {
         Button {
+            addTransactionType = .expense
             presentAddTransactionSheet = true
         } label: {
             Image(systemName: "plus")
@@ -51,6 +58,7 @@ extension HomeTabView {
     final class Router {
         enum Destination: Hashable {
             case allTransactionsView
+            case accountsView
         }
         
         var path = NavigationPath()

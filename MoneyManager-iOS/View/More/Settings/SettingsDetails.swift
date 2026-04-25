@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct SettingsDetails: View {
+    @Environment(\.modelContext) private var modelContext
     @Environment(SettingsTabView.Router.self) private var router
     @State private var notificationsEnabled: Bool = true
     @State private var budgetAlertsEnabled: Bool = false
+    @State private var debugTapCount: Int = 0
+    @State private var isDebugDrawerPresented = false
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -88,17 +91,25 @@ struct SettingsDetails: View {
                     .cornerRadius(16)
                 }
 
-                Text("SpendWise v2.4.1 · Privacy Policy")
+                Text("MoneyManager 1.0 · Privacy Policy")
                     .font(.footnote)
                     .foregroundColor(.secondary)
                     .padding(.top, 8)
                     .padding(.bottom, 24)
+                    .onTapGesture {
+                        handleVersionTap()
+                    }
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
         }
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle("Settings")
+        .sheet(isPresented: $isDebugDrawerPresented) {
+            debugDrawer
+                .presentationDetents([.height(220)])
+                .presentationDragIndicator(.visible)
+        }
     }
     
     private var profileHeader: some View {
@@ -219,6 +230,50 @@ struct SettingsDetails: View {
         .padding()
         .background(Color(uiColor: .secondarySystemGroupedBackground))
         .cornerRadius(16)
+    }
+    
+    private var debugDrawer: some View {
+        NavigationStack {
+            VStack(spacing: 14) {
+                Text("Debug Tools")
+                    .font(.headline)
+                    .padding(.top, 8)
+                
+                settingsButton(
+                    icon: "tray.and.arrow.down.fill",
+                    iconColor: Color(hex: "#1F8F63"),
+                    title: "Seed Test Data"
+                ) {
+                    TestDataManager.shared.seedHomeUITestData(in: modelContext)
+                    isDebugDrawerPresented = false
+                }
+                
+                settingsButton(
+                    icon: "trash.fill",
+                    iconColor: .red,
+                    title: "Clear All Data"
+                ) {
+                    TestDataManager.shared.clearAllData(in: modelContext)
+                    isDebugDrawerPresented = false
+                }
+                
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
+            .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
+        }
+    }
+    
+    private func handleVersionTap() {
+        debugTapCount += 1
+        
+        guard debugTapCount >= 10 else {
+            return
+        }
+        
+        debugTapCount = 0
+        isDebugDrawerPresented = true
     }
 }
 
