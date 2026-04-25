@@ -107,7 +107,7 @@ struct HomeView: View {
     }
     
     private var statCardsSection: some View {
-        LazyVGrid(columns: statColumns, spacing: 12) {
+        LazyVGrid(columns: statColumns, spacing: 10) {
             summaryCard(
                 title: "Income",
                 amount: monthlyIncome,
@@ -252,7 +252,7 @@ struct HomeView: View {
                 Spacer()
                 
                 if accounts.count > 3 {
-                    sectionLinkButton(title: "View All") {
+                    sectionLinkButton(title: "Update") {
                         router.navigate(to: .accountsView)
                     }
                 }
@@ -267,15 +267,11 @@ struct HomeView: View {
                     )
                 }
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 14) {
-                        ForEach(featuredAccounts) { account in
-                            accountCard(for: account)
-                        }
+                LazyVGrid(columns: accountColumns, spacing: accountCardSpacing) {
+                    ForEach(accounts) { account in
+                        accountCard(for: account)
                     }
-                    .padding(.vertical, 2)
                 }
-                .contentMargins(.horizontal, 0, for: .scrollContent)
             }
         }
     }
@@ -328,11 +324,6 @@ struct HomeView: View {
                 .frame(width: 88, height: 88)
                 .offset(x: 10, y: 24)
             
-            Circle()
-                .fill(.white.opacity(0.07))
-                .frame(width: 94, height: 94)
-                .offset(x: 10, y: 24)
-            
             Image(systemName: "wallet.pass.fill")
                 .font(.system(size: 34, weight: .medium))
                 .foregroundStyle(.white.opacity(0.92))
@@ -350,34 +341,34 @@ struct HomeView: View {
         tint: Color
     ) -> some View {
         adaptiveCard {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 Circle()
                     .fill(tint.opacity(colorScheme == .dark ? 0.18 : 0.10))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 40, height: 40)
                     .overlay {
                         Image(systemName: systemImage)
-                            .font(.system(size: 19, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(tint)
                     }
                 
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.7)
                 
                 Text(amount, format: .currency(code: "BDT"))
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundStyle(tint)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.55)
+                    .minimumScaleFactor(0.5)
                 
                 Text(caption)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
         }
     }
     
@@ -419,32 +410,38 @@ struct HomeView: View {
     
     private func accountCard(for account: Account) -> some View {
         adaptiveCard {
-            VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .center, spacing: 12) {
                 Circle()
                     .fill(accountTint(for: account).opacity(colorScheme == .dark ? 0.18 : 0.12))
-                    .frame(width: 56, height: 56)
+                    .frame(width: 42, height: 42)
                     .overlay {
-                        Image(systemName: account.iconName)
-                            .font(.system(size: 24, weight: .semibold))
+                        Image(systemName: accountSymbol(for: account))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(accountTint(for: account))
                     }
                 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(account.name)
-                        .font(.system(size: 16, weight: .medium))
+                    Text(accountCardTitle(for: account))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(primaryTextColor)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     
                     Text(account.accountBalance, format: .currency(code: "BDT"))
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
                         .foregroundStyle(primaryTextColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                     
                     Text(accountSubtitle(for: account))
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
             }
-            .frame(width: 154, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 92, alignment: .leading)
         }
     }
     
@@ -452,21 +449,23 @@ struct HomeView: View {
         HStack(spacing: 14) {
             Circle()
                 .fill(transactionTint(for: transaction).opacity(colorScheme == .dark ? 0.18 : 0.12))
-                .frame(width: 54, height: 54)
+                .frame(width: 44, height: 44)
                 .overlay {
                     Image(systemName: transactionIcon(for: transaction))
-                        .font(.system(size: 22, weight: .medium))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(transactionTint(for: transaction))
                 }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(transactionTitle(for: transaction))
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(primaryTextColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 
                 HStack(spacing: 6) {
-                    Text(transaction.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(.system(size: 14, weight: .medium))
+                    Text(transaction.date.formatted(date: .abbreviated, time: .omitted))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.secondary)
                     
                     Circle()
@@ -474,24 +473,27 @@ struct HomeView: View {
                         .frame(width: 4, height: 4)
                     
                     Text(transactionTypeLabel(for: transaction))
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(transaction.transactionType.color)
                 }
             }
+            .layoutPriority(1)
             
             Spacer()
             
             HStack(spacing: 8) {
                 Text(transaction.amount, format: .currency(code: "BDT"))
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundStyle(transaction.transactionType.color)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.tertiary)
             }
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 12)
     }
     
     private func sectionHeading(title: String) -> some View {
@@ -515,7 +517,7 @@ struct HomeView: View {
     
     private func adaptiveCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
-            .padding(18)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -679,11 +681,22 @@ private extension HomeView {
         return marks
     }
     
+    var accountCardSpacing: CGFloat {
+        14
+    }
+    
+    var accountColumns: [GridItem] {
+        [
+            GridItem(.flexible(), spacing: accountCardSpacing),
+            GridItem(.flexible(), spacing: accountCardSpacing)
+        ]
+    }
+    
     var statColumns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 14),
-            GridItem(.flexible(), spacing: 14),
-            GridItem(.flexible(), spacing: 14)
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10)
         ]
     }
     
@@ -733,8 +746,40 @@ private extension HomeView {
         account.accountType == .credit ? Color(hex: "#F5A623") : Color(hex: "#28B36E")
     }
     
+    func accountCardTitle(for account: Account) -> String {
+        if account.accountType == .credit {
+            return "Credit Card"
+        }
+        
+        if account.name.localizedCaseInsensitiveContains("cash") {
+            return "Cash Wallet"
+        }
+        
+        return account.name
+    }
+    
+    func accountSymbol(for account: Account) -> String {
+        if account.accountType == .credit {
+            return "creditcard.fill"
+        }
+        
+        if account.name.localizedCaseInsensitiveContains("cash") {
+            return "wallet.pass.fill"
+        }
+        
+        return "building.columns.fill"
+    }
+    
     func accountSubtitle(for account: Account) -> String {
-        account.accountType == .credit ? "Credit" : "Cash"
+        if account.accountType == .credit {
+            return "Credit"
+        }
+        
+        if account.name.localizedCaseInsensitiveContains("cash") {
+            return "Cash"
+        }
+        
+        return "Bank"
     }
     
     func transactionTitle(for transaction: Transaction) -> String {
