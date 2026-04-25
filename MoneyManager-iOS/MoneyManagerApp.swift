@@ -10,6 +10,10 @@ import SwiftData
 
 @main
 struct MoneyManager_iOSApp: App {
+    init() {
+        NotificationManager.shared.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             TabBarView()
