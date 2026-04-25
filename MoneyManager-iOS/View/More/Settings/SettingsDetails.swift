@@ -9,9 +9,13 @@ import SwiftUI
 
 struct SettingsDetails: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(SettingsTabView.Router.self) private var router
-    @State private var notificationsEnabled: Bool = true
-    @State private var budgetAlertsEnabled: Bool = false
+    @State private var notificationPreferences = AppNotificationPreferences.load()
+    @State private var authorizationStatus: AppNotificationAuthorizationStatus = .notDetermined
+    @State private var isReminderTimePickerPresented = false
+    @State private var showNotificationSettingsAlert = false
+    @State private var permissionAlertMessage = ""
     @State private var debugTapCount: Int = 0
     @State private var isDebugDrawerPresented = false
     
@@ -33,15 +37,22 @@ struct SettingsDetails: View {
                     icon: "bell.fill",
                     iconColor: Color(hex: "#1F8F63"),
                     title: "Notifications",
-                    isOn: $notificationsEnabled
+                    subtitle: notificationStatusText,
+                    isOn: notificationsToggleBinding
                 )
 
                 settingsToggle(
                     icon: "exclamationmark.triangle.fill",
                     iconColor: Color.orange,
                     title: "Budget alerts",
-                    isOn: $budgetAlertsEnabled
+                    subtitle: budgetAlertStatusText,
+                    isOn: budgetAlertsBinding,
+                    isDisabled: !notificationPreferences.notificationsEnabled
                 )
+
+                if notificationPreferences.notificationsEnabled {
+                    reminderScheduleCard
+                }
 
                 settingsButton(
                     icon: "square.and.arrow.up.fill",
@@ -105,6 +116,26 @@ struct SettingsDetails: View {
         }
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle("Settings")
+        .task {
+            await refreshNotificationState()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else {
+                return
+            }
+
+            Task {
+                await refreshNotificationState()
+            }
+        }
+        .alert("Notifications are unavailable", isPresented: $showNotificationSettingsAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Open Settings") {
+                NotificationManager.shared.openSystemSettings()
+            }
+        } message: {
+            Text(permissionAlertMessage)
+        }
         .sheet(isPresented: $isDebugDrawerPresented) {
             debugDrawer
                 .presentationDetents([.height(220)])
@@ -206,7 +237,9 @@ struct SettingsDetails: View {
         icon: String,
         iconColor: Color,
         title: String,
-        isOn: Binding<Bool>
+        subtitle: String? = nil,
+        isOn: Binding<Bool>,
+        isDisabled: Bool = false
     ) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
@@ -216,16 +249,81 @@ struct SettingsDetails: View {
                 .background(iconColor)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
-            Text(title)
-                .foregroundColor(.primary)
-                .font(.body)
-                .fontWeight(.medium)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .foregroundColor(.primary)
+                    .font(.body)
+                    .fontWeight(.medium)
+
+                if let subtitle {
+                    Text(subtitle)
+                        .foregroundColor(.secondary)
+                        .font(.footnote)
+                }
+            }
 
             Spacer()
 
             Toggle("", isOn: isOn)
                 .labelsHidden()
                 .tint(Color(hex: "#1F8F63"))
+                .disabled(isDisabled)
+        }
+        .padding()
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .cornerRadius(16)
+        .opacity(isDisabled ? 0.6 : 1)
+    }
+
+    private var reminderScheduleCard: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily reminder")
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+
+                    Text("A gentle nudge to record your spending and income.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Button(action: {
+                    withAnimation(.snappy(duration: 0.22)) {
+                        isReminderTimePickerPresented.toggle()
+                    }
+                }) {
+                    Text(notificationPreferences.formattedReminderTime)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "#1F8F63"))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(hex: "#1F8F63").opacity(0.12))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+
+            if isReminderTimePickerPresented {
+                DatePicker(
+                    "Reminder time",
+                    selection: reminderDateBinding,
+                    displayedComponents: .hourAndMinute
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                .frame(maxWidth: .infinity)
+            }
+
+            if notificationPreferences.budgetAlertsEnabled {
+                Label("Budget alerts arrive twice a month at the same time.", systemImage: "calendar.badge.clock")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
         }
         .padding()
         .background(Color(uiColor: .secondarySystemGroupedBackground))
@@ -274,6 +372,118 @@ struct SettingsDetails: View {
         
         debugTapCount = 0
         isDebugDrawerPresented = true
+    }
+
+    private var notificationsToggleBinding: Binding<Bool> {
+        Binding(
+            get: { notificationPreferences.notificationsEnabled },
+            set: { newValue in
+                Task {
+                    await handleNotificationToggleChange(newValue)
+                }
+            }
+        )
+    }
+
+    private var budgetAlertsBinding: Binding<Bool> {
+        Binding(
+            get: { notificationPreferences.budgetAlertsEnabled },
+            set: { newValue in
+                notificationPreferences.budgetAlertsEnabled = newValue
+                notificationPreferences.save()
+
+                Task {
+                    await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+                }
+            }
+        )
+    }
+
+    private var reminderDateBinding: Binding<Date> {
+        Binding(
+            get: { notificationPreferences.reminderDate },
+            set: { newValue in
+                notificationPreferences.updateReminderTime(from: newValue)
+                notificationPreferences.save()
+
+                Task {
+                    await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+                }
+            }
+        )
+    }
+
+    private var notificationStatusText: String {
+        switch authorizationStatus {
+        case .authorized:
+            return notificationPreferences.notificationsEnabled
+                ? "Daily reminders at \(notificationPreferences.formattedReminderTime)"
+                : "Receive a daily reminder to log your transactions"
+        case .notDetermined:
+            return "Turn this on to allow reminders from MoneyManager"
+        case .denied:
+            return "Allow notifications in Settings to receive reminders"
+        }
+    }
+
+    private var budgetAlertStatusText: String {
+        if !notificationPreferences.notificationsEnabled {
+            return "Available after notifications are enabled"
+        }
+
+        return notificationPreferences.budgetAlertsEnabled
+            ? "Mid-month spending check-ins are scheduled"
+            : "Get twice-monthly reminders to review your budget"
+    }
+
+    private func refreshNotificationState() async {
+        authorizationStatus = await NotificationManager.shared.authorizationStatus()
+
+        if authorizationStatus == .denied, notificationPreferences.notificationsEnabled {
+            notificationPreferences.notificationsEnabled = false
+            notificationPreferences.save()
+        }
+
+        if authorizationStatus == .authorized, notificationPreferences.notificationsEnabled {
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+        }
+    }
+
+    private func handleNotificationToggleChange(_ isEnabled: Bool) async {
+        if !isEnabled {
+            notificationPreferences.notificationsEnabled = false
+            notificationPreferences.save()
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+            return
+        }
+
+        let currentStatus = await NotificationManager.shared.authorizationStatus()
+        authorizationStatus = currentStatus
+
+        switch currentStatus {
+        case .authorized:
+            notificationPreferences.notificationsEnabled = true
+            notificationPreferences.save()
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+
+        case .notDetermined:
+            let granted = await NotificationManager.shared.requestAuthorization()
+            authorizationStatus = await NotificationManager.shared.authorizationStatus()
+
+            guard granted else {
+                permissionAlertMessage = "MoneyManager needs notification access to send daily reminders."
+                showNotificationSettingsAlert = true
+                return
+            }
+
+            notificationPreferences.notificationsEnabled = true
+            notificationPreferences.save()
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+
+        case .denied:
+            permissionAlertMessage = "Notifications are turned off for MoneyManager. You can enable them in the system Settings app."
+            showNotificationSettingsAlert = true
+        }
     }
 }
 
