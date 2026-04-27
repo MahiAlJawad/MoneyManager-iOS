@@ -24,6 +24,8 @@ struct HomeTabView: View {
                         AllTransactionView()
                     case .accountsView:
                         AccountsView()
+                    case .balanceDetailsView:
+                        BalanceDetailsView()
                     }
                 }
                 .toolbar {
@@ -59,6 +61,7 @@ extension HomeTabView {
         enum Destination: Hashable {
             case allTransactionsView
             case accountsView
+            case balanceDetailsView
         }
         
         var path = NavigationPath()
