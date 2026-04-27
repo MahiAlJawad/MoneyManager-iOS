@@ -100,11 +100,15 @@ struct CurrencyView: View {
                     .font(.headline)
                     .fontWeight(.semibold)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(addCurrencyButtonForegroundColor)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(Color(hex: "3D6B31"), in: Capsule())
-            .shadow(color: Color.black.opacity(0.12), radius: 14, y: 8)
+            .background(addCurrencyButtonBackgroundColor, in: Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(addCurrencyButtonBorderColor, lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 14, y: 8)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 32)
@@ -112,10 +116,26 @@ struct CurrencyView: View {
         .padding(.bottom, 12)
         .background(Color(uiColor: .systemGroupedBackground))
     }
+    
+    @Environment(\.colorScheme) private var colorScheme
+    
+    private var addCurrencyButtonBackgroundColor: Color {
+        colorScheme == .dark ? Color(hex: "4D47D9") : Color(hex: "5B4BC4")
+    }
+    
+    private var addCurrencyButtonForegroundColor: Color {
+        .white
+    }
+    
+    private var addCurrencyButtonBorderColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04)
+    }
 }
 
 private struct BaseCurrencyCardView: View {
     let currencyCode: String
+    
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         let info = Currency.displayInfo(for: currencyCode)
@@ -126,10 +146,10 @@ private struct BaseCurrencyCardView: View {
                 .fontWeight(.bold)
                 .textCase(.uppercase)
                 .tracking(1.1)
-                .foregroundStyle(Color(hex: "6D55C7"))
+                .foregroundStyle(baseAccentColor)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Color(hex: "E9E0FF"), in: Capsule())
+                .background(baseBadgeBackgroundColor, in: Capsule())
             
             HStack(spacing: 14) {
                 Text(info.flag)
@@ -143,7 +163,7 @@ private struct BaseCurrencyCardView: View {
                     
                     Text(info.currencyName)
                         .font(.subheadline)
-                        .foregroundStyle(Color(hex: "6D55C7"))
+                        .foregroundStyle(baseAccentColor)
                     
                     Text(info.countryName)
                         .font(.footnote)
@@ -156,12 +176,28 @@ private struct BaseCurrencyCardView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color(hex: "F1ECFF"))
+                .fill(baseCardBackgroundColor)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color(hex: "DFD4FF"), lineWidth: 1)
+                .stroke(baseCardBorderColor, lineWidth: 1)
         )
+    }
+    
+    private var baseAccentColor: Color {
+        colorScheme == .dark ? Color(hex: "B8B3FF") : Color(hex: "5B4BC4")
+    }
+    
+    private var baseBadgeBackgroundColor: Color {
+        colorScheme == .dark ? Color(hex: "2E2A52") : Color(hex: "E9E0FF")
+    }
+    
+    private var baseCardBackgroundColor: Color {
+        Color(uiColor: colorScheme == .dark ? .secondarySystemGroupedBackground : .secondarySystemGroupedBackground)
+    }
+    
+    private var baseCardBorderColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color(hex: "DFD4FF")
     }
 }
 
@@ -330,3 +366,28 @@ private struct CurrencyDecimalPlacesView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
+
+#Preview("CurrencyView") {
+    // Sample preview data for saved currencies
+    struct PreviewContainer: View {
+        @State private var isAddCurrencyPresent: Bool = false
+        @State private var savedCurrencies: [Currency] = [
+            Currency(currencyCode: "USD"),
+            Currency(currencyCode: "EUR"),
+            Currency(currencyCode: "JPY")
+        ]
+        
+        var body: some View {
+            NavigationStack {
+                CurrencyView(
+                    isAddCurrencyPresent: $isAddCurrencyPresent,
+                    savedCurrencies: $savedCurrencies
+                )
+            }
+        }
+    }
+    
+    return PreviewContainer()
+}
+
