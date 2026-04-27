@@ -55,8 +55,11 @@ struct SettingsTabView: View {
                                         
                                         CurrencyDetailsView(
                                             currentCurrencies: [baseCurrencyCode, selectedCurrency],
-                                            savedNewCurrencies: $savedCurrencies,
-                                            isSheetPresented: $sheetPresenter.presentAddCurrency
+                                            decimalPlaces: Currency.loadDecimalPlaces(),
+                                            onSaveCompletion: {
+                                                sheetPresenter.presentAddCurrency = false
+                                            }, 
+                                            savedNewCurrencies: $savedCurrencies
                                         )
                                     }
                                 }

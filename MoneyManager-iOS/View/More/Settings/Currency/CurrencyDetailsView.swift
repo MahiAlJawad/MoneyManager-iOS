@@ -11,15 +11,17 @@ struct CurrencyDetailsView: View {
     @Environment(\.dismiss) private var dismiss
     
     let currentCurrencies: [String]
+    let decimalPlaces: Int
+    var onSaveCompletion: (() -> Void)? = nil
     
     @State private var currencyViewModel = CurrencyModel()
     @State private var selectedDirection: ConversionDirection = .baseToTarget
     @State private var editedRateText = ""
     @State private var draftBaseRate: Double?
     @State private var seededInitialRate = false
+    @State private var shouldIgnoreNextEditedRateTextChange = false
     
     @Binding var savedNewCurrencies: [Currency]
-    @Binding var isSheetPresented: Bool
     
     private var baseCurrency: String { currentCurrencies[0] }
     private var targetCurrency: String { currentCurrencies[1] }
@@ -99,12 +101,12 @@ struct CurrencyDetailsView: View {
     private func seedEditedRateIfNeeded() {
         guard !seededInitialRate else { return }
         draftBaseRate = initialBaseRate
-        editedRateText = formattedNumber(displayedDraftRate, minFraction: 0, maxFraction: 5)
+        setEditedRateText(displayedDraftRate)
         seededInitialRate = true
     }
     
     private func syncEditedRateForDirection() {
-        editedRateText = formattedNumber(displayedDraftRate, minFraction: 0, maxFraction: 5)
+        setEditedRateText(displayedDraftRate)
     }
     
     private func updateDraftRate() {
@@ -116,6 +118,11 @@ struct CurrencyDetailsView: View {
         case .targetToBase:
             draftBaseRate = 1 / editedRateValue
         }
+    }
+    
+    private func setEditedRateText(_ rate: Double) {
+        shouldIgnoreNextEditedRateTextChange = true
+        editedRateText = formattedNumber(rate, minFraction: 0, maxFraction: decimalPlaces)
     }
     
     private func saveRate() {
@@ -132,7 +139,7 @@ struct CurrencyDetailsView: View {
         
         Currency.saveNewCurrency(savedCurrencies: savedNewCurrencies)
         dismiss()
-        isSheetPresented = false
+        onSaveCompletion?()
     }
     
     var body: some View {
@@ -142,6 +149,7 @@ struct CurrencyDetailsView: View {
                 rateEditorContent
                 ManualRateKeypad(
                     displayedNumber: $editedRateText,
+                    decimalPlaces: decimalPlaces,
                     saveAction: saveRate,
                     isSaveEnabled: isSaveEnabled
                 )
@@ -156,6 +164,7 @@ struct CurrencyDetailsView: View {
                 rateEditorContent
                 ManualRateKeypad(
                     displayedNumber: $editedRateText,
+                    decimalPlaces: decimalPlaces,
                     saveAction: saveRate,
                     isSaveEnabled: isSaveEnabled
                 )
@@ -197,6 +206,10 @@ struct CurrencyDetailsView: View {
             seedEditedRateIfNeeded()
         }
         .onChange(of: editedRateText) {
+            if shouldIgnoreNextEditedRateTextChange {
+                shouldIgnoreNextEditedRateTextChange = false
+                return
+            }
             updateDraftRate()
         }
     }
@@ -209,7 +222,6 @@ struct CurrencyDetailsView: View {
             VStack(spacing: 12) {
                 savedRateCard
                 editableRateCard
-                activeRateFooter
             }
             .padding(16)
             .background(Color(hex: "EFEFF3"))
@@ -250,7 +262,7 @@ struct CurrencyDetailsView: View {
                 .foregroundStyle(Color(hex: "8A8A96"))
             
             HStack(alignment: .center, spacing: 12) {
-                Text("1 \(selectedSourceCurrency) = \(formattedNumber(displayedSavedRate, minFraction: 0, maxFraction: 5)) \(selectedDestinationCurrency)")
+                Text("1 \(selectedSourceCurrency) = \(formattedNumber(displayedSavedRate, minFraction: 0, maxFraction: decimalPlaces)) \(selectedDestinationCurrency)")
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(.black)
                     .lineLimit(2)
@@ -302,21 +314,6 @@ struct CurrencyDetailsView: View {
         )
     }
     
-    private var activeRateFooter: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(Color(hex: "49B08A"))
-                .frame(width: 8, height: 8)
-            
-            Text("1 \(selectedSourceCurrency) = \(formattedNumber(effectiveEditedRate, minFraction: 0, maxFraction: 5)) \(selectedDestinationCurrency)")
-                .font(.system(size: 16))
-                .foregroundStyle(Color(hex: "6D6D78"))
-            
-            Spacer()
-        }
-        .padding(.horizontal, 2)
-    }
-    
     private func directionTab(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
@@ -347,6 +344,7 @@ private enum ConversionDirection {
 
 struct ManualRateKeypad: View {
     @Binding var displayedNumber: String
+    let decimalPlaces: Int
     let saveAction: () -> Void
     let isSaveEnabled: Bool
     
@@ -373,6 +371,9 @@ struct ManualRateKeypad: View {
                     KeypadButton(label: ".") {
                         appendDecimalPoint()
                     }
+                    .opacity(decimalPlaces == 0 ? 0.35 : 1)
+                    .disabled(decimalPlaces == 0)
+                    
                     KeypadButton(label: "0") {
                         appendCharacter("0")
                     }
@@ -406,6 +407,13 @@ struct ManualRateKeypad: View {
     }
     
     private func appendCharacter(_ character: String) {
+        if let decimalIndex = displayedNumber.firstIndex(of: ".") {
+            let digitsAfterDecimal = displayedNumber.distance(from: displayedNumber.index(after: decimalIndex), to: displayedNumber.endIndex)
+            if digitsAfterDecimal >= decimalPlaces {
+                return
+            }
+        }
+        
         if displayedNumber == "0" {
             displayedNumber = character
         } else {
@@ -414,6 +422,8 @@ struct ManualRateKeypad: View {
     }
     
     private func appendDecimalPoint() {
+        guard decimalPlaces > 0 else { return }
+        
         if displayedNumber.isEmpty {
             displayedNumber = "0."
             return
@@ -482,5 +492,19 @@ struct DeleteKeypadButton: View {
                 .fill(Color(hex: "D9D9E2"))
                 .frame(width: 0.5)
         }
+    }
+}
+
+#Preview {
+    @Previewable @State var previewCurrencies: [Currency] = [
+        Currency(currencyCode: "USD", conversionRate: 0.0081)
+    ]
+    
+    NavigationStack {
+        CurrencyDetailsView(
+            currentCurrencies: ["BDT", "USD"],
+            decimalPlaces: 4,
+            savedNewCurrencies: $previewCurrencies
+        )
     }
 }

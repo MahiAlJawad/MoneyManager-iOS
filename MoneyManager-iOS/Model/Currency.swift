@@ -7,6 +7,14 @@
 
 import Foundation
 
+struct CurrencyDisplayInfo: Hashable {
+    let currencyCode: String
+    let currencyName: String
+    let countryCode: String
+    let countryName: String
+    let flag: String
+}
+
 struct Currency: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     
@@ -33,6 +41,13 @@ struct Currency: Identifiable, Codable, Equatable, Hashable {
 
 extension Currency {
     static let baseCurrencyCode = Locale.current.currency?.identifier ?? ""
+    static let defaultDecimalPlaces = 2
+    static let supportedDecimalPlaces = Array(0...6)
+    
+    private enum UserDefaultsKey {
+        static let savedCurrencies = "SavedCurrencies"
+        static let decimalPlaces = "CurrencyDecimalPlaces"
+    }
     
     static var baseCurrency: Currency {
         .init(
@@ -49,7 +64,7 @@ extension Currency {
         do {
             let encodedData = try JSONEncoder().encode(savedCurrencies)
             let userDefaults = UserDefaults.standard
-            userDefaults.set(encodedData, forKey: "SavedCurrencies")
+            userDefaults.set(encodedData, forKey: UserDefaultsKey.savedCurrencies)
         } catch {
             print("Failed to save currency data \(error.localizedDescription)")
         }
@@ -57,7 +72,7 @@ extension Currency {
     
     static func loadCurrencyData() -> [Currency] {
         var currencies: [Currency] = []
-        if let savedData = UserDefaults.standard.object(forKey: "SavedCurrencies") as? Data {
+        if let savedData = UserDefaults.standard.object(forKey: UserDefaultsKey.savedCurrencies) as? Data {
             do {
                 let savedCurrencyData = try JSONDecoder().decode([Currency].self, from: savedData)
                 currencies = savedCurrencyData
@@ -73,5 +88,29 @@ extension Currency {
             countryCode.unicodeScalars.compactMap( { UnicodeScalar(127397 + $0.value) } ))
         )
     }
+    
+    static func displayInfo(for currencyCode: String) -> CurrencyDisplayInfo {
+        let normalizedCurrencyCode = currencyCode.uppercased()
+        let countryCode = String(normalizedCurrencyCode.prefix(2))
+        let currencyName = Locale.current.localizedString(forCurrencyCode: normalizedCurrencyCode) ?? normalizedCurrencyCode
+        let countryName = Locale.current.localizedString(forRegionCode: countryCode) ?? countryCode
+        
+        return CurrencyDisplayInfo(
+            currencyCode: normalizedCurrencyCode,
+            currencyName: currencyName,
+            countryCode: countryCode,
+            countryName: countryName,
+            flag: countryFlag(countryCode: countryCode)
+        )
+    }
+    
+    static func loadDecimalPlaces() -> Int {
+        let storedValue = UserDefaults.standard.integer(forKey: UserDefaultsKey.decimalPlaces)
+        return supportedDecimalPlaces.contains(storedValue) ? storedValue : defaultDecimalPlaces
+    }
+    
+    static func saveDecimalPlaces(_ decimalPlaces: Int) {
+        let normalizedValue = supportedDecimalPlaces.contains(decimalPlaces) ? decimalPlaces : defaultDecimalPlaces
+        UserDefaults.standard.set(normalizedValue, forKey: UserDefaultsKey.decimalPlaces)
+    }
 }
-

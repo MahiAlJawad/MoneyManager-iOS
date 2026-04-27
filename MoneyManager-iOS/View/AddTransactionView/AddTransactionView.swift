@@ -104,8 +104,11 @@ struct AddTransactionView: View {
                     case .currencyConversionView(let selectedCurrency):
                         CurrencyDetailsView(
                             currentCurrencies: [Currency.baseCurrencyCode, selectedCurrency],
-                            savedNewCurrencies: $savedCurrencies,
-                            isSheetPresented: $presentAddCurrencyView
+                            decimalPlaces: Currency.loadDecimalPlaces(),
+                            onSaveCompletion: {
+                                presentAddCurrencyView = false
+                            }, 
+                            savedNewCurrencies: $savedCurrencies
                         )
                     }
                 }
