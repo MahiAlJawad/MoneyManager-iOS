@@ -61,46 +61,58 @@ struct HomeView: View {
     }
     
     private var balanceCard: some View {
-        ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(balanceGradient)
-                .overlay(alignment: .trailing) {
-                    balanceArtwork
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .strokeBorder(.white.opacity(colorScheme == .dark ? 0.06 : 0.14), lineWidth: 1)
-                }
-            
-            VStack(alignment: .leading, spacing: 14) {
-                Text("Total Balance")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.96))
-                
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(totalBalance.formatted(.currency(code: "BDT")))
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                        .contentTransition(.numericText())
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: balanceTrendDelta >= 0 ? "arrow.up" : "arrow.down")
-                            .font(.system(size: 12, weight: .bold))
-                        
-                        Text(balanceTrendDescription)
-                            .font(.system(size: 13, weight: .semibold))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.9)
+        Button {
+            router.navigate(to: .balanceDetailsView)
+        } label: {
+            ZStack(alignment: .topLeading) {
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(balanceGradient)
+                    .overlay(alignment: .trailing) {
+                        balanceArtwork
                     }
-                    .foregroundStyle(.white.opacity(0.88))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .strokeBorder(.white.opacity(colorScheme == .dark ? 0.06 : 0.14), lineWidth: 1)
+                    }
+                
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(spacing: 8) {
+                        Text("Total Balance")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.96))
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.78))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(totalBalance.formatted(.currency(code: "BDT")))
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                            .contentTransition(.numericText())
+                        
+                        HStack(spacing: 8) {
+                            Image(systemName: balanceTrendDelta >= 0 ? "arrow.up" : "arrow.down")
+                                .font(.system(size: 12, weight: .bold))
+                            
+                            Text(balanceTrendDescription)
+                                .font(.system(size: 13, weight: .semibold))
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.9)
+                        }
+                        .foregroundStyle(.white.opacity(0.88))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.trailing, 104)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.trailing, 104)
+                .padding(22)
             }
-            .padding(22)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("View balance details")
         .frame(maxWidth: .infinity)
         .frame(height: 164)
         .shadow(color: shadowColor, radius: 20, y: 10)
