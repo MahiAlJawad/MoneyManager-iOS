@@ -9,24 +9,43 @@ import SwiftUI
 
 struct CurrencyCellView: View {
     let currencyCode: String
+    var trailingText: String? = nil
+    var showsChevron: Bool = false
     
     var body: some View {
-        HStack {
-            let currencyLocale = Locale(identifier: currencyCode)
-            let countryCode = String(currencyCode.prefix(2))
-            let currencyName = (currencyLocale as NSLocale).displayName(forKey:NSLocale.Key.currencyCode, value: currencyCode)
-            let countryName = (NSLocale.current as NSLocale).displayName(forKey: NSLocale.Key.countryCode, value: countryCode)
-            
-            Text(Currency.countryFlag(countryCode: countryCode))
+        let info = Currency.displayInfo(for: currencyCode)
+        
+        HStack(spacing: 12) {
+            Text(info.flag)
                 .font(.system(size: 30))
             
-            VStack(alignment:.leading){
-                Text("\(currencyCode)")
-                Text(currencyName ?? "")
-                    .font(.caption)
-                Text(countryName ?? "")
+            VStack(alignment: .leading, spacing: 2) {
+                Text(info.currencyCode)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                
+                Text(info.currencyName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                
+                Text(info.countryName)
                     .font(.footnote)
-                    .foregroundColor(.gray)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Spacer(minLength: 12)
+            
+            if let trailingText {
+                Text(trailingText)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
             }
         }
     }
