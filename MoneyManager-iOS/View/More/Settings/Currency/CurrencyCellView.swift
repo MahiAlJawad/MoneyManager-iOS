@@ -13,23 +13,21 @@ struct CurrencyCellView: View {
     var showsChevron: Bool = false
     
     var body: some View {
-        let info = Currency.displayInfo(for: currencyCode)
-        
         HStack(spacing: 12) {
-            Text(info.flag)
+            Text(Currency.flag(for: currencyCode))
                 .font(.system(size: 30))
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(info.currencyCode)
+                Text(Currency.normalizedCurrencyCode(for: currencyCode))
                     .font(.body)
                     .fontWeight(.semibold)
                     .foregroundStyle(.primary)
                 
-                Text(info.currencyName)
+                Text(Currency.currencyName(for: currencyCode))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
-                Text(info.countryName)
+                Text(Currency.countryName(for: currencyCode))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

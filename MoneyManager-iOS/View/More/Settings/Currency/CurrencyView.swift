@@ -138,8 +138,6 @@ private struct BaseCurrencyCardView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        let info = Currency.displayInfo(for: currencyCode)
-        
         VStack(alignment: .leading, spacing: 16) {
             Text("Base Currency")
                 .font(.caption)
@@ -152,20 +150,20 @@ private struct BaseCurrencyCardView: View {
                 .background(baseBadgeBackgroundColor, in: Capsule())
             
             HStack(spacing: 14) {
-                Text(info.flag)
+                Text(Currency.flag(for: currencyCode))
                     .font(.system(size: 40))
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(info.currencyCode)
+                    Text(Currency.normalizedCurrencyCode(for: currencyCode))
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundStyle(.primary)
                     
-                    Text(info.currencyName)
+                    Text(Currency.currencyName(for: currencyCode))
                         .font(.subheadline)
                         .foregroundStyle(baseAccentColor)
                     
-                    Text(info.countryName)
+                    Text(Currency.countryName(for: currencyCode))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -390,4 +388,3 @@ private struct CurrencyDecimalPlacesView: View {
     
     return PreviewContainer()
 }
-
