@@ -15,16 +15,15 @@ struct CurrencyCellView: View {
     var body: some View {
         HStack(spacing: 12) {
             Text(Currency.flag(for: currencyCode))
-                .font(.system(size: 30))
+                .font(.system(size: 28))
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(Currency.normalizedCurrencyCode(for: currencyCode))
-                    .font(.body)
-                    .fontWeight(.semibold)
+                    .font(.headline)
                     .foregroundStyle(.primary)
                 
                 Text(Currency.currencyName(for: currencyCode))
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                 
                 Text(Currency.countryName(for: currencyCode))
@@ -36,7 +35,7 @@ struct CurrencyCellView: View {
             
             if let trailingText {
                 Text(trailingText)
-                    .font(.subheadline)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
             
@@ -46,6 +45,7 @@ struct CurrencyCellView: View {
                     .foregroundStyle(.tertiary)
             }
         }
+        .frame(minHeight: 60)
     }
 }
 

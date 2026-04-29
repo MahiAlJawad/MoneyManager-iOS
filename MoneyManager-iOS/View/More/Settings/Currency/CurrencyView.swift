@@ -11,6 +11,7 @@ struct CurrencyView: View {
     @Binding var isAddCurrencyPresent: Bool
     @Binding var savedCurrencies: [Currency]
     
+    @Environment(\.colorScheme) private var colorScheme
     @State private var decimalPlaces = Currency.loadDecimalPlaces()
     @State private var isDecimalPlacesViewPresented = false
     
@@ -94,41 +95,37 @@ struct CurrencyView: View {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 22))
+                    .font(.system(size: 18, weight: .semibold))
                 
                 Text("Add Currency")
                     .font(.headline)
-                    .fontWeight(.semibold)
             }
-            .foregroundStyle(addCurrencyButtonForegroundColor)
+            .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(addCurrencyButtonBackgroundColor, in: Capsule())
-            .overlay(
+            .frame(height: 50)
+            .background(addCurrencyButtonGradient, in: Capsule())
+            .overlay {
                 Capsule()
-                    .stroke(addCurrencyButtonBorderColor, lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.24 : 0.12), radius: 14, y: 8)
+                    .strokeBorder(.white.opacity(colorScheme == .dark ? 0.06 : 0.14), lineWidth: 1)
+            }
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.28 : 0.14), radius: 14, y: 8)
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 32)
+        .controlSize(.large)
+        .padding(.horizontal, 22)
         .padding(.top, 8)
         .padding(.bottom, 12)
         .background(Color(uiColor: .systemGroupedBackground))
     }
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
-    private var addCurrencyButtonBackgroundColor: Color {
-        colorScheme == .dark ? Color(hex: "4D47D9") : Color(hex: "5B4BC4")
-    }
-    
-    private var addCurrencyButtonForegroundColor: Color {
-        .white
-    }
-    
-    private var addCurrencyButtonBorderColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04)
+
+    private var addCurrencyButtonGradient: LinearGradient {
+        LinearGradient(
+            colors: colorScheme == .dark
+                ? [Color(hex: "#0F5D4F"), Color(hex: "#136959"), Color(hex: "#1B7A67")]
+                : [Color(hex: "#156C60"), Color(hex: "#1A7565"), Color(hex: "#2D8571")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 }
 
@@ -160,8 +157,8 @@ private struct BaseCurrencyCardView: View {
                         .foregroundStyle(.primary)
                     
                     Text(Currency.currencyName(for: currencyCode))
-                        .font(.subheadline)
-                        .foregroundStyle(baseAccentColor)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     
                     Text(Currency.countryName(for: currencyCode))
                         .font(.footnote)
@@ -183,19 +180,19 @@ private struct BaseCurrencyCardView: View {
     }
     
     private var baseAccentColor: Color {
-        colorScheme == .dark ? Color(hex: "B8B3FF") : Color(hex: "5B4BC4")
+        colorScheme == .dark ? Color(hex: "A9EBCF") : Color(hex: "1F8F63")
     }
     
     private var baseBadgeBackgroundColor: Color {
-        colorScheme == .dark ? Color(hex: "2E2A52") : Color(hex: "E9E0FF")
+        colorScheme == .dark ? Color(hex: "163D34") : Color(hex: "E8F3EB")
     }
     
     private var baseCardBackgroundColor: Color {
-        Color(uiColor: colorScheme == .dark ? .secondarySystemGroupedBackground : .secondarySystemGroupedBackground)
+        Color(uiColor: .secondarySystemGroupedBackground)
     }
     
     private var baseCardBorderColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.08) : Color(hex: "DFD4FF")
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color.primary.opacity(0.04)
     }
 }
 
@@ -205,7 +202,7 @@ private struct CurrencyCardRowView: View {
     var body: some View {
         CurrencyCellView(currencyCode: currencyCode)
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.vertical, 10)
             .background(Color(uiColor: .secondarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
@@ -272,17 +269,18 @@ private struct CurrencySettingsStaticRowView: View {
             settingsIcon
             
             Text(title)
-                .font(.body)
+                .font(.headline)
                 .foregroundStyle(.primary)
             
             Spacer()
             
             Text(value)
-                .font(.subheadline)
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 16)
+        .padding(.vertical, 14)
+        .frame(minHeight: 60)
     }
     
     private var settingsIcon: some View {
@@ -310,13 +308,13 @@ private struct CurrencySettingsNavigationRowView: View {
                 .background(iconBackgroundColor, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             
             Text(title)
-                .font(.body)
+                .font(.headline)
                 .foregroundStyle(.primary)
             
             Spacer()
             
             Text(value)
-                .font(.subheadline)
+                .font(.caption)
                 .foregroundStyle(.secondary)
             
             Image(systemName: "chevron.right")
@@ -324,7 +322,8 @@ private struct CurrencySettingsNavigationRowView: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 16)
+        .padding(.vertical, 14)
+        .frame(minHeight: 60)
     }
 }
 
