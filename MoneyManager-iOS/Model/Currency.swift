@@ -7,14 +7,6 @@
 
 import Foundation
 
-struct CurrencyDisplayInfo: Hashable {
-    let currencyCode: String
-    let currencyName: String
-    let countryCode: String
-    let countryName: String
-    let flag: String
-}
-
 struct Currency: Identifiable, Codable, Equatable, Hashable {
     var id = UUID()
     
@@ -89,19 +81,26 @@ extension Currency {
         )
     }
     
-    static func displayInfo(for currencyCode: String) -> CurrencyDisplayInfo {
-        let normalizedCurrencyCode = currencyCode.uppercased()
-        let countryCode = String(normalizedCurrencyCode.prefix(2))
-        let currencyName = Locale.current.localizedString(forCurrencyCode: normalizedCurrencyCode) ?? normalizedCurrencyCode
-        let countryName = Locale.current.localizedString(forRegionCode: countryCode) ?? countryCode
-        
-        return CurrencyDisplayInfo(
-            currencyCode: normalizedCurrencyCode,
-            currencyName: currencyName,
-            countryCode: countryCode,
-            countryName: countryName,
-            flag: countryFlag(countryCode: countryCode)
-        )
+    static func normalizedCurrencyCode(for currencyCode: String) -> String {
+        currencyCode.uppercased()
+    }
+    
+    static func countryCode(for currencyCode: String) -> String {
+        String(normalizedCurrencyCode(for: currencyCode).prefix(2))
+    }
+    
+    static func currencyName(for currencyCode: String) -> String {
+        let normalizedCurrencyCode = normalizedCurrencyCode(for: currencyCode)
+        return Locale.current.localizedString(forCurrencyCode: normalizedCurrencyCode) ?? normalizedCurrencyCode
+    }
+    
+    static func countryName(for currencyCode: String) -> String {
+        let countryCode = countryCode(for: currencyCode)
+        return Locale.current.localizedString(forRegionCode: countryCode) ?? countryCode
+    }
+    
+    static func flag(for currencyCode: String) -> String {
+        countryFlag(countryCode: countryCode(for: currencyCode))
     }
     
     static func loadDecimalPlaces() -> Int {
@@ -112,5 +111,25 @@ extension Currency {
     static func saveDecimalPlaces(_ decimalPlaces: Int) {
         let normalizedValue = supportedDecimalPlaces.contains(decimalPlaces) ? decimalPlaces : defaultDecimalPlaces
         UserDefaults.standard.set(normalizedValue, forKey: UserDefaultsKey.decimalPlaces)
+    }
+    
+    var displayCurrencyCode: String {
+        Self.normalizedCurrencyCode(for: currencyCode ?? "")
+    }
+    
+    var displayCountryCode: String {
+        Self.countryCode(for: currencyCode ?? "")
+    }
+    
+    var displayCurrencyName: String {
+        Self.currencyName(for: currencyCode ?? "")
+    }
+    
+    var displayCountryName: String {
+        Self.countryName(for: currencyCode ?? "")
+    }
+    
+    var displayFlag: String {
+        Self.flag(for: currencyCode ?? "")
     }
 }
