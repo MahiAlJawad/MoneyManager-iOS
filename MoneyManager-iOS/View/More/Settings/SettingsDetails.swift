@@ -10,7 +10,9 @@ import SwiftUI
 struct SettingsDetails: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(SettingsTabView.Router.self) private var router
+
     @State private var notificationPreferences = AppNotificationPreferences.load()
     @State private var authorizationStatus: AppNotificationAuthorizationStatus = .notDetermined
     @State private var isReminderTimePickerPresented = false
@@ -89,12 +91,12 @@ struct SettingsDetails: View {
                             .frame(width: 32, height: 32)
                             .background(Color.red.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        
+
                         Text("Sign out")
                             .font(.body)
                             .fontWeight(.semibold)
                             .foregroundColor(.red)
-                        
+
                         Spacer()
                     }
                     .padding()
@@ -148,7 +150,9 @@ struct SettingsDetails: View {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [Color(red: 0.21, green: 0.34, blue: 0.93), Color(red: 0.05, green: 0.68, blue: 0.56)],
+                        colors: colorScheme == .dark
+                        ? [Color(hex: "#0F5D4F"), Color(hex: "#136959"), Color(hex: "#1B7A67")]
+                        : [Color(hex: "#156C60"), Color(hex: "#1A7565"), Color(hex: "#2D8571")],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -171,9 +175,10 @@ struct SettingsDetails: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
 
-                    Text("arif@email.com")
+                    Text(verbatim: "arif@email.com")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.white)
                 }
 
                 Spacer()
@@ -214,7 +219,7 @@ struct SettingsDetails: View {
                         .background(iconColor)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
-                
+
                 Spacer()
 
                 if let trailingText {
@@ -329,14 +334,14 @@ struct SettingsDetails: View {
         .background(Color(uiColor: .secondarySystemGroupedBackground))
         .cornerRadius(16)
     }
-    
+
     private var debugDrawer: some View {
         NavigationStack {
             VStack(spacing: 14) {
                 Text("Debug Tools")
                     .font(.headline)
                     .padding(.top, 8)
-                
+
                 settingsButton(
                     icon: "tray.and.arrow.down.fill",
                     iconColor: Color(hex: "#1F8F63"),
@@ -345,7 +350,7 @@ struct SettingsDetails: View {
                     TestDataManager.shared.seedHomeUITestData(in: modelContext)
                     isDebugDrawerPresented = false
                 }
-                
+
                 settingsButton(
                     icon: "trash.fill",
                     iconColor: .red,
@@ -354,7 +359,7 @@ struct SettingsDetails: View {
                     TestDataManager.shared.clearAllData(in: modelContext)
                     isDebugDrawerPresented = false
                 }
-                
+
                 Spacer(minLength: 0)
             }
             .padding(.horizontal, 16)
@@ -362,7 +367,7 @@ struct SettingsDetails: View {
             .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         }
     }
-    
+
     private func handleVersionTap() {
         debugTapCount += 1
         
