@@ -17,6 +17,8 @@ struct ExportDataView: View {
     }
 
     @State private var selectedScope: ExportScope = .monthly
+    @State private var selectedFormat: ExportFormatOption = .csv
+    @State private var isExportFormatSheetPresented = false
     @State private var startDate = Calendar.current.date(byAdding: .day, value: -27, to: Date()) ?? Date()
     @State private var endDate = Date()
 
@@ -34,6 +36,14 @@ struct ExportDataView: View {
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle("Export Data")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isExportFormatSheetPresented) {
+            ExportFormatSheetView(
+                selectedFormat: $selectedFormat,
+                isPresented: $isExportFormatSheetPresented
+            )
+            .presentationDetents([.height(410)])
+            .presentationDragIndicator(.hidden)
+        }
     }
 
     private var heroCard: some View {
@@ -156,7 +166,10 @@ struct ExportDataView: View {
     }
 
     private var exportButton: some View {
-        Button(action: {}) {
+        Button {
+            selectedFormat = .csv
+            isExportFormatSheetPresented = true
+        } label: {
             HStack(spacing: 1) {
                 Spacer()
 
