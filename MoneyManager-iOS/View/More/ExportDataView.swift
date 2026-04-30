@@ -7,18 +7,26 @@
 
 import SwiftUI
 
+private enum ExportScopeOption: String, CaseIterable, Identifiable {
+    case monthly
+    case allHistory
+    case custom
+
+    var id: String { rawValue }
+}
+
 struct ExportDataView: View {
-    private enum ExportScope: String, CaseIterable, Identifiable {
-        case monthly
-        case allHistory
-        case custom
+    private static let defaultCustomRangeDays = 30
 
-        var id: String { rawValue }
-    }
-
-    @State private var selectedScope: ExportScope = .monthly
-    @State private var startDate = Calendar.current.date(byAdding: .day, value: -27, to: Date()) ?? Date()
+    @State private var selectedScope: ExportScopeOption = .monthly
+    @State private var selectedFormat: ExportFormatOption = .csv
+    @State private var isExportFormatSheetPresented = false
     @State private var endDate = Date()
+    @State private var startDate = Calendar.current.date(
+        byAdding: .day,
+        value: -(ExportDataView.defaultCustomRangeDays - 1),
+        to: Date()
+    ) ?? Date()
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -34,6 +42,14 @@ struct ExportDataView: View {
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle("Export Data")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $isExportFormatSheetPresented) {
+            ExportFormatSheetView(
+                selectedFormat: $selectedFormat,
+                isPresented: $isExportFormatSheetPresented
+            )
+            .presentationDetents([.height(410)])
+            .presentationDragIndicator(.hidden)
+        }
     }
 
     private var heroCard: some View {
@@ -156,7 +172,10 @@ struct ExportDataView: View {
     }
 
     private var exportButton: some View {
-        Button(action: {}) {
+        Button {
+            selectedFormat = .csv
+            isExportFormatSheetPresented = true
+        } label: {
             HStack(spacing: 1) {
                 Spacer()
 
@@ -205,7 +224,7 @@ struct ExportDataView: View {
     }
 
     private func scopeCard(
-        scope: ExportScope,
+        scope: ExportScopeOption,
         badgeText: String,
         badgeColor: Color,
         title: String,
