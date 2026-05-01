@@ -75,20 +75,30 @@ extension Account {
     }
     
     func addTransaction(_ transaction: Transaction) {
-        let balanceToAdd: Double = {
-            guard transaction.transactionType == .transfer else {
-                return transaction.amount
-            }
-            
-            if transaction.account == self { // debited
-                return -transaction.amount
-            } else { // credited
-                return transaction.amount
-            }
-        }()
+        balance += balanceImpact(of: transaction)
         
-        balance += balanceToAdd
-        transactions.append(transaction)
+        if !transactions.contains(where: { $0.id == transaction.id }) {
+            transactions.append(transaction)
+        }
+    }
+    
+    func removeTransaction(_ transaction: Transaction) {
+        balance -= balanceImpact(of: transaction)
+        transactions.removeAll { $0.id == transaction.id }
+    }
+    
+    private func balanceImpact(of transaction: Transaction) -> Double {
+        guard transaction.transactionType == .transfer else {
+            return transaction.account == self ? transaction.amount : 0
+        }
+        
+        if transaction.account == self { // debited
+            return -transaction.amount
+        } else if transaction.transferAccount == self { // credited
+            return transaction.amount
+        } else {
+            return 0
+        }
     }
     
     static func addAccount(in modelContext: ModelContext, with accountInfo: AddAccountView.AddAccountInfo) throws {

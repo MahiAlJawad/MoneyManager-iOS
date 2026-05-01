@@ -29,8 +29,8 @@ struct HomeView: View {
                 balanceCard
                 statCardsSection
                 quickActionsSection
-                spendingOverviewSection
                 accountsSection
+                spendingOverviewSection
                 recentTransactionsSection
             }
             .padding(.horizontal, 20)
@@ -120,29 +120,35 @@ struct HomeView: View {
     
     private var statCardsSection: some View {
         LazyVGrid(columns: statColumns, spacing: 10) {
-            summaryCard(
-                title: "Income",
-                amount: monthlyIncome,
-                caption: "This Month",
-                systemImage: "arrow.down",
-                tint: Color(hex: "#1FB56B")
-            )
+            Button {
+                router.navigate(to: .monthlyMoneyFlowView(.income))
+            } label: {
+                summaryCard(
+                    title: "Income",
+                    amount: monthlyIncome,
+                    caption: "This Month",
+                    trend: cashflowTrend(current: monthlyIncome, previous: previousMonthIncome),
+                    systemImage: "arrow.down",
+                    tint: Color(hex: "#1FB56B")
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("View income money flow")
             
-            summaryCard(
-                title: "Expense",
-                amount: monthlyExpense,
-                caption: "This Month",
-                systemImage: "arrow.up",
-                tint: Color(hex: "#FF5C54")
-            )
-            
-            summaryCard(
-                title: "Net Savings",
-                amount: monthlySavings,
-                caption: "This Month",
-                systemImage: "chart.line.uptrend.xyaxis",
-                tint: Color(hex: "#5B5CEB")
-            )
+            Button {
+                router.navigate(to: .monthlyMoneyFlowView(.expense))
+            } label: {
+                summaryCard(
+                    title: "Expense",
+                    amount: monthlyExpense,
+                    caption: "This Month",
+                    trend: cashflowTrend(current: monthlyExpense, previous: previousMonthExpense),
+                    systemImage: "arrow.up",
+                    tint: Color(hex: "#FF5C54")
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("View expense money flow")
         }
     }
     
@@ -349,38 +355,52 @@ struct HomeView: View {
         title: String,
         amount: Double,
         caption: String,
+        trend: CashflowTrend,
         systemImage: String,
         tint: Color
     ) -> some View {
         adaptiveCard {
-            VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
                 Circle()
                     .fill(tint.opacity(colorScheme == .dark ? 0.18 : 0.10))
-                    .frame(width: 40, height: 40)
+                    .frame(width: 42, height: 42)
                     .overlay {
                         Image(systemName: systemImage)
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(tint)
                     }
                 
-                Text(title)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                
-                Text(amount, format: .currency(code: "BDT"))
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(tint)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                
-                Text(caption)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(primaryTextColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    
+                    Text(amount, format: .currency(code: "BDT"))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(tint)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                    
+                    HStack(spacing: 4) {
+                        Image(systemName: trend.symbolName)
+                            .font(.system(size: 10, weight: .bold))
+                        
+                        Text(trend.description)
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .foregroundStyle(trend.color)
+                    
+                    Text(caption)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
+            .frame(maxWidth: .infinity, minHeight: 78, alignment: .leading)
         }
     }
     
@@ -568,6 +588,12 @@ private extension HomeView {
         var id: Int { day }
     }
     
+    struct CashflowTrend {
+        let description: String
+        let symbolName: String
+        let color: Color
+    }
+    
     var allTransactions: [Transaction] {
         accounts
             .flatMap(\.transactions)
@@ -607,6 +633,12 @@ private extension HomeView {
             .reduce(0) { $0 + $1.amount }
     }
     
+    var previousMonthIncome: Double {
+        previousMonthTransactions
+            .filter { $0.transactionType == .income }
+            .reduce(0) { $0 + $1.amount }
+    }
+    
     var monthlyExpense: Double {
         abs(
             currentMonthTransactions
@@ -615,26 +647,24 @@ private extension HomeView {
         )
     }
     
-    var monthlySavings: Double {
-        monthlyIncome - monthlyExpense
-    }
-    
-    var previousMonthSavings: Double {
-        let income = previousMonthTransactions
-            .filter { $0.transactionType == .income }
-            .reduce(0) { $0 + $1.amount }
-        
-        let expense = abs(
+    var previousMonthExpense: Double {
+        abs(
             previousMonthTransactions
                 .filter { $0.transactionType == .expense }
                 .reduce(0) { $0 + $1.amount }
         )
-        
-        return income - expense
+    }
+    
+    var monthlyNetBalance: Double {
+        monthlyIncome - monthlyExpense
+    }
+    
+    var previousMonthNetBalance: Double {
+        previousMonthIncome - previousMonthExpense
     }
     
     var balanceTrendDelta: Double {
-        monthlySavings - previousMonthSavings
+        monthlyNetBalance - previousMonthNetBalance
     }
     
     var balanceTrendDescription: String {
@@ -642,13 +672,13 @@ private extension HomeView {
             return "Add more history to compare with last month"
         }
         
-        guard previousMonthSavings != 0 else {
+        guard previousMonthNetBalance != 0 else {
             return balanceTrendDelta == 0
                 ? "Unchanged from last month"
                 : "\(balanceTrendDelta.formatted(.currency(code: "BDT"))) versus last month"
         }
         
-        let percentage = abs((balanceTrendDelta / previousMonthSavings) * 100)
+        let percentage = abs((balanceTrendDelta / previousMonthNetBalance) * 100)
         return "\(percentage.formatted(.number.precision(.fractionLength(1))))% from last month"
     }
     
@@ -706,7 +736,6 @@ private extension HomeView {
     
     var statColumns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 10),
             GridItem(.flexible(), spacing: 10),
             GridItem(.flexible(), spacing: 10)
         ]
@@ -827,5 +856,40 @@ private extension HomeView {
         case .transfer:
             return Color(hex: "#8A63FF")
         }
+    }
+    
+    func cashflowTrend(current: Double, previous: Double) -> CashflowTrend {
+        guard !previousMonthTransactions.isEmpty else {
+            return CashflowTrend(
+                description: "No history",
+                symbolName: "minus",
+                color: Color.secondary
+            )
+        }
+        
+        guard current != 0 else {
+            return CashflowTrend(
+                description: "No activity",
+                symbolName: "minus",
+                color: Color.secondary
+            )
+        }
+        
+        let delta = current - previous
+        guard previous != 0 else {
+            return CashflowTrend(
+                description: "New this month",
+                symbolName: "arrow.up",
+                color: Color(hex: "#1F8F63")
+            )
+        }
+        
+        let percentage = abs((delta / previous) * 100)
+        
+        return CashflowTrend(
+            description: "\(percentage.formatted(.number.precision(.fractionLength(1))))%",
+            symbolName: delta >= 0 ? "arrow.up" : "arrow.down",
+            color: delta >= 0 ? Color(hex: "#1F8F63") : Color(hex: "#E0554D")
+        )
     }
 }

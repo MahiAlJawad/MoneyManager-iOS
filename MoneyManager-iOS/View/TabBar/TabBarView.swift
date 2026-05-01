@@ -11,11 +11,16 @@ struct TabBarView: View {
     private typealias Tab = TabBarModel.Item
     
     @State private var selectedTab: Tab = .home
+    @State private var insightsPath = NavigationPath()
     private let tabBarTint = Color(hex: "#1F8F63")
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeTabView()
+            HomeTabView {
+                selectedTab = .insights
+                insightsPath = NavigationPath()
+                insightsPath.append(InsightsView.Destination.detailMoneyFlow)
+            }
                 .tabItem {
                     Label(Tab.home.title, systemImage: Tab.home.icon)
                 }
@@ -29,8 +34,8 @@ struct TabBarView: View {
             }
             .tag(Tab.transactions)
             
-            NavigationStack {
-                InsightsComingSoonView()
+            NavigationStack(path: $insightsPath) {
+                InsightsView()
             }
             .tabItem {
                 Label(Tab.insights.title, systemImage: Tab.insights.icon)

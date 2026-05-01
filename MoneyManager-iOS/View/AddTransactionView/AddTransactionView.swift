@@ -18,6 +18,7 @@ struct AddTransactionView: View {
     @Environment(TransactionTabView.Router.self) private var router
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var addTransactionInfo = AddTransactionInfo()
     @State private var displayedAmount = "-0"
     @State private var amountExpression = ""
@@ -31,13 +32,15 @@ struct AddTransactionView: View {
     @Query(sort: [.init(\Account.name)])
     private var accounts: [Account]
     
-    @Query(sort: [.init(\Transaction.date, order: .reverse)])
-    private var transactions: [Transaction]
-    
     private let quickCategoryLimit = 5
+    private let editingTransaction: Transaction?
     
-    init(initialTransactionType: TransactionType = .expense) {
-        _addTransactionInfo = State(initialValue: AddTransactionInfo(transactionType: initialTransactionType))
+    init(initialTransactionType: TransactionType = .expense, editingTransaction: Transaction? = nil) {
+        self.editingTransaction = editingTransaction
+        _addTransactionInfo = State(
+            initialValue: editingTransaction.map(AddTransactionInfo.init(transaction:)) ??
+                AddTransactionInfo(transactionType: initialTransactionType)
+        )
     }
     
     // TODO: Logic needs to update after all data are prepared
@@ -124,7 +127,7 @@ struct AddTransactionView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Add", action: saveTransaction)
+                Button(editingTransaction == nil ? "Add" : "Save", action: saveTransaction)
                     .fontWeight(.semibold)
                     .buttonStyle(.borderedProminent)
                     .tint(addTransactionInfo.transactionType.color)
@@ -132,7 +135,7 @@ struct AddTransactionView: View {
                     .id(addTransactionInfo.transactionType)
             }
         }
-        .navigationTitle("Add Transaction")
+        .navigationTitle(editingTransaction == nil ? "Add Transaction" : "Edit Transaction")
         .navigationBarTitleDisplayMode(.inline)
     }
     
@@ -250,7 +253,7 @@ struct AddTransactionView: View {
         var categoryItems: [CategoryMenuItem] = []
         var addedCategoryNames = Set<String>()
         
-        for transaction in transactions {
+        for transaction in recentTransactionsForCategories() {
             guard let category = transaction.transactionCategory,
                   addedCategoryNames.insert(category.name).inserted else {
                 continue
@@ -276,6 +279,15 @@ struct AddTransactionView: View {
         }
         
         return categoryItems
+    }
+    
+    private func recentTransactionsForCategories() -> [Transaction] {
+        var descriptor = FetchDescriptor<Transaction>(
+            sortBy: [.init(\.date, order: .reverse)]
+        )
+        descriptor.fetchLimit = 100
+        
+        return (try? modelContext.fetch(descriptor)) ?? []
     }
     
     private var availableCurrencies: [Currency] {
@@ -489,7 +501,13 @@ struct AddTransactionView: View {
             var transactionInfo = addTransactionInfo
             transactionInfo.amount = AmountExpressionCalculator.evaluatedAmountValue(from: amountExpression)
             
-            try Transaction.addTransaction(from: transactionInfo)
+            if let editingTransaction {
+                try editingTransaction.update(from: transactionInfo)
+            } else {
+                try Transaction.addTransaction(from: transactionInfo)
+            }
+            
+            try modelContext.save()
         } catch {
             // TODO: show error alert once the UI is ready
             print("Error: \(error)")
@@ -645,6 +663,17 @@ extension AddTransactionView {
         
         init(transactionType: TransactionType = .expense) {
             self.transactionType = transactionType
+        }
+        
+        init(transaction: Transaction) {
+            transactionType = transaction.transactionType
+            currency = .init(currencyCode: Locale.current.currency?.identifier ?? "", conversionRate: 1.0)
+            amount = abs(transaction.amount).formatted(.number.grouping(.never).precision(.fractionLength(0...2)))
+            account = transaction.account
+            transferAccount = transaction.transferAccount
+            category = transaction.transactionCategory
+            date = transaction.date
+            note = transaction.note
         }
     }
 }

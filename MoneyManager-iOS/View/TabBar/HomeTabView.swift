@@ -11,6 +11,11 @@ struct HomeTabView: View {
     @State var router = Router()
     @State private var presentAddTransactionSheet = false
     @State private var addTransactionType: Transaction.TransactionType = .expense
+    let openDetailMoneyFlowInInsights: () -> Void
+    
+    init(openDetailMoneyFlowInInsights: @escaping () -> Void = {}) {
+        self.openDetailMoneyFlowInInsights = openDetailMoneyFlowInInsights
+    }
     
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -26,6 +31,13 @@ struct HomeTabView: View {
                         AccountsView()
                     case .balanceDetailsView:
                         BalanceDetailsView()
+                    case .monthlyMoneyFlowView(let metric):
+                        MonthlyMoneyFlowView(
+                            initialMetric: metric,
+                            openDetailMoneyFlow: openDetailMoneyFlowInInsights
+                        )
+                    case .cashflowTransactionsView(let metric):
+                        CashflowTransactionsView(metric: metric)
                     }
                 }
                 .toolbar {
@@ -62,6 +74,8 @@ extension HomeTabView {
             case allTransactionsView
             case accountsView
             case balanceDetailsView
+            case monthlyMoneyFlowView(CashflowMetric)
+            case cashflowTransactionsView(CashflowMetric)
         }
         
         var path = NavigationPath()
