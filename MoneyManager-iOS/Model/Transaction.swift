@@ -146,4 +146,34 @@ extension Transaction {
         account.addTransaction(transaction)
         info.transferAccount?.addTransaction(transaction)
     }
+    
+    func update(from info: AddTransactionView.AddTransactionInfo) throws {
+        guard let account = info.account else {
+            throw AddTransactionError.accountNotFound
+        }
+        
+        guard let amount = Double(info.amount) else {
+            throw AddTransactionError.invalidAmount
+        }
+        
+        let previousAccounts = accounts
+        previousAccounts.forEach { $0.removeTransaction(self) }
+        
+        type = info.transactionType.description
+        self.account = account
+        transferAccount = info.transferAccount
+        accounts = info.transferAccount.map { [account, $0] } ?? [account]
+        self.amount = info.transactionType == .expense ? amount * -1 : amount
+        category = info.category?.name ?? ""
+        date = info.date
+        note = info.note
+        
+        account.addTransaction(self)
+        info.transferAccount?.addTransaction(self)
+    }
+    
+    func delete(in modelContext: ModelContext) {
+        accounts.forEach { $0.removeTransaction(self) }
+        modelContext.delete(self)
+    }
 }

@@ -41,11 +41,13 @@ final class TestDataManager {
         let categories: [Category] = Transaction.MainCategory.allCases + Transaction.Subcategory.allCases
         let calendar = Calendar.current
         let now = Date()
+        let endOfCurrentMonth = calendar.dateInterval(of: .month, for: now)
+            .flatMap { calendar.date(byAdding: DateComponents(second: -1), to: $0.end) } ?? now
         let oneYearAgo = calendar.date(byAdding: .year, value: -1, to: now) ?? now
         
         for index in 0..<transactionCount {
             let transactionType = randomTransactionType()
-            let randomTimeInterval = TimeInterval.random(in: 0...(now.timeIntervalSince(oneYearAgo)))
+            let randomTimeInterval = TimeInterval.random(in: 0...(endOfCurrentMonth.timeIntervalSince(oneYearAgo)))
             let date = oneYearAgo.addingTimeInterval(randomTimeInterval)
             let amount = randomAmount(for: transactionType)
             

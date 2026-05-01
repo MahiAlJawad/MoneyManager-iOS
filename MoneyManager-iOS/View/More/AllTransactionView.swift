@@ -9,29 +9,29 @@ import SwiftData
 import SwiftUI
 
 struct AllTransactionView: View {
-    @Query private var accounts: [Account]
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: [.init(\Transaction.date, order: .reverse)])
+    private var allTransactions: [Transaction]
     @State private var searchString: String = ""
+    @State private var transactionPendingDeletion: Transaction?
+    @State private var transactionPendingEdit: Transaction?
     
     var transactions: [Transaction] {
-        accounts
-            .flatMap(\.transactions)
-            .filter({ transaction in
-                guard !searchString.isEmpty else {
-                    return true
-                }
-                
-                let categoryName = transaction.category
-                let accountName = transaction.accountName
-                let amount = String(transaction.amount)
-                let date = transaction.date.description
-                
-                return categoryName.localizedStandardContains(searchString) ||
-                    accountName.localizedStandardContains(searchString) ||
-                    amount.localizedStandardContains(searchString) ||
-                    date.localizedStandardContains(searchString)
-            })
-            .sorted { $0.date > $1.date }
-            .removeConsecutiveDuplicates()
+        allTransactions.filter { transaction in
+            guard !searchString.isEmpty else {
+                return true
+            }
+            
+            let categoryName = transaction.category
+            let accountName = transaction.accountName
+            let amount = String(transaction.amount)
+            let date = transaction.date.description
+            
+            return categoryName.localizedStandardContains(searchString) ||
+                accountName.localizedStandardContains(searchString) ||
+                amount.localizedStandardContains(searchString) ||
+                date.localizedStandardContains(searchString)
+        }
     }
     
     var datewiseTransactions: [Date: [Transaction]] {
@@ -59,6 +59,20 @@ struct AllTransactionView: View {
         }
         .searchable(text: $searchString)
         .navigationTitle("Transactions")
+        .alert("Delete transaction?", isPresented: deleteAlertBinding, presenting: transactionPendingDeletion) { transaction in
+            Button("Delete", role: .destructive) {
+                deleteTransaction(transaction)
+            }
+            Button("Cancel", role: .cancel) {
+                transactionPendingDeletion = nil
+            }
+        } message: { transaction in
+            Text("This will remove \(transactionTitle(for: transaction)) and update the account balance.")
+        }
+        .sheet(item: $transactionPendingEdit) { transaction in
+            TransactionTabView(editingTransaction: transaction)
+                .presentationDetents([.large])
+        }
     }
     
     func transactionView(of transaction: Transaction) -> some View {
@@ -106,5 +120,48 @@ struct AllTransactionView: View {
                     .font(.caption)
             }
         }
+        .contentShape(Rectangle())
+        .contextMenu {
+            Button {
+                transactionPendingEdit = transaction
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            
+            Button(role: .destructive) {
+                transactionPendingDeletion = transaction
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+    
+    private var deleteAlertBinding: Binding<Bool> {
+        Binding(
+            get: { transactionPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    transactionPendingDeletion = nil
+                }
+            }
+        )
+    }
+    
+    private func deleteTransaction(_ transaction: Transaction) {
+        transaction.delete(in: modelContext)
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to delete transaction: \(error)")
+        }
+        transactionPendingDeletion = nil
+    }
+    
+    private func transactionTitle(for transaction: Transaction) -> String {
+        if transaction.transactionType == .transfer {
+            return "Transfer"
+        }
+        
+        return transaction.category.isEmpty ? transaction.transactionType.description : transaction.category
     }
 }
