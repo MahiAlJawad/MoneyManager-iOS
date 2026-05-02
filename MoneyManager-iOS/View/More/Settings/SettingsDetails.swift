@@ -21,6 +21,20 @@ struct SettingsDetails: View {
     @State private var debugTapCount: Int = 0
     @State private var isDebugDrawerPresented = false
     
+    private var cardBackgroundColor: Color {
+        Color(uiColor: .secondarySystemGroupedBackground)
+    }
+    
+    private var cardCornerRadius: CGFloat { 16 }
+    
+    private var primaryAccentColor: Color {
+        colorScheme == .dark ? Color(hex: "#A9EBCF") : Color(hex: "#1F8F63")
+    }
+    
+    private var primaryAccentBackgroundColor: Color {
+        colorScheme == .dark ? Color(hex: "#163D34") : Color(hex: "#E8F3EB")
+    }
+    
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 16) {
@@ -28,7 +42,8 @@ struct SettingsDetails: View {
 
                 settingsButton(
                     icon: "dollarsign.circle.fill",
-                    iconColor: Color("AccentColor"),
+                    iconForegroundColor: primaryAccentColor,
+                    iconBackgroundColor: primaryAccentBackgroundColor,
                     title: "Currency",
                     trailingText: "BDT ৳"
                 ) {
@@ -37,7 +52,8 @@ struct SettingsDetails: View {
 
                 settingsToggle(
                     icon: "bell.fill",
-                    iconColor: Color(hex: "#1F8F63"),
+                    iconForegroundColor: primaryAccentColor,
+                    iconBackgroundColor: primaryAccentBackgroundColor,
                     title: "Notifications",
                     subtitle: notificationStatusText,
                     isOn: notificationsToggleBinding
@@ -45,7 +61,8 @@ struct SettingsDetails: View {
 
                 settingsToggle(
                     icon: "exclamationmark.triangle.fill",
-                    iconColor: Color.orange,
+                    iconForegroundColor: Color.orange,
+                    iconBackgroundColor: Color.orange.opacity(colorScheme == .dark ? 0.22 : 0.14),
                     title: "Budget alerts",
                     subtitle: budgetAlertStatusText,
                     isOn: budgetAlertsBinding,
@@ -58,7 +75,8 @@ struct SettingsDetails: View {
 
                 settingsButton(
                     icon: "square.and.arrow.up.fill",
-                    iconColor: Color.blue,
+                    iconForegroundColor: Color.blue,
+                    iconBackgroundColor: Color.blue.opacity(colorScheme == .dark ? 0.22 : 0.14),
                     title: "Export data",
                     trailingText: "CSV · PDF"
                 ) {
@@ -67,7 +85,8 @@ struct SettingsDetails: View {
 
                 settingsButton(
                     icon: "questionmark.circle.fill",
-                    iconColor: Color.green,
+                    iconForegroundColor: Color.green,
+                    iconBackgroundColor: Color.green.opacity(colorScheme == .dark ? 0.22 : 0.14),
                     title: "Help & FAQ"
                 ) {
                     router.navigateForFirstNavigation(to: .helpView)
@@ -75,7 +94,8 @@ struct SettingsDetails: View {
 
                 settingsButton(
                     icon: "message.fill",
-                    iconColor: Color.red.opacity(0.85),
+                    iconForegroundColor: Color.red,
+                    iconBackgroundColor: Color.red.opacity(colorScheme == .dark ? 0.24 : 0.14),
                     title: "Send feedback"
                 ) {
                     router.navigateForFirstNavigation(to: .sendFeedbackView)
@@ -89,7 +109,7 @@ struct SettingsDetails: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.red)
                             .frame(width: 32, height: 32)
-                            .background(Color.red.opacity(0.12))
+                            .background(Color.red.opacity(colorScheme == .dark ? 0.24 : 0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
                         Text("Sign out")
@@ -100,8 +120,8 @@ struct SettingsDetails: View {
                         Spacer()
                     }
                     .padding()
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
-                    .cornerRadius(16)
+                    .background(cardBackgroundColor)
+                    .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
                 }
 
                 Text("MoneyManager 1.0 · Privacy Policy")
@@ -199,7 +219,8 @@ struct SettingsDetails: View {
     
     private func settingsButton(
         icon: String,
-        iconColor: Color,
+        iconForegroundColor: Color,
+        iconBackgroundColor: Color,
         title: String,
         trailingText: String? = nil,
         action: @escaping () -> Void
@@ -214,9 +235,9 @@ struct SettingsDetails: View {
                 } icon: {
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(iconForegroundColor)
                         .frame(width: 34, height: 34)
-                        .background(iconColor)
+                        .background(iconBackgroundColor)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
 
@@ -232,15 +253,16 @@ struct SettingsDetails: View {
                     .foregroundColor(.secondary)
             }
             .padding()
-            .background(Color(uiColor: .secondarySystemGroupedBackground))
-            .cornerRadius(16)
+            .background(cardBackgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
     }
     
     private func settingsToggle(
         icon: String,
-        iconColor: Color,
+        iconForegroundColor: Color,
+        iconBackgroundColor: Color,
         title: String,
         subtitle: String? = nil,
         isOn: Binding<Bool>,
@@ -249,9 +271,9 @@ struct SettingsDetails: View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(iconForegroundColor)
                 .frame(width: 34, height: 34)
-                .background(iconColor)
+                .background(iconBackgroundColor)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
@@ -271,12 +293,12 @@ struct SettingsDetails: View {
 
             Toggle("", isOn: isOn)
                 .labelsHidden()
-                .tint(Color(hex: "#1F8F63"))
+                .tint(primaryAccentColor)
                 .disabled(isDisabled)
         }
         .padding()
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .background(cardBackgroundColor)
+        .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .opacity(isDisabled ? 0.6 : 1)
     }
 
@@ -304,10 +326,10 @@ struct SettingsDetails: View {
                     Text(notificationPreferences.formattedReminderTime)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(Color(hex: "#1F8F63"))
+                        .foregroundColor(primaryAccentColor)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color(hex: "#1F8F63").opacity(0.12))
+                        .background(primaryAccentBackgroundColor)
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -331,8 +353,8 @@ struct SettingsDetails: View {
             }
         }
         .padding()
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .cornerRadius(16)
+        .background(cardBackgroundColor)
+        .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
     }
 
     private var debugDrawer: some View {
@@ -344,7 +366,8 @@ struct SettingsDetails: View {
 
                 settingsButton(
                     icon: "tray.and.arrow.down.fill",
-                    iconColor: Color(hex: "#1F8F63"),
+                    iconForegroundColor: primaryAccentColor,
+                    iconBackgroundColor: primaryAccentBackgroundColor,
                     title: "Seed Test Data"
                 ) {
                     TestDataManager.shared.seedHomeUITestData(in: modelContext)
@@ -353,7 +376,8 @@ struct SettingsDetails: View {
 
                 settingsButton(
                     icon: "trash.fill",
-                    iconColor: .red,
+                    iconForegroundColor: .red,
+                    iconBackgroundColor: Color.red.opacity(colorScheme == .dark ? 0.24 : 0.14),
                     title: "Clear All Data"
                 ) {
                     TestDataManager.shared.clearAllData(in: modelContext)
