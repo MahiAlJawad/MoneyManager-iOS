@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CurrencyDetailsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     
     let currentCurrencies: [String]
     let decimalPlaces: Int
@@ -86,6 +87,30 @@ struct CurrencyDetailsView: View {
     private var isSaveEnabled: Bool {
         guard let editedRateValue else { return false }
         return editedRateValue > 0
+    }
+    
+    private var screenBackgroundColor: Color {
+        Color(uiColor: .systemGroupedBackground)
+    }
+    
+    private var sectionBackgroundColor: Color {
+        Color(uiColor: .secondarySystemGroupedBackground)
+    }
+    
+    private var cardBackgroundColor: Color {
+        Color(uiColor: .systemBackground)
+    }
+    
+    private var cardBorderColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.08) : Color(hex: "DEDEE8")
+    }
+    
+    private var secondaryLabelColor: Color {
+        Color(uiColor: .secondaryLabel)
+    }
+    
+    private var tertiaryLabelColor: Color {
+        Color(uiColor: .tertiaryLabel)
     }
     
     private func rateForSelectedDirection(fromBaseRate baseRate: Double) -> Double {
@@ -180,21 +205,19 @@ struct CurrencyDetailsView: View {
         .navigationTitle("Set exchange rate")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
-        .background(Color(hex: "F7F6FB").ignoresSafeArea())
+        .background(screenBackgroundColor.ignoresSafeArea())
+        .toolbarBackground(screenBackgroundColor, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.black)
-                        .frame(width: 40, height: 40)
-                        .background(Color(hex: "F2F2F7"), in: Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(Color(hex: "E1E1E8"), lineWidth: 1)
-                        )
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 28, height: 28, alignment: .center)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -224,7 +247,8 @@ struct CurrencyDetailsView: View {
                 editableRateCard
             }
             .padding(16)
-            .background(Color(hex: "EFEFF3"))
+            .background(sectionBackgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
     }
     
@@ -247,10 +271,10 @@ struct CurrencyDetailsView: View {
             }
         }
         .padding(4)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 18))
+        .background(cardBackgroundColor, in: RoundedRectangle(cornerRadius: 18))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(hex: "DEDEE8"), lineWidth: 1)
+                .stroke(cardBorderColor, lineWidth: 1)
         )
     }
     
@@ -259,12 +283,12 @@ struct CurrencyDetailsView: View {
             Text(savedRateCardTitle)
                 .font(.system(size: 13, weight: .semibold))
                 .tracking(1.2)
-                .foregroundStyle(Color(hex: "8A8A96"))
+                .foregroundStyle(secondaryLabelColor)
             
             HStack(alignment: .center, spacing: 12) {
                 Text("1 \(selectedSourceCurrency) = \(formattedNumber(displayedSavedRate, minFraction: 0, maxFraction: decimalPlaces)) \(selectedDestinationCurrency)")
                     .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.primary)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
                 
@@ -274,10 +298,10 @@ struct CurrencyDetailsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 18)
         .padding(.vertical, 16)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 20))
+        .background(cardBackgroundColor, in: RoundedRectangle(cornerRadius: 20))
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(Color(hex: "DEDEE8"), lineWidth: 1)
+                .stroke(cardBorderColor, lineWidth: 1)
         )
     }
     
@@ -291,11 +315,11 @@ struct CurrencyDetailsView: View {
             HStack(alignment: .lastTextBaseline, spacing: 10) {
                 Text(selectedDestinationCurrency)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(Color(hex: "7A7A88"))
+                    .foregroundStyle(secondaryLabelColor)
                 
                 Text(editedRateText.isEmpty ? "0" : editedRateText)
                     .font(.system(size: 52, weight: .regular))
-                    .foregroundStyle(Color(hex: "B9BBC5"))
+                    .foregroundStyle(tertiaryLabelColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
                 
@@ -307,7 +331,7 @@ struct CurrencyDetailsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.vertical, 20)
-        .background(Color.white, in: RoundedRectangle(cornerRadius: 22))
+        .background(cardBackgroundColor, in: RoundedRectangle(cornerRadius: 22))
         .overlay(
             RoundedRectangle(cornerRadius: 22)
                 .stroke(Color(hex: "5B4BC4"), lineWidth: 2)
@@ -318,7 +342,7 @@ struct CurrencyDetailsView: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(isSelected ? .white : Color(hex: "8A8A96"))
+                .foregroundStyle(isSelected ? .white : secondaryLabelColor)
                 .frame(maxWidth: .infinity, minHeight: 38)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
@@ -354,6 +378,10 @@ struct ManualRateKeypad: View {
         ["7", "8", "9"]
     ]
     
+    private var separatorColor: Color {
+        Color(uiColor: .separator)
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             VStack(spacing: 0) {
@@ -385,7 +413,7 @@ struct ManualRateKeypad: View {
             .frame(maxWidth: .infinity)
             .overlay(alignment: .top) {
                 Rectangle()
-                    .fill(Color(hex: "D9D9E2"))
+                    .fill(separatorColor)
                     .frame(height: 0.5)
             }
             
@@ -444,25 +472,33 @@ struct KeypadButton: View {
     let label: String
     let action: () -> Void
     
+    private var textColor: Color {
+        Color(uiColor: .label)
+    }
+    
+    private var separatorColor: Color {
+        Color(uiColor: .separator)
+    }
+    
     var body: some View {
         Button {
             action()
         } label: {
             Text(label)
                 .font(.system(size: 26, weight: .regular))
-                .foregroundStyle(.black)
+                .foregroundStyle(textColor)
                 .frame(maxWidth: .infinity, minHeight: 62)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Color(hex: "D9D9E2"))
+                .fill(separatorColor)
                 .frame(height: 0.5)
         }
         .overlay(alignment: .leading) {
             Rectangle()
-                .fill(Color(hex: "D9D9E2"))
+                .fill(separatorColor)
                 .frame(width: 0.5)
         }
     }
@@ -471,25 +507,33 @@ struct KeypadButton: View {
 struct DeleteKeypadButton: View {
     let action: () -> Void
     
+    private var iconColor: Color {
+        Color(uiColor: .label)
+    }
+    
+    private var separatorColor: Color {
+        Color(uiColor: .separator)
+    }
+    
     var body: some View {
         Button {
             action()
         } label: {
             Image(systemName: "delete.left")
                 .font(.system(size: 24, weight: .regular))
-                .foregroundStyle(.black)
+                .foregroundStyle(iconColor)
                 .frame(maxWidth: .infinity, minHeight: 62)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .overlay(alignment: .top) {
             Rectangle()
-                .fill(Color(hex: "D9D9E2"))
+                .fill(separatorColor)
                 .frame(height: 0.5)
         }
         .overlay(alignment: .leading) {
             Rectangle()
-                .fill(Color(hex: "D9D9E2"))
+                .fill(separatorColor)
                 .frame(width: 0.5)
         }
     }
