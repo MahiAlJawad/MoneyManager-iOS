@@ -80,19 +80,18 @@ struct SettingsDetails: View {
                     }
                 )
 
-                settingsButton(
-                    icon: "slider.horizontal.3",
-                    iconForegroundColor: primaryAccentColor,
-                    iconBackgroundColor: primaryAccentBackgroundColor,
-                    title: "Custom Notification",
-                    subtitle: canConfigureReminderSettings
-                        ? "Fine-tune reminder messaging and schedule"
-                        : "Available after daily reminders are enabled",
-                    isDisabled: !canConfigureReminderSettings
-                ) {
-                    router.navigateForFirstNavigation(to: .customNotificationView)
+                if isSystemNotificationsAuthorized {
+                    settingsButton(
+                        icon: "slider.horizontal.3",
+                        iconForegroundColor: primaryAccentColor,
+                        iconBackgroundColor: primaryAccentBackgroundColor,
+                        title: "Custom Notification",
+                        subtitle: "Fine-tune reminder messaging and schedule"
+                    ) {
+                        router.navigateForFirstNavigation(to: .customNotificationView)
+                    }
                 }
-                
+
                 settingsToggle(
                     icon: "exclamationmark.triangle.fill",
                     iconForegroundColor: Color.orange,
