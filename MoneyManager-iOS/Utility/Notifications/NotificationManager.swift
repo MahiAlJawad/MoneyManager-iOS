@@ -82,8 +82,16 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         await scheduleBudgetAlert(day: 25, identifier: RequestIdentifier.budgetAlertLateMonth, using: preferences)
     }
 
-    func openSystemSettings() {
-        guard let url = URL(string: UIApplication.openSettingsURLString),
+    func openNotificationSystemSettings() {
+        let settingsURLString: String
+
+        if #available(iOS 16.0, *) {
+            settingsURLString = UIApplication.openNotificationSettingsURLString
+        } else {
+            settingsURLString = UIApplication.openSettingsURLString
+        }
+
+        guard let url = URL(string: settingsURLString),
               UIApplication.shared.canOpenURL(url) else {
             return
         }

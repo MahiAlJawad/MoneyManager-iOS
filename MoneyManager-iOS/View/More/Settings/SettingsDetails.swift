@@ -17,7 +17,9 @@ struct SettingsDetails: View {
     @State private var authorizationStatus: AppNotificationAuthorizationStatus = .notDetermined
     @State private var isReminderTimePickerPresented = false
     @State private var showNotificationSettingsAlert = false
+    @State private var notificationAlertTitle = "Notifications are unavailable"
     @State private var permissionAlertMessage = ""
+    @State private var shouldOfferNotificationSettingsLink = false
     @State private var debugTapCount: Int = 0
     @State private var isDebugDrawerPresented = false
     
@@ -50,15 +52,47 @@ struct SettingsDetails: View {
                     router.navigateForFirstNavigation(to: .currencyView)
                 }
 
-                settingsToggle(
+                settingsButton(
                     icon: "bell.fill",
                     iconForegroundColor: primaryAccentColor,
                     iconBackgroundColor: primaryAccentBackgroundColor,
-                    title: "Notifications",
-                    subtitle: notificationStatusText,
-                    isOn: notificationsToggleBinding
+                    title: "System Notifications",
+                    subtitle: systemNotificationsStatusText,
+                    trailingText: systemNotificationsTrailingText
+                ) {
+                    Task {
+                        await handleSystemNotificationsTap()
+                    }
+                }
+
+                settingsToggle(
+                    icon: "bell.badge.fill",
+                    iconForegroundColor: primaryAccentColor,
+                    iconBackgroundColor: primaryAccentBackgroundColor,
+                    title: "Daily Reminders",
+                    subtitle: dailyRemindersStatusText,
+                    isOn: notificationsToggleBinding,
+                    isDisabled: !isSystemNotificationsAuthorized,
+                    onTapWhenDisabled: {
+                        Task {
+                            await handleNotificationToggleChange(true)
+                        }
+                    }
                 )
 
+                settingsButton(
+                    icon: "slider.horizontal.3",
+                    iconForegroundColor: primaryAccentColor,
+                    iconBackgroundColor: primaryAccentBackgroundColor,
+                    title: "Custom Notification",
+                    subtitle: canConfigureReminderSettings
+                        ? "Fine-tune reminder messaging and schedule"
+                        : "Available after daily reminders are enabled",
+                    isDisabled: !canConfigureReminderSettings
+                ) {
+                    router.navigateForFirstNavigation(to: .customNotificationView)
+                }
+                
                 settingsToggle(
                     icon: "exclamationmark.triangle.fill",
                     iconForegroundColor: Color.orange,
@@ -66,12 +100,10 @@ struct SettingsDetails: View {
                     title: "Budget alerts",
                     subtitle: budgetAlertStatusText,
                     isOn: budgetAlertsBinding,
-                    isDisabled: !notificationPreferences.notificationsEnabled
+                    isDisabled: !canConfigureReminderSettings
                 )
 
-                if notificationPreferences.notificationsEnabled {
-                    reminderScheduleCard
-                }
+                reminderScheduleCard
 
                 settingsButton(
                     icon: "square.and.arrow.up.fill",
@@ -150,10 +182,12 @@ struct SettingsDetails: View {
                 await refreshNotificationState()
             }
         }
-        .alert("Notifications are unavailable", isPresented: $showNotificationSettingsAlert) {
+        .alert(notificationAlertTitle, isPresented: $showNotificationSettingsAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("Open Settings") {
-                NotificationManager.shared.openSystemSettings()
+            if shouldOfferNotificationSettingsLink {
+                Button("Open Settings") {
+                    NotificationManager.shared.openNotificationSystemSettings()
+                }
             }
         } message: {
             Text(permissionAlertMessage)
@@ -222,16 +256,26 @@ struct SettingsDetails: View {
         iconForegroundColor: Color,
         iconBackgroundColor: Color,
         title: String,
+        subtitle: String? = nil,
         trailingText: String? = nil,
+        isDisabled: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Label {
-                    Text(title)
-                        .foregroundColor(.primary)
-                        .font(.body)
-                        .fontWeight(.medium)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(title)
+                            .foregroundColor(.primary)
+                            .font(.body)
+                            .fontWeight(.medium)
+
+                        if let subtitle {
+                            Text(subtitle)
+                                .foregroundColor(.secondary)
+                                .font(.footnote)
+                        }
+                    }
                 } icon: {
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .semibold))
@@ -257,6 +301,8 @@ struct SettingsDetails: View {
             .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         }
         .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.6 : 1)
     }
     
     private func settingsToggle(
@@ -266,7 +312,8 @@ struct SettingsDetails: View {
         title: String,
         subtitle: String? = nil,
         isOn: Binding<Bool>,
-        isDisabled: Bool = false
+        isDisabled: Bool = false,
+        onTapWhenDisabled: (() -> Void)? = nil
     ) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
@@ -300,18 +347,30 @@ struct SettingsDetails: View {
         .background(cardBackgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
         .opacity(isDisabled ? 0.6 : 1)
+        .contentShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .onTapGesture {
+            guard isDisabled else {
+                return
+            }
+
+            onTapWhenDisabled?()
+        }
     }
 
     private var reminderScheduleCard: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Daily reminder")
+                    Text("Reminder Time")
                         .font(.body)
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
 
-                    Text("A gentle nudge to record your spending and income.")
+                    Text(
+                        canConfigureReminderSettings
+                        ? "A gentle nudge to record your spending and income."
+                        : "Available after daily reminders are enabled"
+                    )
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }
@@ -333,9 +392,10 @@ struct SettingsDetails: View {
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .disabled(!canConfigureReminderSettings)
             }
 
-            if isReminderTimePickerPresented {
+            if isReminderTimePickerPresented && canConfigureReminderSettings {
                 DatePicker(
                     "Reminder time",
                     selection: reminderDateBinding,
@@ -355,6 +415,7 @@ struct SettingsDetails: View {
         .padding()
         .background(cardBackgroundColor)
         .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .opacity(canConfigureReminderSettings ? 1 : 0.6)
     }
 
     private var debugDrawer: some View {
@@ -442,22 +503,52 @@ struct SettingsDetails: View {
         )
     }
 
-    private var notificationStatusText: String {
+    private var isSystemNotificationsAuthorized: Bool {
+        authorizationStatus == .authorized
+    }
+
+    private var canConfigureReminderSettings: Bool {
+        isSystemNotificationsAuthorized && notificationPreferences.notificationsEnabled
+    }
+
+    private var systemNotificationsStatusText: String {
+        switch authorizationStatus {
+        case .authorized:
+            return "Allowed on iPhone"
+        case .notDetermined:
+            return "Not set up yet"
+        case .denied:
+            return "Disabled in iPhone Settings"
+        }
+    }
+
+    private var systemNotificationsTrailingText: String {
+        switch authorizationStatus {
+        case .authorized:
+            return "Manage"
+        case .notDetermined:
+            return "Open Settings"
+        case .denied:
+            return "Open Settings"
+        }
+    }
+
+    private var dailyRemindersStatusText: String {
         switch authorizationStatus {
         case .authorized:
             return notificationPreferences.notificationsEnabled
-                ? "Daily reminders at \(notificationPreferences.formattedReminderTime)"
+                ? "Daily reminder at \(notificationPreferences.formattedReminderTime)"
                 : "Receive a daily reminder to log your transactions"
         case .notDetermined:
-            return "Turn this on to allow reminders from MoneyManager"
+            return "Set up in iPhone Settings to enable reminders"
         case .denied:
-            return "Allow notifications in Settings to receive reminders"
+            return "Enable in iPhone Settings first"
         }
     }
 
     private var budgetAlertStatusText: String {
-        if !notificationPreferences.notificationsEnabled {
-            return "Available after notifications are enabled"
+        if !canConfigureReminderSettings {
+            return "Available after daily reminders are enabled"
         }
 
         return notificationPreferences.budgetAlertsEnabled
@@ -470,17 +561,40 @@ struct SettingsDetails: View {
 
         if authorizationStatus == .denied, notificationPreferences.notificationsEnabled {
             notificationPreferences.notificationsEnabled = false
+            notificationPreferences.notificationsDisabledBySystemRevocation = true
+            notificationPreferences.save()
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+            return
+        }
+
+        if authorizationStatus == .authorized, notificationPreferences.notificationsDisabledBySystemRevocation {
+            notificationPreferences.notificationsEnabled = true
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
+            notificationPreferences.save()
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+            return
+        }
+
+        if authorizationStatus != .denied, notificationPreferences.notificationsDisabledBySystemRevocation {
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
             notificationPreferences.save()
         }
 
         if authorizationStatus == .authorized, notificationPreferences.notificationsEnabled {
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
+            notificationPreferences.save()
             await NotificationManager.shared.syncNotifications(using: notificationPreferences)
         }
+    }
+
+    private func handleSystemNotificationsTap() async {
+        NotificationManager.shared.openNotificationSystemSettings()
     }
 
     private func handleNotificationToggleChange(_ isEnabled: Bool) async {
         if !isEnabled {
             notificationPreferences.notificationsEnabled = false
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
             notificationPreferences.save()
             await NotificationManager.shared.syncNotifications(using: notificationPreferences)
             return
@@ -492,26 +606,12 @@ struct SettingsDetails: View {
         switch currentStatus {
         case .authorized:
             notificationPreferences.notificationsEnabled = true
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
             notificationPreferences.save()
             await NotificationManager.shared.syncNotifications(using: notificationPreferences)
 
-        case .notDetermined:
-            let granted = await NotificationManager.shared.requestAuthorization()
-            authorizationStatus = await NotificationManager.shared.authorizationStatus()
-
-            guard granted else {
-                permissionAlertMessage = "MoneyManager needs notification access to send daily reminders."
-                showNotificationSettingsAlert = true
-                return
-            }
-
-            notificationPreferences.notificationsEnabled = true
-            notificationPreferences.save()
-            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
-
-        case .denied:
-            permissionAlertMessage = "Notifications are turned off for MoneyManager. You can enable them in the system Settings app."
-            showNotificationSettingsAlert = true
+        case .notDetermined, .denied:
+            NotificationManager.shared.openNotificationSystemSettings()
         }
     }
 }

@@ -12,17 +12,20 @@ struct AppNotificationPreferences: Equatable {
     static let defaultReminderMinute = 0
 
     var notificationsEnabled: Bool
+    var notificationsDisabledBySystemRevocation: Bool
     var budgetAlertsEnabled: Bool
     var reminderHour: Int
     var reminderMinute: Int
 
     init(
         notificationsEnabled: Bool = false,
+        notificationsDisabledBySystemRevocation: Bool = false,
         budgetAlertsEnabled: Bool = false,
         reminderHour: Int = AppNotificationPreferences.defaultReminderHour,
         reminderMinute: Int = AppNotificationPreferences.defaultReminderMinute
     ) {
         self.notificationsEnabled = notificationsEnabled
+        self.notificationsDisabledBySystemRevocation = notificationsDisabledBySystemRevocation
         self.budgetAlertsEnabled = budgetAlertsEnabled
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
@@ -32,6 +35,7 @@ struct AppNotificationPreferences: Equatable {
 extension AppNotificationPreferences {
     private enum Keys {
         static let notificationsEnabled = "notification.preferences.enabled"
+        static let notificationsDisabledBySystemRevocation = "notification.preferences.disabledBySystemRevocation"
         static let budgetAlertsEnabled = "notification.preferences.budgetAlertsEnabled"
         static let reminderHour = "notification.preferences.reminderHour"
         static let reminderMinute = "notification.preferences.reminderMinute"
@@ -43,6 +47,7 @@ extension AppNotificationPreferences {
 
         return AppNotificationPreferences(
             notificationsEnabled: defaults.bool(forKey: Keys.notificationsEnabled),
+            notificationsDisabledBySystemRevocation: defaults.bool(forKey: Keys.notificationsDisabledBySystemRevocation),
             budgetAlertsEnabled: defaults.bool(forKey: Keys.budgetAlertsEnabled),
             reminderHour: min(max(storedHour, 0), 23),
             reminderMinute: min(max(storedMinute, 0), 59)
@@ -51,6 +56,7 @@ extension AppNotificationPreferences {
 
     func save(to defaults: UserDefaults = .standard) {
         defaults.set(notificationsEnabled, forKey: Keys.notificationsEnabled)
+        defaults.set(notificationsDisabledBySystemRevocation, forKey: Keys.notificationsDisabledBySystemRevocation)
         defaults.set(budgetAlertsEnabled, forKey: Keys.budgetAlertsEnabled)
         defaults.set(reminderHour, forKey: Keys.reminderHour)
         defaults.set(reminderMinute, forKey: Keys.reminderMinute)
