@@ -70,6 +70,8 @@ struct SettingsTabView: View {
                         ExportDataView()
                     case .sendFeedbackView:
                         SendFeedbackView()
+                    case .customNotificationView:
+                        CustomNotificationView()
                     case .signOutView:
                         SignOutView()
                     }
@@ -93,6 +95,7 @@ extension SettingsTabView {
             case currencyView
             case exportDataView
             case sendFeedbackView
+            case customNotificationView
             case signOutView
         }
         
