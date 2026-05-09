@@ -197,7 +197,11 @@ struct SettingsDetails: View {
             }
         }
         .alert(notificationAlertTitle, isPresented: $showNotificationSettingsAlert) {
-            Button("Cancel", role: .cancel) { }
+            Button("Cancel", role: .cancel) {
+                notificationPreferences.notificationsEnabled = false
+                notificationPreferences.notificationsDisabledBySystemRevocation = false
+                notificationPreferences.save()
+            }
             if shouldOfferNotificationSettingsLink {
                 Button("Open Settings") {
                     NotificationManager.shared.openNotificationSystemSettings()
@@ -541,7 +545,7 @@ struct SettingsDetails: View {
         case .authorized:
             return "Manage"
         case .notDetermined:
-            return "Open Settings"
+            return "Enable"
         case .denied:
             return "Open Settings"
         }
@@ -554,7 +558,7 @@ struct SettingsDetails: View {
                 ? "Daily reminder at \(notificationPreferences.formattedReminderTime)"
                 : "Receive a daily reminder to log your transactions"
         case .notDetermined:
-            return "Set up in iPhone Settings to enable reminders"
+            return "Allow notifications to enable reminders"
         case .denied:
             return "Enable in iPhone Settings first"
         }
@@ -602,7 +606,25 @@ struct SettingsDetails: View {
     }
 
     private func handleSystemNotificationsTap() async {
-        NotificationManager.shared.openNotificationSystemSettings()
+        let currentStatus = await NotificationManager.shared.authorizationStatus()
+        authorizationStatus = currentStatus
+
+        switch currentStatus {
+        case .authorized:
+            NotificationManager.shared.openNotificationSystemSettings()
+        case .notDetermined:
+            let granted = await NotificationManager.shared.requestAuthorization()
+            authorizationStatus = await NotificationManager.shared.authorizationStatus()
+
+            guard granted else {
+                notificationPreferences.notificationsEnabled = false
+                notificationPreferences.notificationsDisabledBySystemRevocation = false
+                notificationPreferences.save()
+                return
+            }
+        case .denied:
+            presentNotificationSettingsAlert()
+        }
     }
 
     private func handleNotificationToggleChange(_ isEnabled: Bool) async {
@@ -624,9 +646,35 @@ struct SettingsDetails: View {
             notificationPreferences.save()
             await NotificationManager.shared.syncNotifications(using: notificationPreferences)
 
-        case .notDetermined, .denied:
-            NotificationManager.shared.openNotificationSystemSettings()
+        case .notDetermined:
+            let granted = await NotificationManager.shared.requestAuthorization()
+            authorizationStatus = await NotificationManager.shared.authorizationStatus()
+
+            guard granted else {
+                notificationPreferences.notificationsEnabled = false
+                notificationPreferences.notificationsDisabledBySystemRevocation = false
+                notificationPreferences.save()
+                return
+            }
+
+            notificationPreferences.notificationsEnabled = true
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
+            notificationPreferences.save()
+            await NotificationManager.shared.syncNotifications(using: notificationPreferences)
+
+        case .denied:
+            notificationPreferences.notificationsEnabled = false
+            notificationPreferences.notificationsDisabledBySystemRevocation = false
+            notificationPreferences.save()
+            presentNotificationSettingsAlert()
         }
+    }
+
+    private func presentNotificationSettingsAlert() {
+        notificationAlertTitle = "Notifications Disabled"
+        permissionAlertMessage = "Please enable notifications for this app in Settings."
+        shouldOfferNotificationSettingsLink = true
+        showNotificationSettingsAlert = true
     }
 }
 
