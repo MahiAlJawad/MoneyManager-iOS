@@ -11,9 +11,17 @@ struct AppearanceView: View {
     var body: some View {
         List {
             Section("Theme") {
-                Text("Appearance settings will be available here.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack {
+                    Text("System")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "checkmark")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .navigationTitle("Appearance")

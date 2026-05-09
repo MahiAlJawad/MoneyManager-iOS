@@ -46,7 +46,8 @@ struct SettingsDetails: View {
                     icon: "paintbrush.fill",
                     iconForegroundColor: primaryAccentColor,
                     iconBackgroundColor: primaryAccentBackgroundColor,
-                    title: "Appearance"
+                    title: "Appearance",
+                    trailingText: "System"
                 ) {
                     router.navigateForFirstNavigation(to: .appearanceView)
                 }
