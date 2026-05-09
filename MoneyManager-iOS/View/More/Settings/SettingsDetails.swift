@@ -43,6 +43,15 @@ struct SettingsDetails: View {
                 profileHeader
 
                 settingsButton(
+                    icon: "paintbrush.fill",
+                    iconForegroundColor: primaryAccentColor,
+                    iconBackgroundColor: primaryAccentBackgroundColor,
+                    title: "Appearance"
+                ) {
+                    router.navigateForFirstNavigation(to: .appearanceView)
+                }
+
+                settingsButton(
                     icon: "dollarsign.circle.fill",
                     iconForegroundColor: primaryAccentColor,
                     iconBackgroundColor: primaryAccentBackgroundColor,
