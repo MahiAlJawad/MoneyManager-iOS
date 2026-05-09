@@ -68,26 +68,4 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
             return nil
         }
     }
-
-    var modeRowTitle: String {
-        switch self {
-        case .light:
-            return "Light"
-        case .dark:
-            return "Dark"
-        case .system:
-            return "Use System Settings"
-        }
-    }
-
-    var modeRowIcon: String {
-        switch self {
-        case .light:
-            return "sun.max"
-        case .dark:
-            return "moon"
-        case .system:
-            return "circle.lefthalf.filled"
-        }
-    }
 }

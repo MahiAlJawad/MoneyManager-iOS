@@ -10,6 +10,8 @@ import SwiftUI
 struct AppearanceView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage(AppearanceMode.userDefaultsKey) private var appearanceModeRawValue = AppearanceMode.system.rawValue
+    @State private var pendingSelection: AppearanceMode = .system
+    @State private var applyAppearanceTask: Task<Void, Never>?
 
     private var selectedAppearanceMode: AppearanceMode {
         AppearanceMode(rawValue: appearanceModeRawValue) ?? .system
@@ -35,18 +37,6 @@ struct AppearanceView: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 2)
-
-                Text("MODE")
-                    .font(.footnote)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 10)
-
-                modeSelectionCard
-
-                Text("Overrides your iPhone system appearance.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
@@ -55,61 +45,26 @@ struct AppearanceView: View {
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
         .navigationTitle("Appearance")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private var cardBackgroundColor: Color {
-        Color(uiColor: .secondarySystemGroupedBackground)
-    }
-
-    private var modeSelectionCard: some View {
-        VStack(spacing: 0) {
-            modeRow(for: .light)
-            divider
-            modeRow(for: .dark)
-            divider
-            modeRow(for: .system)
+        .onAppear {
+            pendingSelection = selectedAppearanceMode
         }
-        .background(cardBackgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    private var divider: some View {
-        Divider()
-            .padding(.leading, 46)
-    }
-
-    private func modeRow(for mode: AppearanceMode) -> some View {
-        Button {
-            appearanceModeRawValue = mode.rawValue
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: mode.modeRowIcon)
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(mode == .light ? Color.orange : .secondary)
-                    .frame(width: 24, height: 24)
-
-                Text(mode.modeRowTitle)
-                    .font(.body)
-                    .foregroundStyle(.primary)
-
-                Spacer()
-
-                if selectedAppearanceMode == mode {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: "#1F8F63"))
-                }
+        .onDisappear {
+            applyAppearanceTask?.cancel()
+            applyAppearanceTask = nil
+        }
+        .onChange(of: appearanceModeRawValue) { _, newValue in
+            let updatedMode = AppearanceMode(rawValue: newValue) ?? .system
+            guard pendingSelection != updatedMode else {
+                return
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
+
+            pendingSelection = updatedMode
         }
-        .buttonStyle(.plain)
     }
 
     private func appearanceOptionCard(for mode: AppearanceMode) -> some View {
         Button {
-            appearanceModeRawValue = mode.rawValue
+            applySelection(mode)
         } label: {
             VStack(spacing: 10) {
                 previewCard(for: mode)
@@ -119,11 +74,12 @@ struct AppearanceView: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(.primary)
 
-                Image(systemName: selectedAppearanceMode == mode ? "largecircle.fill.circle" : "circle")
+                Image(systemName: pendingSelection == mode ? "largecircle.fill.circle" : "circle")
                     .font(.title3)
-                    .foregroundStyle(selectedAppearanceMode == mode ? Color(hex: "#1F8F63") : .secondary)
+                    .foregroundStyle(pendingSelection == mode ? Color(hex: "#1F8F63") : .secondary)
             }
             .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -135,8 +91,8 @@ struct AppearanceView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .strokeBorder(
-                        selectedAppearanceMode == mode ? Color(hex: "#1D74E7") : Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.12),
-                        lineWidth: selectedAppearanceMode == mode ? 2.4 : 1
+                        pendingSelection == mode ? Color(hex: "#1D74E7") : Color.primary.opacity(colorScheme == .dark ? 0.18 : 0.12),
+                        lineWidth: pendingSelection == mode ? 2.4 : 1
                     )
             )
             .overlay(alignment: .topLeading) {
@@ -160,6 +116,27 @@ struct AppearanceView: View {
                 .padding(12)
             }
             .frame(height: 122)
+    }
+
+    private func applySelection(_ mode: AppearanceMode) {
+        guard !(pendingSelection == mode && selectedAppearanceMode == mode) else {
+            return
+        }
+
+        pendingSelection = mode
+        applyAppearanceTask?.cancel()
+
+        applyAppearanceTask = Task {
+            try? await Task.sleep(for: .milliseconds(120))
+            guard !Task.isCancelled else {
+                return
+            }
+
+            await MainActor.run {
+                appearanceModeRawValue = mode.rawValue
+                applyAppearanceTask = nil
+            }
+        }
     }
 
     private func previewCardFill(for mode: AppearanceMode) -> LinearGradient {
