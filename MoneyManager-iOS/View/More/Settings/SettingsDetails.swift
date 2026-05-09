@@ -22,6 +22,7 @@ struct SettingsDetails: View {
     @State private var shouldOfferNotificationSettingsLink = false
     @State private var debugTapCount: Int = 0
     @State private var isDebugDrawerPresented = false
+    @AppStorage(AppearanceMode.userDefaultsKey) private var appearanceModeRawValue = AppearanceMode.system.rawValue
     
     private var cardBackgroundColor: Color {
         Color(uiColor: .secondarySystemGroupedBackground)
@@ -36,6 +37,10 @@ struct SettingsDetails: View {
     private var primaryAccentBackgroundColor: Color {
         colorScheme == .dark ? Color(hex: "#163D34") : Color(hex: "#E8F3EB")
     }
+
+    private var selectedAppearanceMode: AppearanceMode {
+        AppearanceMode(rawValue: appearanceModeRawValue) ?? .system
+    }
     
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -47,7 +52,7 @@ struct SettingsDetails: View {
                     iconForegroundColor: primaryAccentColor,
                     iconBackgroundColor: primaryAccentBackgroundColor,
                     title: "Appearance",
-                    trailingText: "System"
+                    trailingText: selectedAppearanceMode.description
                 ) {
                     router.navigateForFirstNavigation(to: .appearanceView)
                 }

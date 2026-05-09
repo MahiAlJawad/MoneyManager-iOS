@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // TODO: Make enums instead of this @Shakib
 struct Settings: Identifiable, Hashable {
@@ -24,4 +25,69 @@ extension Settings {
         Settings(image: "person.badge.key.fill", title: "Personal data & Privacy"),
         Settings(image: "lock.square", title: "Security")
     ]
+}
+
+enum AppearanceMode: String, CaseIterable, Identifiable {
+    case light
+    case dark
+    case system
+
+    static let userDefaultsKey = "appearanceMode"
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .light:
+            return "Light"
+        case .dark:
+            return "Dark"
+        case .system:
+            return "System"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .light:
+            return "Light"
+        case .dark:
+            return "Dark"
+        case .system:
+            return "System"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        case .system:
+            return nil
+        }
+    }
+
+    var modeRowTitle: String {
+        switch self {
+        case .light:
+            return "Light"
+        case .dark:
+            return "Dark"
+        case .system:
+            return "Use System Settings"
+        }
+    }
+
+    var modeRowIcon: String {
+        switch self {
+        case .light:
+            return "sun.max"
+        case .dark:
+            return "moon"
+        case .system:
+            return "circle.lefthalf.filled"
+        }
+    }
 }
