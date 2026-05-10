@@ -31,6 +31,8 @@ struct HomeTabView: View {
                         AccountsView()
                     case .balanceDetailsView:
                         BalanceDetailsView()
+                    case .balanceTrendDetailsView:
+                        BalanceTrendDetailsView()
                     case .monthlyMoneyFlowView(let metric):
                         MonthlyMoneyFlowView(
                             initialMetric: metric,
@@ -74,6 +76,7 @@ extension HomeTabView {
             case allTransactionsView
             case accountsView
             case balanceDetailsView
+            case balanceTrendDetailsView
             case monthlyMoneyFlowView(CashflowMetric)
             case cashflowTransactionsView(CashflowMetric)
         }
@@ -91,5 +94,14 @@ extension HomeTabView {
         func navigateToRoot() {
             path.removeLast()
         }
+    }
+}
+
+private struct BalanceTrendDetailsView: View {
+    var body: some View {
+        Text("Balance Trend")
+            .font(.system(size: 24, weight: .bold, design: .rounded))
+            .navigationTitle("Balance Trend")
+            .navigationBarTitleDisplayMode(.inline)
     }
 }
