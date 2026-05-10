@@ -30,7 +30,7 @@ struct HomeView: View {
                 statCardsSection
                 quickActionsSection
                 accountsSection
-                spendingOverviewSection
+                balanceTrendSection
                 recentTransactionsSection
             }
             .padding(.horizontal, 20)
@@ -186,80 +186,117 @@ struct HomeView: View {
         }
     }
     
-    private var spendingOverviewSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
+    private var balanceTrendSection: some View {
+        let snapshot = balanceTrendSnapshot
+        
+        return VStack(alignment: .leading, spacing: 14) {
             HStack {
-                sectionHeading(title: "Spending Overview")
+                sectionHeading(title: "Balance Trend")
                 Spacer()
-                Text(monthLabel)
+                Text("Last 30 Days")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(.secondary)
             }
             
-            adaptiveCard {
-                if monthlyExpense > 0 {
-                    Chart {
-                        ForEach(nonZeroMonthlyExpenseByDay) { item in
-                            BarMark(
-                                x: .value("Day", item.day),
-                                y: .value("Expense", item.amount)
-                            )
-                            .foregroundStyle(chartBarColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                            
-                            if item.id == highestExpenseDay?.id {
-                                PointMark(
-                                    x: .value("Day", item.day),
-                                    y: .value("Expense", item.amount)
-                                )
-                                .annotation(position: .top, spacing: 12) {
-                                    Text(item.amount, format: .currency(code: "BDT"))
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(.white)
+            Button {
+                router.navigate(to: .balanceTrendDetailsView)
+            } label: {
+                adaptiveCard {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(alignment: .top, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(totalBalance, format: .currency(code: "BDT"))
+                                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                                    .foregroundStyle(primaryTextColor)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.65)
+                                    .contentTransition(.numericText())
+                                
+                                HStack(spacing: 6) {
+                                    Image(systemName: snapshot.comparisonSymbolName)
+                                        .font(.system(size: 11, weight: .bold))
+                                    
+                                    Text(snapshot.comparisonDescription)
+                                        .font(.system(size: 13, weight: .semibold))
                                         .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 7)
-                                        .background(
-                                            Capsule(style: .continuous)
-                                                .fill(chartHighlightColor)
-                                        )
+                                        .minimumScaleFactor(0.75)
+                                }
+                                .foregroundStyle(snapshot.comparisonColor)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                        
+                        Chart {
+                            ForEach(snapshot.points) { point in
+                                AreaMark(
+                                    x: .value("Date", point.date),
+                                    yStart: .value("Baseline", snapshot.lowerBound),
+                                    yEnd: .value("Balance", point.balance)
+                                )
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [
+                                            balanceTrendLineColor.opacity(colorScheme == .dark ? 0.28 : 0.20),
+                                            balanceTrendLineColor.opacity(0.03)
+                                        ],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                
+                                LineMark(
+                                    x: .value("Date", point.date),
+                                    y: .value("Balance", point.balance)
+                                )
+                                .foregroundStyle(balanceTrendLineColor)
+                                .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                                .interpolationMethod(.catmullRom)
+                            }
+                            
+                            if let latestBalanceTrendPoint = snapshot.latestPoint {
+                                PointMark(
+                                    x: .value("Date", latestBalanceTrendPoint.date),
+                                    y: .value("Balance", latestBalanceTrendPoint.balance)
+                                )
+                                .foregroundStyle(balanceTrendLineColor)
+                                .symbolSize(55)
+                            }
+                        }
+                        .frame(height: 150)
+                        .chartLegend(.hidden)
+                        .chartYScale(domain: snapshot.lowerBound...snapshot.upperBound)
+                        .chartYAxis {
+                            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { _ in
+                                AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [4, 6]))
+                                    .foregroundStyle(chartGridColor)
+                                AxisValueLabel()
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .chartXAxis {
+                            AxisMarks(values: snapshot.axisMarks) { value in
+                                AxisGridLine().foregroundStyle(.clear)
+                                AxisTick().foregroundStyle(.clear)
+                                AxisValueLabel {
+                                    if let date = value.as(Date.self) {
+                                        Text(date.formatted(.dateTime.day().month(.abbreviated)))
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(.secondary)
+                                    }
                                 }
                             }
                         }
                     }
-                    .frame(height: 180)
-                    .chartLegend(.hidden)
-                    .chartYAxis {
-                        AxisMarks(position: .leading, values: .automatic(desiredCount: 5)) { value in
-                            AxisGridLine(stroke: StrokeStyle(lineWidth: 1, dash: [4, 6]))
-                                .foregroundStyle(chartGridColor)
-                            AxisValueLabel()
-                                .font(.system(size: 11))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .chartXAxis {
-                        AxisMarks(values: monthlyExpenseAxisMarks) { value in
-                            AxisGridLine().foregroundStyle(.clear)
-                            AxisTick().foregroundStyle(.clear)
-                            AxisValueLabel {
-                                if let day = value.as(Int.self) {
-                                    Text("\(day)")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    emptyCardState(
-                        title: "No spending this month",
-                        subtitle: "Your monthly expense chart will appear after you log some expenses.",
-                        systemImage: "chart.bar.xaxis"
-                    )
                 }
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("View balance trend details")
+            .accessibilityHint("Opens the balance trend detail view")
         }
     }
     
@@ -581,11 +618,26 @@ struct HomeView: View {
 }
 
 private extension HomeView {
-    struct DailyExpense: Identifiable {
-        let day: Int
-        let amount: Double
+    struct BalanceTrendPoint: Identifiable {
+        let date: Date
+        let balance: Double
         
-        var id: Int { day }
+        var id: Date { date }
+    }
+    
+    struct BalanceTrendSnapshot {
+        let points: [BalanceTrendPoint]
+        let latestPoint: BalanceTrendPoint?
+        let axisMarks: [Date]
+        let change: Double
+        let changeDescription: String
+        let changeSymbolName: String
+        let changeColor: Color
+        let comparisonDescription: String
+        let comparisonSymbolName: String
+        let comparisonColor: Color
+        let lowerBound: Double
+        let upperBound: Double
     }
     
     struct CashflowTrend {
@@ -686,41 +738,207 @@ private extension HomeView {
         "This Month"
     }
     
-    var monthlyExpenseByDay: [DailyExpense] {
+    var balanceTrendTransactions: [Transaction] {
+        allTransactions.filter { $0.transactionType != .transfer }
+    }
+    
+    var balanceTrendSnapshot: BalanceTrendSnapshot {
+        let points = makeBalanceTrendPoints()
+        let latestPoint = points.last
+        let axisMarks = makeBalanceTrendAxisMarks(from: points)
+        let change = makeBalanceTrendChange(from: points)
+        let previousChange = makePreviousBalanceTrendChange()
+        let comparison = makeBalanceTrendComparison(
+            currentChange: change,
+            previousChange: previousChange,
+            totalBalance: totalBalance
+        )
+        let bounds = makeBalanceTrendChartBounds(from: points)
+        
+        return BalanceTrendSnapshot(
+            points: points,
+            latestPoint: latestPoint,
+            axisMarks: axisMarks,
+            change: change,
+            changeDescription: makeBalanceTrendChangeDescription(for: change),
+            changeSymbolName: makeBalanceTrendChangeSymbolName(for: change),
+            changeColor: makeBalanceTrendChangeColor(for: change),
+            comparisonDescription: comparison.description,
+            comparisonSymbolName: comparison.symbolName,
+            comparisonColor: comparison.color,
+            lowerBound: bounds.lower,
+            upperBound: bounds.upper
+        )
+    }
+    
+    var balanceTrendPoints: [BalanceTrendPoint] {
+        makeBalanceTrendPoints()
+    }
+    
+    var latestBalanceTrendPoint: BalanceTrendPoint? {
+        balanceTrendPoints.last
+    }
+    
+    var balanceTrendAxisMarks: [Date] {
+        makeBalanceTrendAxisMarks(from: balanceTrendPoints)
+    }
+    
+    var balanceTrendChange: Double {
+        makeBalanceTrendChange(from: balanceTrendPoints)
+    }
+    
+    var balanceTrendChangeDescription: String {
+        makeBalanceTrendChangeDescription(for: balanceTrendChange)
+    }
+    
+    var balanceTrendChartLowerBound: Double {
+        makeBalanceTrendChartBounds(from: balanceTrendPoints).lower
+    }
+    
+    var balanceTrendChartUpperBound: Double {
+        makeBalanceTrendChartBounds(from: balanceTrendPoints).upper
+    }
+    
+    func makeBalanceTrendPoints() -> [BalanceTrendPoint] {
         let calendar = Calendar.current
-        let expenseByDay = Dictionary(grouping: currentMonthTransactions.filter { $0.transactionType == .expense }) {
-            calendar.component(.day, from: $0.date)
+        let today = calendar.startOfDay(for: .now)
+        let startDate = calendar.date(byAdding: .day, value: -29, to: today) ?? today
+        let transactions = balanceTrendTransactions
+        let currentTotalBalance = totalBalance
+        
+        var dates: [Date] = []
+        var currentDate = startDate
+        
+        while currentDate <= today {
+            dates.append(currentDate)
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else {
+                break
+            }
+            currentDate = nextDate
         }
         
-        guard let days = calendar.range(of: .day, in: .month, for: Date()) else {
+        return dates.map { date in
+            BalanceTrendPoint(
+                date: date,
+                balance: balanceTrendValue(atEndOf: date, transactions: transactions, totalBalance: currentTotalBalance)
+            )
+        }
+    }
+    
+    func makeBalanceTrendAxisMarks(from points: [BalanceTrendPoint]) -> [Date] {
+        guard let firstDate = points.first?.date,
+              let lastDate = points.last?.date else {
             return []
         }
         
-        return days.map { day in
-            let amount = abs((expenseByDay[day] ?? []).reduce(0) { $0 + $1.amount })
-            return DailyExpense(day: day, amount: amount)
-        }
-    }
-    
-    var nonZeroMonthlyExpenseByDay: [DailyExpense] {
-        monthlyExpenseByDay.filter { $0.amount > 0 }
-    }
-    
-    var highestExpenseDay: DailyExpense? {
-        nonZeroMonthlyExpenseByDay.max { $0.amount < $1.amount }
-    }
-    
-    var monthlyExpenseAxisMarks: [Int] {
-        let days = monthlyExpenseByDay.map(\.day)
-        guard let lastDay = days.last else {
-            return []
+        let calendar = Calendar.current
+        var marks: [Date] = []
+        var currentDate = firstDate
+        
+        while currentDate <= lastDate {
+            marks.append(currentDate)
+            guard let nextDate = calendar.date(byAdding: .day, value: 5, to: currentDate) else {
+                break
+            }
+            currentDate = nextDate
         }
         
-        var marks = Array(stride(from: 1, through: lastDay, by: 5))
-        if marks.last != lastDay {
-            marks.append(lastDay)
+        if !marks.contains(where: { calendar.isDate($0, inSameDayAs: lastDate) }) {
+            marks.append(lastDate)
         }
+        
         return marks
+    }
+    
+    func makeBalanceTrendChange(from points: [BalanceTrendPoint]) -> Double {
+        guard let first = points.first, let last = points.last else {
+            return 0
+        }
+        
+        return last.balance - first.balance
+    }
+    
+    func makeBalanceTrendChangeDescription(for change: Double) -> String {
+        if change == 0 {
+            return "No change in 30 days"
+        }
+        
+        return "\(change > 0 ? "+" : "-")\(abs(change).formatted(.currency(code: "BDT"))) in 30 days"
+    }
+    
+    func makeBalanceTrendChangeSymbolName(for change: Double) -> String {
+        if change == 0 {
+            return "minus"
+        }
+        
+        return change > 0 ? "arrow.up.right" : "arrow.down.right"
+    }
+    
+    func makeBalanceTrendChangeColor(for change: Double) -> Color {
+        if change == 0 {
+            return Color.secondary
+        }
+        
+        return change > 0 ? positiveBalanceTrendColor : negativeBalanceTrendColor
+    }
+    
+    func makePreviousBalanceTrendChange() -> Double {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        guard let previousPeriodStart = calendar.date(byAdding: .day, value: -59, to: today),
+              let previousPeriodEnd = calendar.date(byAdding: .day, value: -30, to: today) else {
+            return 0
+        }
+        
+        let transactions = balanceTrendTransactions
+        let currentTotalBalance = totalBalance
+        let startBalance = balanceTrendValue(
+            atEndOf: previousPeriodStart,
+            transactions: transactions,
+            totalBalance: currentTotalBalance
+        )
+        let endBalance = balanceTrendValue(
+            atEndOf: previousPeriodEnd,
+            transactions: transactions,
+            totalBalance: currentTotalBalance
+        )
+        
+        return endBalance - startBalance
+    }
+    
+    func makeBalanceTrendComparison(
+        currentChange: Double,
+        previousChange: Double,
+        totalBalance: Double
+    ) -> (description: String, symbolName: String, color: Color) {
+        let delta = currentChange - previousChange
+        let improved = delta >= 0
+        let symbolName = improved ? "arrow.up.right" : "arrow.down.right"
+        let color = improved ? positiveBalanceTrendColor : negativeBalanceTrendColor
+        let meaningfulPreviousChange = max(500, abs(totalBalance) * 0.01)
+        
+        guard abs(previousChange) >= meaningfulPreviousChange else {
+            if currentChange == 0 {
+                return ("No change vs previous 30 days", "minus", Color.secondary)
+            }
+            
+            return (
+                improved ? "Stronger than previous 30 days" : "Weaker than previous 30 days",
+                symbolName,
+                color
+            )
+        }
+        
+        let percent = abs((delta / abs(previousChange)) * 100)
+        let formattedPercent = percent.formatted(.number.precision(.fractionLength(1)))
+        return ("\(formattedPercent)% vs previous 30 days", symbolName, color)
+    }
+    
+    func makeBalanceTrendChartBounds(from points: [BalanceTrendPoint]) -> (lower: Double, upper: Double) {
+        let minimum = points.map(\.balance).min() ?? 0
+        let maximum = points.map(\.balance).max() ?? 1
+        let padding = max((maximum - minimum) * 0.14, 100)
+        return (minimum - padding, maximum + padding)
     }
     
     var accountCardSpacing: CGFloat {
@@ -771,16 +989,20 @@ private extension HomeView {
         )
     }
     
-    var chartBarColor: Color {
-        colorScheme == .dark ? Color(hex: "#6BE2B5") : Color(hex: "#A9EBCF")
-    }
-    
-    var chartHighlightColor: Color {
-        colorScheme == .dark ? Color(hex: "#1F8F63") : Color(hex: "#2DA672")
-    }
-    
     var chartGridColor: Color {
         Color.primary.opacity(colorScheme == .dark ? 0.14 : 0.08)
+    }
+    
+    var balanceTrendLineColor: Color {
+        colorScheme == .dark ? Color(hex: "#7ADDB9") : Color(hex: "#1F8F63")
+    }
+    
+    var positiveBalanceTrendColor: Color {
+        Color(hex: "#1F8F63")
+    }
+    
+    var negativeBalanceTrendColor: Color {
+        Color(hex: "#E0554D")
     }
     
     func accountTint(for account: Account) -> Color {
@@ -891,5 +1113,23 @@ private extension HomeView {
             symbolName: delta >= 0 ? "arrow.up" : "arrow.down",
             color: delta >= 0 ? Color(hex: "#1F8F63") : Color(hex: "#E0554D")
         )
+    }
+    
+    func balanceTrendValue(atEndOf date: Date) -> Double {
+        balanceTrendValue(
+            atEndOf: date,
+            transactions: balanceTrendTransactions,
+            totalBalance: totalBalance
+        )
+    }
+    
+    func balanceTrendValue(atEndOf date: Date, transactions: [Transaction], totalBalance: Double) -> Double {
+        let calendar = Calendar.current
+        let endOfDay = calendar.date(byAdding: DateComponents(day: 1, second: -1), to: calendar.startOfDay(for: date)) ?? date
+        let laterTransactionTotal = transactions
+            .filter { $0.date > endOfDay }
+            .reduce(0) { $0 + $1.amount }
+        
+        return totalBalance - laterTransactionTotal
     }
 }
