@@ -34,6 +34,8 @@ struct SettingsTabView: View {
                         HelpView()
                     case .particularSettingsView(let settings):
                         ParticularSettingsDetails(settings: settings)
+                    case .appearanceView:
+                        AppearanceView()
                     case .currencyView:
                         CurrencyView(
                             isAddCurrencyPresent: $sheetPresenter.presentAddCurrency,
@@ -92,6 +94,7 @@ extension SettingsTabView {
             case investmentsView
             case helpView
             case particularSettingsView(settings: Settings)
+            case appearanceView
             case currencyView
             case exportDataView
             case sendFeedbackView
