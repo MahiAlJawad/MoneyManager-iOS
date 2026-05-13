@@ -39,6 +39,7 @@ struct CustomNotificationView: View {
     @State private var reminderTime: Date = .now
     @State private var startDate: Date = .now
     @State private var isTimePickerPresented = false
+    @State private var isCustomRangePresented = false
 
     private var cardBackgroundColor: Color {
         Color(uiColor: .secondarySystemGroupedBackground)
@@ -80,16 +81,17 @@ struct CustomNotificationView: View {
         .navigationTitle("Custom Remainder")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
+        .navigationDestination(isPresented: $isCustomRangePresented) {
+            CustomRangeNotificationView()
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    ZStack {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .regular))
-                            .foregroundStyle(.primary)
-                    }
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .regular))
+                        .foregroundStyle(.primary)
                 }
                 .buttonStyle(.plain)
             }
@@ -141,7 +143,12 @@ struct CustomNotificationView: View {
 
     private func repeatOptionRow(_ option: RepeatOption) -> some View {
         Button {
-            selectedRepeatOption = option
+            if option == .customRange {
+                selectedRepeatOption = .customRange
+                isCustomRangePresented = true
+            } else {
+                selectedRepeatOption = option
+            }
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
@@ -150,7 +157,7 @@ struct CustomNotificationView: View {
                         .fontWeight(.medium)
                         .foregroundStyle(.primary)
 
-                    Text(option.subtitle)
+                    Text(optionSubtitle(for: option))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -179,6 +186,10 @@ struct CustomNotificationView: View {
             .background(selectedRepeatOption == option ? accentBackgroundColor.opacity(0.35) : Color.clear)
         }
         .buttonStyle(.plain)
+    }
+
+    private func optionSubtitle(for option: RepeatOption) -> String {
+        option.subtitle
     }
 
     private var repeatHintCard: some View {
@@ -236,7 +247,6 @@ struct CustomNotificationView: View {
                     title: "Start date",
                     value: formattedStartDate
                 ) {
-                    // UI-only screen; date picker behavior will be connected later.
                 }
             }
             .background(cardBackgroundColor)
@@ -308,35 +318,6 @@ struct CustomNotificationView: View {
             .padding(.vertical, 14)
         }
         .buttonStyle(.plain)
-    }
-
-    private func toggleOptionRow(
-        icon: String,
-        iconColor: Color,
-        iconBackgroundColor: Color,
-        title: String,
-        isOn: Binding<Bool>
-    ) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(iconColor)
-                .frame(width: 30, height: 30)
-                .background(iconBackgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-            Text(title)
-                .font(.body)
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            Toggle("", isOn: isOn)
-                .labelsHidden()
-                .tint(accentColor)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
     }
 
     private var saveButton: some View {
