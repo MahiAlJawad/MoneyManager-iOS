@@ -2,7 +2,7 @@
 //  AppNotificationPreferences.swift
 //  MoneyManager-iOS
 //
-//  Created by Codex on 25/4/26.
+//  Created by Kazi Tanjim Shakib on 25/4/26.
 //
 
 import Foundation

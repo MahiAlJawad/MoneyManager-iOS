@@ -6,12 +6,18 @@
 import SwiftUI
 
 struct CustomRangeNotificationView: View {
+    private enum ActiveRangeField {
+        case start
+        case end
+    }
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var startDate: Date?
     @State private var endDate: Date?
     @State private var displayedMonth: Date
+    @State private var activeField: ActiveRangeField = .start
 
     private let calendar: Calendar
     private let today: Date
@@ -133,10 +139,10 @@ struct CustomRangeNotificationView: View {
                     .foregroundStyle(.secondary)
 
                 VStack(spacing: 0) {
-                    summaryRow(title: "From", value: formattedDate(startDate))
+                    summaryRow(title: "From", value: formattedDate(startDate), field: .start)
                     Divider()
                         .padding(.leading, 16)
-                    summaryRow(title: "To", value: formattedDate(endDate))
+                    summaryRow(title: "To", value: formattedDate(endDate), field: .end)
                 }
                 .background(cardBackgroundColor)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -220,27 +226,53 @@ struct CustomRangeNotificationView: View {
         }
     }
 
-    private func summaryRow(title: String, value: String) -> some View {
-        let isPlaceholder = (title == "From" && startDate == nil) || (title == "To" && endDate == nil)
+    private func summaryRow(title: String, value: String, field: ActiveRangeField) -> some View {
+        let selectedDate = field == .start ? startDate : endDate
+        let isPlaceholder = selectedDate == nil
+        let isActive = activeField == field
 
-        return HStack {
-            Text(title)
-                .font(.body)
-                .foregroundStyle(.primary)
+        return Button {
+            focus(field)
+        } label: {
+            HStack {
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(.primary)
 
-            Spacer()
+                Spacer()
 
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                HStack(spacing: 8) {
+                    Text(value)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+
+                    if isActive {
+                        RoundedRectangle(cornerRadius: 1, style: .continuous)
+                            .fill(accentColor.opacity(0.8))
+                            .frame(width: 2, height: 18)
+                    }
+                }
                 .foregroundStyle(isPlaceholder ? Color.secondary : accentColor)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(accentBackgroundColor.opacity(isPlaceholder ? 0.18 : 0.6))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(accentBackgroundColor.opacity(isActive ? 0.82 : (isPlaceholder ? 0.18 : 0.6)))
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(isActive ? accentColor : Color.clear, lineWidth: isActive ? 2 : 0)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(isActive ? accentBackgroundColor.opacity(0.14) : .clear)
+            )
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 16)
+        .buttonStyle(.plain)
     }
 
     private func monthButton(systemName: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
@@ -262,6 +294,7 @@ struct CustomRangeNotificationView: View {
         let isSelectedEnd = endDate == cell.date
         let isEndpoint = isSelectedStart || isSelectedEnd
         let isInRange = isDateInSelectedRange(cell.date)
+        let isActiveEndpoint = (activeField == .start && isSelectedStart) || (activeField == .end && isSelectedEnd)
 
         return Button {
             handleDateTap(cell.date)
@@ -277,8 +310,9 @@ struct CustomRangeNotificationView: View {
                 )
                 .overlay {
                     if isEndpoint {
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(accentColor, lineWidth: 1)
+                        Circle()
+                            .stroke(accentColor, lineWidth: isActiveEndpoint ? 2.5 : 1.5)
+                            .padding(1)
                     }
                 }
         }
@@ -300,7 +334,7 @@ struct CustomRangeNotificationView: View {
 
     private func dayForegroundColor(for cell: CalendarDayCell, isDisabled: Bool, isEndpoint: Bool) -> Color {
         if isEndpoint {
-            return accentColor
+            return .white
         }
 
         if !cell.isInDisplayedMonth {
@@ -316,7 +350,7 @@ struct CustomRangeNotificationView: View {
 
     private func dayBackgroundColor(for cell: CalendarDayCell, isInRange: Bool, isEndpoint: Bool) -> Color {
         if isEndpoint {
-            return accentBackgroundColor
+            return accentColor
         }
 
         if isInRange && cell.isInDisplayedMonth {
@@ -343,20 +377,24 @@ struct CustomRangeNotificationView: View {
             return false
         }
 
-        if let startDate, endDate == nil, cell.date < startDate {
-            return true
-        }
+        let maximumOffset = AppNotificationPreferences.maximumCustomRangeLengthInDays - 1
 
-        if let startDate, endDate == nil,
-           let latestEndDate = calendar.date(
-            byAdding: .day,
-            value: AppNotificationPreferences.maximumCustomRangeLengthInDays - 1,
-            to: startDate
-           ) {
-            return cell.date <= latestEndDate
-        }
+        switch activeField {
+        case .start:
+            guard let endDate else {
+                return true
+            }
 
-        return true
+            let earliestAllowedStart = calendar.date(byAdding: .day, value: -maximumOffset, to: endDate) ?? endDate
+            return cell.date >= max(today, earliestAllowedStart) && cell.date <= endDate
+        case .end:
+            guard let startDate else {
+                return true
+            }
+
+            let latestAllowedEnd = calendar.date(byAdding: .day, value: maximumOffset, to: startDate) ?? startDate
+            return cell.date >= startDate && cell.date <= latestAllowedEnd
+        }
     }
 
     private func isDateInSelectedRange(_ date: Date) -> Bool {
@@ -368,29 +406,49 @@ struct CustomRangeNotificationView: View {
     }
 
     private func handleDateTap(_ date: Date) {
-        if startDate == nil || (startDate != nil && endDate != nil) {
-            startDate = date
-            endDate = nil
+        let normalizedDate = calendar.startOfDay(for: date)
+        let maximumOffset = AppNotificationPreferences.maximumCustomRangeLengthInDays - 1
+
+        switch activeField {
+        case .start:
+            startDate = normalizedDate
+
+            if let currentEndDate = endDate {
+                if normalizedDate > currentEndDate {
+                    endDate = normalizedDate
+                } else if let earliestAllowedStart = calendar.date(byAdding: .day, value: -maximumOffset, to: currentEndDate),
+                          normalizedDate < earliestAllowedStart {
+                    endDate = calendar.date(byAdding: .day, value: maximumOffset, to: normalizedDate)
+                }
+            } else {
+                endDate = normalizedDate
+            }
+        case .end:
+            endDate = normalizedDate
+
+            if let currentStartDate = startDate {
+                if normalizedDate < currentStartDate {
+                    startDate = normalizedDate
+                } else if let latestAllowedEnd = calendar.date(byAdding: .day, value: maximumOffset, to: currentStartDate),
+                          normalizedDate > latestAllowedEnd {
+                    startDate = calendar.date(byAdding: .day, value: -maximumOffset, to: normalizedDate)
+                }
+            } else {
+                startDate = normalizedDate
+            }
+        }
+    }
+
+    private func focus(_ field: ActiveRangeField) {
+        activeField = field
+
+        let dateToShow = field == .start ? startDate : endDate
+        guard let dateToShow,
+              let targetMonth = calendar.dateInterval(of: .month, for: dateToShow)?.start else {
             return
         }
 
-        guard let startDate else {
-            return
-        }
-
-        if date < startDate {
-            self.startDate = date
-            endDate = nil
-            return
-        }
-
-        if let latestEndDate = calendar.date(
-            byAdding: .day,
-            value: AppNotificationPreferences.maximumCustomRangeLengthInDays - 1,
-            to: startDate
-        ), date <= latestEndDate {
-            endDate = date
-        }
+        displayedMonth = max(targetMonth, firstDisplayableMonth)
     }
 
     private func changeMonth(by offset: Int) {
