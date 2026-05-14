@@ -1,5 +1,5 @@
 //
-//  BalanceDetailsView.swift
+//  BalanceTrendView.swift
 //  MoneyManager-iOS
 //
 //  Created by Codex on 26/4/26.
@@ -9,7 +9,7 @@ import Charts
 import SwiftData
 import SwiftUI
 
-struct BalanceDetailsView: View {
+struct BalanceTrendView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Query(sort: [.init(\Account.name)]) private var accounts: [Account]
     
@@ -34,7 +34,7 @@ struct BalanceDetailsView: View {
             .padding(.bottom, 28)
         }
         .background(screenBackground.ignoresSafeArea())
-        .navigationTitle("Balance Details")
+        .navigationTitle("Balance Trend")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: selectedPeriod) { _, _ in
             refreshBalanceData()
@@ -545,7 +545,7 @@ struct BalanceDetailsView: View {
     }
 }
 
-private extension BalanceDetailsView {
+private extension BalanceTrendView {
     enum BalancePeriod: String, CaseIterable, Identifiable {
         case oneWeek
         case oneMonth

@@ -35,11 +35,15 @@ struct AddTransactionView: View {
     private let quickCategoryLimit = 5
     private let editingTransaction: Transaction?
     
-    init(initialTransactionType: TransactionType = .expense, editingTransaction: Transaction? = nil) {
+    init(
+        initialTransactionType: TransactionType = .expense,
+        initialAccount: Account? = nil,
+        editingTransaction: Transaction? = nil
+    ) {
         self.editingTransaction = editingTransaction
         _addTransactionInfo = State(
             initialValue: editingTransaction.map(AddTransactionInfo.init(transaction:)) ??
-                AddTransactionInfo(transactionType: initialTransactionType)
+                AddTransactionInfo(transactionType: initialTransactionType, account: initialAccount)
         )
     }
     
@@ -661,8 +665,9 @@ extension AddTransactionView {
         var date: Date = Date()
         var note: String = ""
         
-        init(transactionType: TransactionType = .expense) {
+        init(transactionType: TransactionType = .expense, account: Account? = nil) {
             self.transactionType = transactionType
+            self.account = account
         }
         
         init(transaction: Transaction) {

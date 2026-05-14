@@ -10,10 +10,16 @@ import SwiftUI
 struct TransactionTabView: View {
     @State var router = Router()
     private let initialTransactionType: Transaction.TransactionType
+    private let initialAccount: Account?
     private let editingTransaction: Transaction?
     
-    init(initialTransactionType: Transaction.TransactionType = .expense, editingTransaction: Transaction? = nil) {
+    init(
+        initialTransactionType: Transaction.TransactionType = .expense,
+        initialAccount: Account? = nil,
+        editingTransaction: Transaction? = nil
+    ) {
         self.initialTransactionType = initialTransactionType
+        self.initialAccount = initialAccount
         self.editingTransaction = editingTransaction
     }
 
@@ -21,6 +27,7 @@ struct TransactionTabView: View {
         NavigationStack(path: $router.path) {
             AddTransactionView(
                 initialTransactionType: initialTransactionType,
+                initialAccount: initialAccount,
                 editingTransaction: editingTransaction
             )
                 .navigationDestination(for: Router.Destination.self) { destination in

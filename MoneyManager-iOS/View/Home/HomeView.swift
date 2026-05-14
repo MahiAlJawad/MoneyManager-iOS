@@ -62,7 +62,7 @@ struct HomeView: View {
     
     private var balanceCard: some View {
         Button {
-            router.navigate(to: .balanceDetailsView)
+            router.navigate(to: .balanceTrendView)
         } label: {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -199,7 +199,7 @@ struct HomeView: View {
             }
             
             Button {
-                router.navigate(to: .balanceTrendDetailsView)
+                router.navigate(to: .balanceTrendView)
             } label: {
                 adaptiveCard {
                     VStack(alignment: .leading, spacing: 16) {
@@ -324,7 +324,13 @@ struct HomeView: View {
             } else {
                 LazyVGrid(columns: accountColumns, spacing: accountCardSpacing) {
                     ForEach(accounts) { account in
-                        accountCard(for: account)
+                        Button {
+                            router.navigate(to: .accountDetailView(accountID: account.id))
+                        } label: {
+                            accountCard(for: account)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("View \(account.name) account details")
                     }
                 }
             }

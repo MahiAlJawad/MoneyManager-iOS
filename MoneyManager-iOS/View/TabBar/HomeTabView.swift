@@ -29,10 +29,12 @@ struct HomeTabView: View {
                         AllTransactionView()
                     case .accountsView:
                         AccountsView()
-                    case .balanceDetailsView:
-                        BalanceDetailsView()
-                    case .balanceTrendDetailsView:
-                        BalanceTrendDetailsView()
+                    case .accountDetailView(let accountID):
+                        AccountDetailView(accountID: accountID)
+                    case .accountTransactionsView(let accountID):
+                        AccountTransactionsView(accountID: accountID)
+                    case .balanceTrendView:
+                        BalanceTrendView()
                     case .monthlyMoneyFlowView(let metric):
                         MonthlyMoneyFlowView(
                             initialMetric: metric,
@@ -75,8 +77,9 @@ extension HomeTabView {
         enum Destination: Hashable {
             case allTransactionsView
             case accountsView
-            case balanceDetailsView
-            case balanceTrendDetailsView
+            case accountDetailView(accountID: String)
+            case accountTransactionsView(accountID: String)
+            case balanceTrendView
             case monthlyMoneyFlowView(CashflowMetric)
             case cashflowTransactionsView(CashflowMetric)
         }
@@ -94,14 +97,5 @@ extension HomeTabView {
         func navigateToRoot() {
             path.removeLast()
         }
-    }
-}
-
-private struct BalanceTrendDetailsView: View {
-    var body: some View {
-        Text("Balance Trend")
-            .font(.system(size: 24, weight: .bold, design: .rounded))
-            .navigationTitle("Balance Trend")
-            .navigationBarTitleDisplayMode(.inline)
     }
 }
