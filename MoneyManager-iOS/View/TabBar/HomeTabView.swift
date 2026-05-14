@@ -29,6 +29,10 @@ struct HomeTabView: View {
                         AllTransactionView()
                     case .accountsView:
                         AccountsView()
+                    case .accountDetailView(let accountID):
+                        AccountDetailView(accountID: accountID)
+                    case .accountTransactionsView(let accountID):
+                        AccountTransactionsView(accountID: accountID)
                     case .balanceTrendView:
                         BalanceTrendView()
                     case .monthlyMoneyFlowView(let metric):
@@ -73,6 +77,8 @@ extension HomeTabView {
         enum Destination: Hashable {
             case allTransactionsView
             case accountsView
+            case accountDetailView(accountID: String)
+            case accountTransactionsView(accountID: String)
             case balanceTrendView
             case monthlyMoneyFlowView(CashflowMetric)
             case cashflowTransactionsView(CashflowMetric)

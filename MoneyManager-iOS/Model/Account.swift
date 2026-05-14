@@ -56,6 +56,9 @@ class Account {
 
 extension Account {
     var accountBalance: Double { balance }
+    var accountCreditLimit: Double { creditLimit }
+    var accountBillingDay: Int { billingDay }
+    var accountDueDay: Int { dueDay }
     
     var accountType: AccountType {
         type == AccountType.credit.description ? .credit : .debit

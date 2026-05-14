@@ -324,7 +324,13 @@ struct HomeView: View {
             } else {
                 LazyVGrid(columns: accountColumns, spacing: accountCardSpacing) {
                     ForEach(accounts) { account in
-                        accountCard(for: account)
+                        Button {
+                            router.navigate(to: .accountDetailView(accountID: account.id))
+                        } label: {
+                            accountCard(for: account)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("View \(account.name) account details")
                     }
                 }
             }
