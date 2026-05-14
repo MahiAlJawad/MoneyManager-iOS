@@ -62,7 +62,7 @@ struct HomeView: View {
     
     private var balanceCard: some View {
         Button {
-            router.navigate(to: .balanceDetailsView)
+            router.navigate(to: .balanceTrendView)
         } label: {
             ZStack(alignment: .topLeading) {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
@@ -199,7 +199,7 @@ struct HomeView: View {
             }
             
             Button {
-                router.navigate(to: .balanceTrendDetailsView)
+                router.navigate(to: .balanceTrendView)
             } label: {
                 adaptiveCard {
                     VStack(alignment: .leading, spacing: 16) {
