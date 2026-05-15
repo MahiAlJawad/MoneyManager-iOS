@@ -38,8 +38,8 @@ struct CustomNotificationView: View {
     @State private var selectedRepeatOption: RepeatOption = .once
     @State private var reminderTime: Date = .now
     @State private var startDate: Date = .now
-    @State private var isSoundEnabled: Bool = false
-    @State private var isBadgeOnIconEnabled: Bool = false
+    @State private var isTimePickerPresented = false
+    @State private var isCustomRangePresented = false
 
     private var cardBackgroundColor: Color {
         Color(uiColor: .secondarySystemGroupedBackground)
@@ -72,7 +72,6 @@ struct CustomNotificationView: View {
                 repeatSection
                 repeatHintCard
                 scheduleSection
-                optionsSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)
@@ -82,16 +81,17 @@ struct CustomNotificationView: View {
         .navigationTitle("Custom Remainder")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
+        .navigationDestination(isPresented: $isCustomRangePresented) {
+            CustomRangeNotificationView()
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     dismiss()
                 } label: {
-                    ZStack {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .regular))
-                            .foregroundStyle(.primary)
-                    }
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .regular))
+                        .foregroundStyle(.primary)
                 }
                 .buttonStyle(.plain)
             }
@@ -143,7 +143,12 @@ struct CustomNotificationView: View {
 
     private func repeatOptionRow(_ option: RepeatOption) -> some View {
         Button {
-            selectedRepeatOption = option
+            if option == .customRange {
+                selectedRepeatOption = .customRange
+                isCustomRangePresented = true
+            } else {
+                selectedRepeatOption = option
+            }
         } label: {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
@@ -152,7 +157,7 @@ struct CustomNotificationView: View {
                         .fontWeight(.medium)
                         .foregroundStyle(.primary)
 
-                    Text(option.subtitle)
+                    Text(optionSubtitle(for: option))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -181,6 +186,10 @@ struct CustomNotificationView: View {
             .background(selectedRepeatOption == option ? accentBackgroundColor.opacity(0.35) : Color.clear)
         }
         .buttonStyle(.plain)
+    }
+
+    private func optionSubtitle(for option: RepeatOption) -> String {
+        option.subtitle
     }
 
     private var repeatHintCard: some View {
@@ -214,28 +223,70 @@ struct CustomNotificationView: View {
                 .foregroundStyle(sectionLabelColor)
 
             VStack(spacing: 0) {
-                scheduleRow(
-                    icon: "clock.fill",
-                    title: "Time",
-                    value: formattedTime
-                ) {
-                    // UI-only screen; time picker behavior will be connected later.
-                }
+                timeScheduleRow
 
                 Divider()
                     .padding(.leading, 56)
+
+                if isTimePickerPresented {
+                    DatePicker(
+                        "Reminder time",
+                        selection: $reminderTime,
+                        displayedComponents: .hourAndMinute
+                    )
+                    .datePickerStyle(.wheel)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity)
+
+                    Divider()
+                        .padding(.leading, 56)
+                }
 
                 scheduleRow(
                     icon: "calendar",
                     title: "Start date",
                     value: formattedStartDate
                 ) {
-                    // UI-only screen; date picker behavior will be connected later.
                 }
             }
             .background(cardBackgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
+    }
+
+    private var timeScheduleRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "clock.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(accentColor)
+                .frame(width: 30, height: 30)
+                .background(accentBackgroundColor)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Text("Time")
+                .foregroundStyle(.primary)
+                .font(.body)
+
+            Spacer()
+
+            Button {
+                withAnimation(.snappy(duration: 0.22)) {
+                    isTimePickerPresented.toggle()
+                }
+            } label: {
+                Text(formattedTime)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(accentColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(accentBackgroundColor)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
     }
 
     private func scheduleRow(
@@ -262,77 +313,11 @@ struct CustomNotificationView: View {
                 Text(value)
                     .foregroundStyle(.secondary)
                     .font(.subheadline)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
         .buttonStyle(.plain)
-    }
-
-    private var optionsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("OPTIONS")
-                .font(.footnote)
-                .fontWeight(.semibold)
-                .kerning(1.2)
-                .foregroundStyle(sectionLabelColor)
-
-            VStack(spacing: 0) {
-                toggleOptionRow(
-                    icon: "speaker.wave.2.fill",
-                    iconColor: accentColor,
-                    iconBackgroundColor: accentBackgroundColor,
-                    title: "Sound",
-                    isOn: $isSoundEnabled
-                )
-
-                Divider()
-                    .padding(.leading, 56)
-
-                toggleOptionRow(
-                    icon: "app.badge.fill",
-                    iconColor: Color(hex: "#4B9BE3"),
-                    iconBackgroundColor: Color(hex: "#DCEBFA"),
-                    title: "Badge on icon",
-                    isOn: $isBadgeOnIconEnabled
-                )
-            }
-            .background(cardBackgroundColor)
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        }
-    }
-
-    private func toggleOptionRow(
-        icon: String,
-        iconColor: Color,
-        iconBackgroundColor: Color,
-        title: String,
-        isOn: Binding<Bool>
-    ) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(iconColor)
-                .frame(width: 30, height: 30)
-                .background(iconBackgroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-            Text(title)
-                .font(.body)
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            Toggle("", isOn: isOn)
-                .labelsHidden()
-                .tint(accentColor)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
     }
 
     private var saveButton: some View {
