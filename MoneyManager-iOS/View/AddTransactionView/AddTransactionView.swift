@@ -47,6 +47,11 @@ struct AddTransactionView: View {
         )
     }
     
+    init(initialTransactionInfo: AddTransactionInfo) {
+        self.editingTransaction = nil
+        _addTransactionInfo = State(initialValue: initialTransactionInfo)
+    }
+    
     // TODO: Logic needs to update after all data are prepared
     var isSaveButtonEnabled: Bool {
         !addTransactionInfo.amount.isEmpty &&
