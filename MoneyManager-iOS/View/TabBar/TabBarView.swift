@@ -35,6 +35,12 @@ struct TabBarView: View {
             }
             .tag(Tab.transactions)
             
+            BudgetTabView()
+                .tabItem {
+                    Label(Tab.budget.title, systemImage: Tab.budget.icon)
+                }
+                .tag(Tab.budget)
+            
             NavigationStack(path: $insightsPath) {
                 InsightsView()
             }
