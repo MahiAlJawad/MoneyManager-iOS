@@ -12,6 +12,7 @@ struct TabBarView: View {
     
     @State private var selectedTab: Tab = .home
     @State private var insightsPath = NavigationPath()
+    @State private var presentFinanceBot = false
     private let tabBarTint = Color(hex: "#1F8F63")
     
     var body: some View {
@@ -49,5 +50,35 @@ struct TabBarView: View {
                 .tag(Tab.settings)
         }
         .tint(tabBarTint)
+        .overlay(alignment: .bottomTrailing) {
+            financeBotButton
+                .padding(.trailing, 28)
+                .padding(.bottom, 76)
+        }
+        .sheet(isPresented: $presentFinanceBot) {
+            NavigationStack {
+                FinanceBotView()
+            }
+            .presentationDetents([.large])
+        }
+    }
+
+    private var financeBotButton: some View {
+        Button {
+            presentFinanceBot = true
+        } label: {
+            Image(systemName: "bubble.left.and.bubble.right.fill")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 58, height: 58)
+                .background(tabBarTint.gradient, in: Circle())
+                .overlay {
+                    Circle()
+                        .strokeBorder(.white.opacity(0.18), lineWidth: 1)
+                }
+                .shadow(color: tabBarTint.opacity(0.35), radius: 16, y: 8)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open FinanceBot")
     }
 }
