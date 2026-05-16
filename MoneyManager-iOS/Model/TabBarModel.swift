@@ -11,6 +11,7 @@ struct TabBarModel {
     enum Item {
         case home
         case transactions
+        case budget
         case insights
         case settings
         
@@ -20,6 +21,8 @@ struct TabBarModel {
                 return "Home"
             case .transactions:
                 return "Transactions"
+            case .budget:
+                return "Budget"
             case .insights:
                 return "Insights"
             case .settings:
@@ -33,6 +36,8 @@ struct TabBarModel {
                 return "house.fill"
             case .transactions:
                 return "list.bullet.rectangle.fill"
+            case .budget:
+                return "chart.pie.fill"
             case .insights:
                 return "chart.line.uptrend.xyaxis"
             case .settings:

@@ -32,6 +32,18 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
+
+    /// Resolves at render time for light and dark interface styles.
+    init(light: Color, dark: Color) {
+        self.init(uiColor: UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(dark)
+            default:
+                return UIColor(light)
+            }
+        })
+    }
     
     var hexString: String {
         let components = self.cgColor?.components

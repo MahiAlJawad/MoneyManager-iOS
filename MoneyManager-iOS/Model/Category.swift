@@ -56,8 +56,16 @@ extension Transaction {
             case .Restaurant:         return .red
             case .Shopping:           return .blue
             case .Housing:            return .orange
-            case .Transportation:     return .gray
-            case .Communication:      return .black
+            case .Transportation:
+                return Color(
+                    light: Color(hex: "#8E8E93"),
+                    dark: Color(hex: "#AEAEB2")
+                )
+            case .Communication:
+                return Color(
+                    light: Color(hex: "#1C1C1E"),
+                    dark: Color(hex: "#D1D1D6")
+                )
             case .Life_Entertainment: return .green
             }
         }
@@ -212,7 +220,11 @@ extension Transaction {
             case .Alcohol:              return .cyan
             case .Cigarette:            return .brown
             case .TV_Streaming:         return .accentColor
-            case .Books:                return .gray
+            case .Books:
+                return Color(
+                    light: Color(hex: "#8E8E93"),
+                    dark: Color(hex: "#AEAEB2")
+                )
             case .ContentSubscription:  return .orange
             case .Sports:               return .orange
             case .Postal_Service:       return .red
