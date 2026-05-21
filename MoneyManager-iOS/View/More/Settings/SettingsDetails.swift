@@ -555,7 +555,7 @@ struct SettingsDetails: View {
         switch authorizationStatus {
         case .authorized:
             return notificationPreferences.notificationsEnabled
-                ? "Daily reminder at \(notificationPreferences.formattedReminderTime)"
+                ? notificationPreferences.reminderScheduleSummary
                 : "Receive a daily reminder to log your transactions"
         case .notDetermined:
             return "Allow notifications to enable reminders"
