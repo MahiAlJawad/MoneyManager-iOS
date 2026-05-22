@@ -757,9 +757,12 @@ struct CustomNotificationView: View {
             oneTimeDate = clampDate(oneTimeDate, min: today, max: maxStartDate)
         case .daily:
             recurringEndDate = nil
-        case .weekly, .monthly:
+        case .weekly:
             recurringStartDate = clampDate(recurringStartDate, min: today, max: maxStartDate)
             recurringEndDate = clampedRecurringEndDate(for: option, startDate: recurringStartDate, currentEndDate: recurringEndDate)
+        case .monthly:
+            recurringStartDate = clampDate(recurringStartDate, min: today, max: maxStartDate)
+            recurringEndDate = monthlyDefaultAwareEndDate(startDate: recurringStartDate, currentEndDate: recurringEndDate)
         case .customRange:
             break
         }
@@ -772,12 +775,29 @@ struct CustomNotificationView: View {
         case .weekly:
             baseEndDate = calendar.date(byAdding: .weekOfYear, value: 1, to: today) ?? today
         case .monthly:
-            baseEndDate = calendar.date(byAdding: .month, value: 1, to: today) ?? today
+            baseEndDate = calendar.date(byAdding: .day, value: 30, to: today) ?? today
         case .once, .daily, .customRange:
             baseEndDate = startDate
         }
 
         return clampDate(baseEndDate, min: startDate, max: maxEndDate)
+    }
+
+    private func monthlyDefaultAwareEndDate(startDate: Date, currentEndDate: Date?) -> Date {
+        let defaultMonthlyEndDate = defaultRecurringEndDate(for: .monthly, startDate: startDate)
+
+        guard let currentEndDate else {
+            return defaultMonthlyEndDate
+        }
+
+        let normalizedCurrentEndDate = clampDate(currentEndDate, min: startDate, max: maxEndDate)
+        let weeklyDefaultEndDate = defaultRecurringEndDate(for: .weekly, startDate: startDate)
+
+        if normalizedCurrentEndDate <= weeklyDefaultEndDate {
+            return defaultMonthlyEndDate
+        }
+
+        return normalizedCurrentEndDate
     }
 
     private func clampedRecurringEndDate(
