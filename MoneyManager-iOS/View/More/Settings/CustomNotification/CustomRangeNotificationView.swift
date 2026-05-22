@@ -26,7 +26,7 @@ struct CustomRangeNotificationView: View {
         let calendar = Calendar.current
         let preferences = AppNotificationPreferences.load()
         let today = calendar.startOfDay(for: Date.now)
-        let defaultEndDate = calendar.date(byAdding: .day, value: 14, to: today) ?? today
+        let defaultEndDate = calendar.date(byAdding: .month, value: 1, to: today) ?? today
         let storedStartDate = preferences.customRangeDateInterval?.lowerBound ?? today
         let storedEndDate = preferences.customRangeDateInterval?.upperBound ?? defaultEndDate
         let initialMonth = calendar.dateInterval(of: .month, for: storedStartDate)?.start ?? today
@@ -59,7 +59,7 @@ struct CustomRangeNotificationView: View {
     }
 
     private var selectedRange: ClosedRange<Date>? {
-        guard let startDate, let endDate, startDate <= endDate else {
+        guard let startDate, let endDate, startDate < endDate else {
             return nil
         }
 
@@ -471,13 +471,7 @@ struct CustomRangeNotificationView: View {
         var preferences = AppNotificationPreferences.load()
         preferences.setCustomRange(from: range.lowerBound, to: range.upperBound, calendar: calendar)
         preferences.save()
-
-        Task {
-            await NotificationManager.shared.syncNotifications(using: preferences)
-            await MainActor.run {
-                dismiss()
-            }
-        }
+        dismiss()
     }
 
     private var saveButton: some View {
